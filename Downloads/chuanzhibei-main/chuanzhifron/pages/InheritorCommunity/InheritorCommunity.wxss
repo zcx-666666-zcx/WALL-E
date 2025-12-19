@@ -1,0 +1,432 @@
+/* InheritorCommunit.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f8f5f2;
+  padding-bottom: 160rpx;
+}
+
+/* 页面标题 */
+.page-header {
+  background-color: white;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 区块样式 */
+.section {
+  margin-bottom: 40rpx;
+  padding: 0 30rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  position: relative;
+  padding-bottom: 12rpx;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60rpx;
+  height: 4rpx;
+  background-color: #c41e3a;
+}
+
+.more-link {
+  font-size: 28rpx;
+  color: #c41e3a;
+}
+
+/* 传承人网格 */
+.master-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.master-card {
+  background: white;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.master-image {
+  width: 100%;
+  height: 300rpx;
+}
+
+.master-content {
+  padding: 24rpx;
+  flex: 1;
+}
+
+.master-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.master-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.master-level {
+  font-size: 20rpx;
+  background-color: rgba(196, 30, 58, 0.1);
+  color: #c41e3a;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  white-space: nowrap;
+}
+
+.master-skill {
+  font-size: 24rpx;
+  color: #3a6ea5;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.master-desc {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.master-footer {
+  padding: 0 24rpx 24rpx;
+}
+
+.book-button {
+  width: 100%;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+}
+
+/* 技艺展示网格 */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.skill-card {
+  background: white;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.video-container {
+  position: relative;
+}
+
+.video-thumbnail {
+  width: 100%;
+  height: 240rpx;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-icon {
+  color: white;
+  font-size: 32rpx;
+  margin-left: 8rpx;
+}
+
+.video-duration {
+  position: absolute;
+  bottom: 16rpx;
+  right: 16rpx;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 20rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.skill-content {
+  padding: 24rpx;
+}
+
+.skill-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.skill-desc {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.skill-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skill-date {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.skill-views {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 活动列表 */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.activity-item {
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.activity-date {
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(196, 30, 58, 0.1);
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.date-day {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #c41e3a;
+}
+
+.date-month {
+  font-size: 20rpx;
+  color: #c41e3a;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.activity-time {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.activity-location {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+}
+
+.activity-button {
+  padding: 16rpx 24rpx;
+  font-size: 24rpx;
+  white-space: nowrap;
+}
+
+/* 社区动态 */
+.community-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.community-item {
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+}
+
+.user-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.post-content {
+  flex: 1;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.user-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.post-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.post-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.post-images {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.post-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+}
+
+.post-footer {
+  display: flex;
+  gap: 40rpx;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+.action-btn:active {
+  color: #c41e3a;
+}
+
+/* 图标字体 */
+.iconfont {
+  font-size: 28rpx;
+}
+
+.icon-heart::before {
+  content: '♡';
+}
+
+.icon-heart-fill::before {
+  content: '♥';
+}
+
+.icon-comment::before {
+  content: '💬';
+}
+
+/* 响应式调整 */
+@media (max-width: 750rpx) {
+  .master-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .skill-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .activity-date {
+    margin-right: 0;
+    margin-bottom: 20rpx;
+  }
+  
+  .activity-button {
+    width: 100%;
+    margin-top: 20rpx;
+  }
+  
+  .post-images {
+    flex-wrap: wrap;
+  }
+  
+  .post-image {
+    width: 100rpx;
+    height: 100rpx;
+  }
+}

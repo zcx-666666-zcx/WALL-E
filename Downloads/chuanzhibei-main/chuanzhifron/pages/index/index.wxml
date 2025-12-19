@@ -1,0 +1,86 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 顶部导航栏 -->
+  <view class="header">
+    <view class="header-content">
+      <view class="logo">
+        <image src="http://localhost:8001/uploads/login-bg.png.png" class="logo-img"></image>
+        <text class="logo-text">非遗传承</text>
+      </view>
+      <view class="header-icons">
+        <button class="icon-btn" bindtap="onSearch">
+          <text class="iconfont icon-search"></text>
+        </button>
+        <button class="icon-btn" bindtap="onNotification">
+          <text class="iconfont icon-bell"></text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主内容区域 -->
+  <view class="content">
+    <!-- 轮播图 -->
+    <swiper indicator-dots="{{true}}" autoplay="{{true}}" interval="5000" duration="1000" class="swiper" circular="{{true}}">
+      <block wx:for="{{bannerList}}" wx:key="id">
+        <swiper-item bindtap="onBannerTap" data-item="{{item}}">
+          <image src="{{item.image}}" class="swiper-img" mode="aspectFill"></image>
+          <view class="swiper-text">
+            <text class="swiper-title">{{item.title}}</text>
+            <text class="swiper-desc">{{item.description}}</text>
+          </view>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <!-- 非遗动态 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">非遗动态</text>
+        <navigator url="/pages/Heritage/Heritage" class="more-link">查看更多</navigator>
+      </view>
+      <view class="news-list">
+        <view class="news-card card card-hover" wx:for="{{newsList}}" wx:key="id" bindtap="onNewsTap" data-item="{{item}}">
+          <image src="{{item.image}}" class="news-img" mode="aspectFill"></image>
+          <view class="news-content">
+            <text class="news-title">{{item.title}}</text>
+            <text class="news-desc">{{item.description}}</text>
+            <view class="news-footer">
+              <text class="news-date">{{item.date}}</text>
+              <button class="fav-btn" bindtap="onFavTap" data-item="{{item}}" catchtap="true">
+                <text class="iconfont {{item.isFav ? 'icon-heart-fill' : 'icon-heart'}}"></text>
+              </button>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 推荐非遗项目 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">推荐非遗项目</text>
+      </view>
+      <view class="recommend-grid">
+        <view class="recommend-item" wx:for="{{recommendList}}" wx:key="id" bindtap="onRecommendTap" data-item="{{item}}">
+          <image src="{{item.image}}" class="recommend-img" mode="aspectFill"></image>
+          <text class="recommend-text">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- AR体验入口 -->
+    <view class="ar-section">
+      <view class="ar-content">
+        <view class="ar-text">
+          <text class="ar-title">AR文物复原体验</text>
+          <text class="ar-desc">通过AR技术，让文物"活"起来，感受传统文化的魅力</text>
+        </view>
+        <button class="btn-primary ar-button" bindtap="navigateToARExperience">
+          <text class="iconfont icon-cube"></text>
+          <text>立即体验</text>
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

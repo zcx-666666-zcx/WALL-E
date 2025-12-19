@@ -1,0 +1,38 @@
+.container {
+  padding: 20rpx;
+  background-color: #f8f5f2;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.content {
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.news-image {
+  width: 100%;
+  border-radius: 10rpx;
+  margin-bottom: 30rpx;
+}
+
+.description {
+  font-size: 28rpx;
+  line-height: 42rpx;
+  color: #666;
+}

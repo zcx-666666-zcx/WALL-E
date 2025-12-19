@@ -1,0 +1,115 @@
+<!--ARExperience.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">AR文物复原体验</text>
+  </view>
+
+  <!-- AR体验介绍 -->
+  <view class="intro-section">
+    <view class="intro-content">
+      <view class="intro-text">
+        <text class="intro-title">什么是AR文物复原？</text>
+        <text class="intro-desc">AR文物复原是一种利用增强现实技术，将破损或消失的文物通过数字技术还原，让用户可以在现实环境中与虚拟文物进行互动的创新体验方式。</text>
+        <text class="intro-features">通过我们的AR功能，您可以：</text>
+        <view class="feature-list">
+          <view class="feature-item">
+            <text class="feature-icon">🔍</text>
+            <text class="feature-text">360°全方位观看文物细节</text>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">👆</text>
+            <text class="feature-text">与虚拟文物进行互动</text>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">📖</text>
+            <text class="feature-text">了解文物背后的历史故事</text>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">🔧</text>
+            <text class="feature-text">参与文物修复的虚拟体验</text>
+          </view>
+        </view>
+      </view>
+      <image src="https://s.coze.cn/image/PwCwmJk5298/" class="intro-image" mode="aspectFill"></image>
+    </view>
+  </view>
+
+  <!-- AR体验项目 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">热门AR体验项目</text>
+    </view>
+    <view class="ar-grid">
+      <view class="ar-card card card-hover" 
+            wx:for="{{arProjects}}" 
+            wx:key="id" 
+            bindtap="onARProjectTap" 
+            data-item="{{item}}">
+        <view class="ar-image-container">
+          <image src="{{item.image}}" class="ar-image" mode="aspectFill"></image>
+          <view wx:if="{{item.isHot}}" class="hot-badge">热门</view>
+        </view>
+        <view class="ar-content">
+          <text class="ar-title">{{item.name}}</text>
+          <text class="ar-desc">{{item.description}}</text>
+          <button class="btn-primary ar-button" bindtap="startARExperience" data-item="{{item}}" catchtap="true">
+            <text class="iconfont icon-cube"></text>
+            <text>开始体验</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- AR体验指南 -->
+  <view class="guide-section">
+    <view class="section-header">
+      <text class="section-title">AR体验指南</text>
+    </view>
+    <view class="guide-grid">
+      <view class="guide-item">
+        <view class="guide-icon">
+          <text class="iconfont icon-mobile">📱</text>
+        </view>
+        <text class="guide-title">打开小程序</text>
+        <text class="guide-desc">确保您的设备支持AR功能并已授予相机权限</text>
+      </view>
+      <view class="guide-item">
+        <view class="guide-icon">
+          <text class="iconfont icon-camera">📷</text>
+        </view>
+        <text class="guide-title">扫描识别</text>
+        <text class="guide-desc">将相机对准指定的识别图或平面</text>
+      </view>
+      <view class="guide-item">
+        <view class="guide-icon">
+          <text class="iconfont icon-hand">👆</text>
+        </view>
+        <text class="guide-title">互动体验</text>
+        <text class="guide-desc">点击、缩放或旋转屏幕上的虚拟文物进行互动</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 体验记录 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">我的体验记录</text>
+      <text class="more-link">查看全部</text>
+    </view>
+    <view class="record-list">
+      <view class="record-item" wx:for="{{experienceRecords}}" wx:key="id">
+        <image src="{{item.image}}" class="record-image" mode="aspectFill"></image>
+        <view class="record-content">
+          <text class="record-title">{{item.name}}</text>
+          <text class="record-time">{{item.time}}</text>
+          <text class="record-duration">体验时长：{{item.duration}}</text>
+        </view>
+        <button class="btn-secondary record-button" bindtap="replayExperience" data-item="{{item}}">
+          重新体验
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

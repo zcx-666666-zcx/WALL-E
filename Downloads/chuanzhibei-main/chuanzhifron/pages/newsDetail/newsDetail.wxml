@@ -1,0 +1,10 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{newsDetail.title}}</text>
+  </view>
+  
+  <view class="content">
+    <image wx:if="{{newsDetail.image}}" src="{{newsDetail.image}}" class="news-image" mode="widthFix"></image>
+    <view class="description">{{newsDetail.description}}</view>
+  </view>
+</view>

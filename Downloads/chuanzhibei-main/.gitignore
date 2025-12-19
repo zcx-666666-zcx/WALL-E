@@ -1,0 +1,8 @@
+target/
+node_modules/
+.idea/
+.vscode/
+*.class
+.DS_Store
+__pycache__/
+

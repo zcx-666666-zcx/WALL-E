@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/Heritage/Heritage",
+    "pages/ARExperience/ARExperience",
+    "pages/InheritorCommunity/InheritorCommunity",
+    "pages/PersonalCenter/PersonalCenter",
+    "pages/logs/logs",
+    "pages/learning/learning",
+    "pages/newsDetail/newsDetail"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "非遗传承",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f8f5f2"
+  },
+  "tabBar": {
+    "color": "#888888",
+    "selectedColor": "#c41e3a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/Heritage/Heritage",
+        "text": "非遗名录"
+      },
+      {
+        "pagePath": "pages/ARExperience/ARExperience",
+        "text": "AR体验"
+      },
+      {
+        "pagePath": "pages/InheritorCommunity/InheritorCommunity",
+        "text": "传承人社区"
+      },
+      {
+        "pagePath": "pages/PersonalCenter/PersonalCenter",
+        "text": "个人中心"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

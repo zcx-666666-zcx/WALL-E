@@ -1,0 +1,11 @@
+<view class="news-card card card-hover" bindtap="onTap">
+  <image class="news-image" src="{{news.imageUrl}}" mode="aspectFill"></image>
+  <view class="news-content">
+    <view class="news-title">{{news.title}}</view>
+    <view class="news-description">{{news.description}}</view>
+    <view class="news-footer">
+      <text class="news-date">{{news.date}}</text>
+      <icon class="fav-icon" type="{{news.isFav ? 'favor-fill' : 'favor'}}" bindtap="onFavTap" />
+    </view>
+  </view>
+</view>

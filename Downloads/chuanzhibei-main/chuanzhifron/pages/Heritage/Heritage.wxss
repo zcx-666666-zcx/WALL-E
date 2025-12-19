@@ -1,0 +1,235 @@
+/* Heritage.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f8f5f2;
+  padding-bottom: 160rpx;
+}
+
+/* 页面标题 */
+.page-header {
+  background-color: white;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 分类筛选 */
+.filter-section {
+  background-color: white;
+  padding: 30rpx 0;
+  margin-bottom: 20rpx;
+}
+
+.filter-scroll {
+  white-space: nowrap;
+}
+
+.filter-list {
+  display: flex;
+  padding: 0 30rpx;
+}
+
+.filter-item {
+  display: inline-block;
+  padding: 16rpx 32rpx;
+  margin-right: 20rpx;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  background-color: #f0e6d2;
+  color: #8c6e44;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.filter-item.active {
+  background-color: #c41e3a;
+  color: white;
+}
+
+.filter-item:last-child {
+  margin-right: 0;
+}
+
+/* 区块样式 */
+.section {
+  margin-bottom: 40rpx;
+  padding: 0 30rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  position: relative;
+  padding-bottom: 12rpx;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60rpx;
+  height: 4rpx;
+  background-color: #c41e3a;
+}
+
+.section-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 非遗项目网格 */
+.heritage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.heritage-card {
+  background: white;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.heritage-img {
+  width: 100%;
+  height: 240rpx;
+}
+
+.heritage-content {
+  padding: 24rpx;
+}
+
+.heritage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.heritage-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  margin-right: 16rpx;
+  line-height: 1.3;
+}
+
+.heritage-level {
+  font-size: 20rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  white-space: nowrap;
+}
+
+.heritage-level.national {
+  background-color: rgba(196, 30, 58, 0.1);
+  color: #c41e3a;
+}
+
+.heritage-level.provincial {
+  background-color: rgba(58, 110, 165, 0.1);
+  color: #3a6ea5;
+}
+
+.heritage-desc {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.heritage-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heritage-region {
+  font-size: 22rpx;
+  color: #999;
+  flex: 1;
+}
+
+.bookmark-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.bookmark-btn:active {
+  color: #c41e3a;
+}
+
+/* 空状态 */
+.empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 200rpx 0;
+  color: #999;
+}
+
+.empty-img {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 40rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 图标字体 */
+.iconfont {
+  font-size: 32rpx;
+}
+
+.icon-bookmark::before {
+  content: '🔖';
+}
+
+.icon-bookmark-fill::before {
+  content: '📌';
+}
+
+/* 响应式调整 */
+@media (max-width: 750rpx) {
+  .heritage-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-item {
+    font-size: 26rpx;
+    padding: 14rpx 28rpx;
+  }
+}

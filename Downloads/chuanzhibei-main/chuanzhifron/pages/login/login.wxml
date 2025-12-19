@@ -1,0 +1,60 @@
+<!-- pages/login/login.wxml -->
+<view class="container">
+  <view class="header">
+    <image class="logo" src="{{logoUrl}}" mode="aspectFit"></image>
+    <text class="title">非遗传承</text>
+    <text class="subtitle">探索中国非物质文化遗产</text>
+  </view>
+
+  <view class="form-container">
+    <view class="tabs">
+      <view class="tab {{currentTab === 0 ? 'active' : ''}}" data-tab="0" bindtap="switchTab">账号登录</view>
+      <view class="tab {{currentTab === 1 ? 'active' : ''}}" data-tab="1" bindtap="switchTab">微信登录</view>
+    </view>
+    
+    <!-- 账号登录表单 -->
+    <view class="form-content" wx:if="{{currentTab === 0}}">
+      <view class="input-group">
+        <text class="input-label">用户名</text>
+        <input class="form-input" placeholder="请输入用户名" bindinput="onUsernameInput" />
+      </view>
+      
+      <view class="input-group">
+        <text class="input-label">密码</text>
+        <input class="form-input" placeholder="请输入密码" password bindinput="onPasswordInput" />
+      </view>
+      
+      <button class="login-btn" bindtap="onLogin">登录</button>
+      
+      <view class="form-footer">
+        <text class="link" bindtap="goToRegister">立即注册</text>
+        <text class="link">忘记密码？</text>
+      </view>
+    </view>
+    
+    <!-- 微信登录 -->
+    <view class="form-content wechat-login" wx:if="{{currentTab === 1}}">
+      <view class="wechat-info">
+        <view class="wechat-icon-placeholder"></view>
+        <text class="wechat-text">微信一键登录</text>
+        <text class="wechat-desc">使用微信账号快速登录，安全便捷</text>
+      </view>
+      
+      <button class="wechat-login-btn" bindtap="onWechatLogin">
+        <view class="btn-icon-placeholder"></view>
+        微信登录
+      </button>
+      
+      <view class="form-footer">
+        <text class="link" bindtap="switchTab" data-tab="0">账号密码登录</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="agreement">
+    <text>登录即表示您同意</text>
+    <text class="link">《用户协议》</text>
+    <text>和</text>
+    <text class="link">《隐私政策》</text>
+  </view>
+</view>

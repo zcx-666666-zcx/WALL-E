@@ -1,0 +1,123 @@
+<!--InheritorCommunit.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">传承人社区</text>
+  </view>
+
+  <!-- 传承人推荐 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">国家级传承人</text>
+    </view>
+    <view class="master-grid">
+      <view class="master-card card card-hover" 
+            wx:for="{{masterList}}" 
+            wx:key="id" 
+            bindtap="onMasterTap" 
+            data-item="{{item}}">
+        <image src="{{item.image}}" class="master-image" mode="aspectFill"></image>
+        <view class="master-content">
+          <view class="master-header">
+            <text class="master-name">{{item.name}}</text>
+            <view class="master-level">{{item.level}}</view>
+          </view>
+          <text class="master-skill">{{item.skill}}</text>
+          <text class="master-desc">{{item.description}}</text>
+        </view>
+        <view class="master-footer">
+          <button class="btn-secondary book-button" bindtap="bookExperience" data-item="{{item}}" catchtap="true">
+            预约体验
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 技艺展示 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">技艺展示</text>
+    </view>
+    <view class="skill-grid">
+      <view class="skill-card card card-hover" 
+            wx:for="{{skillVideos}}" 
+            wx:key="id" 
+            bindtap="onVideoTap" 
+            data-item="{{item}}">
+        <view class="video-container">
+          <image src="{{item.thumbnail}}" class="video-thumbnail" mode="aspectFill"></image>
+          <view class="play-overlay">
+            <text class="play-icon">▶</text>
+          </view>
+          <view class="video-duration">{{item.duration}}</view>
+        </view>
+        <view class="skill-content">
+          <text class="skill-title">{{item.title}}</text>
+          <text class="skill-desc">{{item.description}}</text>
+          <view class="skill-footer">
+            <text class="skill-date">{{item.date}}</text>
+            <text class="skill-views">{{item.views}}次观看</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 社区活动 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">近期活动</text>
+    </view>
+    <view class="activity-list">
+      <view class="activity-item" wx:for="{{activities}}" wx:key="id">
+        <view class="activity-date">
+          <text class="date-day">{{item.day}}</text>
+          <text class="date-month">{{item.month}}</text>
+        </view>
+        <view class="activity-content">
+          <text class="activity-title">{{item.title}}</text>
+          <text class="activity-time">{{item.time}}</text>
+          <text class="activity-location">{{item.location}}</text>
+        </view>
+        <button class="btn-primary activity-button" bindtap="joinActivity" data-item="{{item}}">
+          {{item.buttonText}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 社区动态 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">社区动态</text>
+      <text class="more-link">查看更多</text>
+    </view>
+    <view class="community-list">
+      <view class="community-item" wx:for="{{communityPosts}}" wx:key="id">
+        <image src="{{item.avatar}}" class="user-avatar" mode="aspectFill"></image>
+        <view class="post-content">
+          <view class="post-header">
+            <text class="user-name">{{item.userName}}</text>
+            <text class="post-time">{{item.time}}</text>
+          </view>
+          <text class="post-text">{{item.content}}</text>
+          <view wx:if="{{item.images.length > 0}}" class="post-images">
+            <image wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" 
+                   src="{{img}}" class="post-image" mode="aspectFill"></image>
+          </view>
+          <view class="post-footer">
+            <button class="action-btn" bindtap="likePost" data-item="{{item}}" catchtap="true">
+              <text class="iconfont {{item.isLiked ? 'icon-heart-fill' : 'icon-heart'}}"></text>
+              <text>{{item.likes}}</text>
+            </button>
+            <button class="action-btn" bindtap="commentPost" data-item="{{item}}" catchtap="true">
+              <text class="iconfont icon-comment">💬</text>
+              <text>{{item.comments}}</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,113 @@
+<!--Heritage.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">非遗名录</text>
+  </view>
+
+  <!-- 分类筛选 -->
+  <view class="filter-section">
+    <scroll-view scroll-x="true" class="filter-scroll">
+      <view class="filter-list">
+        <view class="filter-item {{currentCategory === 'all' ? 'active' : ''}}" 
+              data-category="all" bindtap="onCategoryChange">
+          <text>全部</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'craft' ? 'active' : ''}}" 
+              data-category="craft" bindtap="onCategoryChange">
+          <text>传统技艺</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'music' ? 'active' : ''}}" 
+              data-category="music" bindtap="onCategoryChange">
+          <text>传统音乐</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'dance' ? 'active' : ''}}" 
+              data-category="dance" bindtap="onCategoryChange">
+          <text>传统舞蹈</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'drama' ? 'active' : ''}}" 
+              data-category="drama" bindtap="onCategoryChange">
+          <text>传统戏剧</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'art' ? 'active' : ''}}" 
+              data-category="art" bindtap="onCategoryChange">
+          <text>传统美术</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'medicine' ? 'active' : ''}}" 
+              data-category="medicine" bindtap="onCategoryChange">
+          <text>传统医药</text>
+        </view>
+        <view class="filter-item {{currentCategory === 'folklore' ? 'active' : ''}}" 
+              data-category="folklore" bindtap="onCategoryChange">
+          <text>民俗</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 国家级非遗项目 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">国家级非遗项目</text>
+      <text class="section-count">{{nationalList.length}}项</text>
+    </view>
+    <view class="heritage-grid">
+      <view class="heritage-card card card-hover" 
+            wx:for="{{nationalList}}" 
+            wx:key="id" 
+            bindtap="onHeritageTap" 
+            data-item="{{item}}">
+        <image src="{{item.image}}" class="heritage-img" mode="aspectFill"></image>
+        <view class="heritage-content">
+          <view class="heritage-header">
+            <text class="heritage-title">{{item.name}}</text>
+            <view class="heritage-level national">国家级</view>
+          </view>
+          <text class="heritage-desc">{{item.description}}</text>
+          <view class="heritage-footer">
+            <text class="heritage-region">{{item.region}}</text>
+            <button class="bookmark-btn" bindtap="onBookmarkTap" data-item="{{item}}" catchtap="true">
+              <text class="iconfont {{item.isBookmarked ? 'icon-bookmark-fill' : 'icon-bookmark'}}"></text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 省级非遗项目 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">省级非遗项目</text>
+      <text class="section-count">{{provincialList.length}}项</text>
+    </view>
+    <view class="heritage-grid">
+      <view class="heritage-card card card-hover" 
+            wx:for="{{provincialList}}" 
+            wx:key="id" 
+            bindtap="onHeritageTap" 
+            data-item="{{item}}">
+        <image src="{{item.image}}" class="heritage-img" mode="aspectFill"></image>
+        <view class="heritage-content">
+          <view class="heritage-header">
+            <text class="heritage-title">{{item.name}}</text>
+            <view class="heritage-level provincial">省级</view>
+          </view>
+          <text class="heritage-desc">{{item.description}}</text>
+          <view class="heritage-footer">
+            <text class="heritage-region">{{item.region}}</text>
+            <button class="bookmark-btn" bindtap="onBookmarkTap" data-item="{{item}}" catchtap="true">
+              <text class="iconfont {{item.isBookmarked ? 'icon-bookmark-fill' : 'icon-bookmark'}}"></text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{filteredList.length === 0}}" class="empty">
+    <image src="/images/empty.png" class="empty-img"></image>
+    <text class="empty-text">暂无相关非遗项目</text>
+  </view>
+</view>
