@@ -1,0 +1,105 @@
+/* pages/registion/registion.wxss */
+.container1{
+  height:100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+#title{
+  height: 50rpx;
+  width: 350rpx;
+  margin: 40rpx 200rpx 10rpx 200rpx;
+  z-index: 2;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 40rpx;
+  color: rgb(255, 255, 255);
+}
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.9;
+}
+.picture{
+  margin: 100rpx 0 20rpx 0;
+  height: 600rpx;
+  width: 100%;
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+}
+.pc-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  z-index: 1;
+}
+.ipt{
+  z-index: 2;
+  position: relative;
+  height: 70rpx; /* 调整输入框高度 */
+  width: 450rpx; /* 保持你的宽度 */
+  margin: 20rpx 0; /* 调整垂直间距，保持水平居中 */
+  background: rgba(179, 213, 236, 0.8);
+  border-radius: 5rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+}
+
+.ipt input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 32rpx;
+}
+
+.ipt input::placeholder{
+  color: #333333;
+  font-size: 28rpx;
+}
+
+#regist {
+  z-index: 2;
+  position: relative;
+  height: 80rpx;
+  width: 650rpx;
+  margin: 10rpx 0;
+  font-weight: 300;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40rpx;
+}
+
+/* 注册链接样式 */
+.log {
+  height: 50rpx;
+  width: 450rpx;
+  margin: 720rpx 150rpx;
+  z-index: 2;
+  position: relative;
+  text-align: center;
+  color: white;
+  font-size: 28rpx;
+}
