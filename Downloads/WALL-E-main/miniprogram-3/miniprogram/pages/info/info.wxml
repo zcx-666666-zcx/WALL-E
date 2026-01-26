@@ -1,0 +1,33 @@
+<view class="container1">
+  <image class="bg-image" src="{{image_ip}}" mode=""/>
+
+  <view class="container2">
+    <view id="call_info">通话功能说明
+      <text>null</text>
+    </view>
+
+    <view id="element_info">事件功能说明
+      <text>null</text>
+    </view>
+
+    <view id="AI_info">AI陪伴功能说明
+      <text>null</text>
+    </view>
+
+    <view id="drive_info">遥控功能说明
+      <text>null</text>
+    </view>
+
+    <view id="command_info">自定义命令说明
+      <text>null</text>
+    </view>
+  
+    <view id="write_info">数据记录
+      <text>null</text>
+    </view>
+
+    <view id="Star_info">更多连接
+      <text>null</text>
+    </view>
+  </view>
+</view>
