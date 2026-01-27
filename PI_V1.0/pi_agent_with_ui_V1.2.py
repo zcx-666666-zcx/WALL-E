@@ -24,7 +24,7 @@ from aiortc import RTCPeerConnection, RTCSessionDescription, RTCIceCandidate
 from aiortc.contrib.media import MediaPlayer
 
 # ================= 配置区域 =================
-SERVER_URL = "http://172.19.88.122:8081" 
+SERVER_URL = "http://192.168.3.124:8081" 
 ROOM_ID = "0001"
 CAMERA_DEVICE = '/dev/video0'
 
@@ -274,11 +274,12 @@ def ai_thread():
                 
                 time.sleep(0.05) 
 
-# ================= 5. 网络线程 (WebRTC) =================
+# ================= 5. 网络线程 (WebRTC + 全功能远程控制) =================
 async def network_main():
     sio = socketio.AsyncClient()
     pc_container = {"pc": None}
 
+    # --- WebRTC 初始化逻辑 (保持不变) ---
     async def create_pc():
         pc = RTCPeerConnection()
         pc_container["pc"] = pc
@@ -288,12 +289,15 @@ async def network_main():
                 await asyncio.sleep(0.1)
 
         try:
+            # 建立媒体流
             player = MediaPlayer(CAMERA_DEVICE, format='v4l2', options={
                 'video_size': '640x480', 'framerate': '30'
             })
             pc.addTrack(player.video)
             pc.addTrack(player.audio)
-        except Exception: return None
+        except Exception as e:
+            logger.error(f"WebRTC Error: {e}")
+            return None
 
         @pc.on("iceconnectionstatechange")
         async def on_ice_change():
@@ -302,13 +306,17 @@ async def network_main():
 
         return pc
 
+    # --- SocketIO 事件 ---
+
     @sio.event
     async def connect():
         update_ui(status="Network Connected")
+        # 加入房间，房间号需与服务器一致
         await sio.emit('join', {'room': ROOM_ID})
 
     @sio.event
     async def message(data):
+        # 处理 WebRTC 信令 (保持不变)
         if data['type'] == 'offer':
             state.mode = "CALL"
             update_ui(face="> 📞 <", status="Incoming Call...")
@@ -339,19 +347,69 @@ async def network_main():
 
     @sio.event
     async def control(data):
-        if data.get('cmd') == 'motor':
+        """
+        处理远程控制指令
+        从 app.py 移植所有控制逻辑到此处
+        """
+        cmd = data.get('cmd')
+        
+        # 1. 摇杆电机控制
+        if cmd == 'motor':
             x, y = data.get('x', 0), data.get('y', 0)
-            arduino.send(f"X{int(float(x)*100)}")
-            arduino.send(f"Y{int(float(y)*100)}")
+            try:
+                # 保持原有逻辑：归一化小数 -> 乘以100转整数
+                arduino.send(f"X{int(float(x)*100)}")
+                arduino.send(f"Y{int(float(y)*100)}")
+            except: pass
 
+        # 2. 舵机控制 (处理如 'G50', 'T30' 等指令)
+        elif cmd == 'servo':
+            sid = data.get('id')   # 舵机标识符 (G, T, B, L, R, E, U)
+            val = data.get('val')  # 角度值
+            if sid and val is not None:
+                arduino.send(f"{sid}{val}")
+
+        # 3. 动画控制 (处理如 'A1' 指令)
+        elif cmd == 'animate':
+            aid = data.get('id')
+            if aid is not None:
+                arduino.send(f"A{aid}")
+                update_ui(face="> ^ <", status="Performing Animation")
+                # 动画结束后恢复表情 (可选延时)
+                threading.Timer(2.0, lambda: update_ui(face="O  _  O", status="AI Safety Guarding")).start()
+
+        # 4. TTS 语音合成
+        elif cmd == 'tts':
+            text = data.get('text')
+            if text:
+                update_ui(status=f"Speaking...")
+                # 使用线程运行 TTS，防止阻塞网络主循环
+                def run_tts():
+                    import subprocess
+                    try:
+                        # 尝试调用 espeak，模拟 app.py 的逻辑
+                        subprocess.run(['espeak-ng', '-v', 'zh', text], stderr=subprocess.DEVNULL)
+                    except Exception as e:
+                        logger.error(f"TTS Error: {e}")
+                threading.Thread(target=run_tts).start()
+
+        # 5. 系统设置 (关机等)
+        elif cmd == 'settings':
+            stype = data.get('type')
+            if stype == 'shutdown':
+                import subprocess
+                update_ui(face="X _ X", status="Shutting Down...")
+                subprocess.run(['sudo', 'shutdown', '-h', 'now'])
+
+    # --- 连接循环 ---
     while True:
         try:
             await sio.connect(SERVER_URL)
             await sio.wait()
-        except:
+        except Exception as e:
             update_ui(status="Connecting to Server...")
+            logger.warning(f"Connection failed: {e}, retrying in 5s...")
             await asyncio.sleep(5)
-
 # ================= 6. 启动 =================
 if __name__ == "__main__":
     arduino.connect()
