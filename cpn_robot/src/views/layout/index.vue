@@ -1,8 +1,8 @@
 <script setup>
   import {ref , onMounted} from 'vue';
-  import { GetMachineListApi } from '../../api/users';
   import { useRoute } from 'vue-router';
   import { GetIdApi } from '../../api/users';
+  import { GetMachineListApi } from '../../api/users';
   import router from '../../router';
 
   const route = useRoute()
@@ -80,8 +80,17 @@
     });
   };
 
-  const Machines = ref([])
+  const goToWalleInterface = () => {
+    // 跳转到 walle-replica 的 web_interface 界面
+    window.open('http://192.168.3.54:5000', '_blank');
+  };
 
+  const goToWebrtcVideo = () => {
+    // 跳转到WebRTC视频通话页面
+    router.push('/webrtc-video');
+  };
+
+  const Machines = ref([])
 </script>
 
 <template>
@@ -119,6 +128,8 @@
 
             <el-menu-item index="/video" class="options">视频通话</el-menu-item>
 
+            <el-menu-item index="/webrtc-video" @click="goToWebrtcVideo" class="options">WebRTC视频通话</el-menu-item>
+
             <el-menu-item index="/drive" class="options">远程遥控</el-menu-item>
 
             <el-menu-item index="/connections" class="options">更多连接</el-menu-item>
@@ -126,11 +137,17 @@
             <el-menu-item index="/set" class="options">设置</el-menu-item>
 
             <el-menu-item index="/info" class="options">说明</el-menu-item>
+            
+            <el-menu-item @click="goToWalleInterface" class="options">WALL-E原版界面</el-menu-item>
+            
             <el-menu-item index="/Agent" class="user">{{userName}}</el-menu-item>
         </el-menu>
       </el-aside>
       <el-container>
-        <el-header class="head">智 能 陪 伴 机 器 人 网 页 资 源 控 制 平 台</el-header>
+        <el-header class="head">
+          智 能 陪 伴 机 器 人 网 页 资 源 控 制 平 台
+          <el-button type="primary" size="small" class="walle-jump-btn" @click="goToWalleInterface">WALL-E原版界面</el-button>
+        </el-header>
 
         <el-main class="main">
           <router-view></router-view>
@@ -206,13 +223,18 @@
     background-color: rgb(155, 155, 155);
     opacity: 0.5;
     display: flex;
-    justify-content: center;
-    text-align: center;
+    justify-content: space-between;
     align-items: center;
+    text-align: center;
     font-size: 45px;
     font-weight: 700;
     color: rgb(34, 0, 185);
-    
+  }
+  .walle-jump-btn {
+    margin-right: 20px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 600;
   }
   .main{
     width: 2300px;

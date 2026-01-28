@@ -283,8 +283,8 @@
     }
     .addElement_container{
         position: absolute;
-        height: 550px;
-        width: 400px;
+        height: 700px;
+        width: 550px;
         background-color: rgb(255, 200, 155);
         top: 100px;
         left: 825px;

@@ -11,7 +11,7 @@ import IndexView from '@/views/index/index.vue';
 import InfoView from '@/views/info/info.vue';
 import SetView from '@/views/set/set.vue'
 import MachineView from '@/views/machines/machines.vue'
-import VideoView from '@/views/video/video.vue';
+import WebrtcVideoView from '@/views/video/webrtc_video.vue'; // 替换导入
 import DriveView from '@/views/drive/web_interface/templates/index.vue'
 
 const router = createRouter({
@@ -32,7 +32,8 @@ const router = createRouter({
         {path: 'info', name: 'info', component: InfoView},
         {path: 'set', name: 'set', component: SetView},
         {path: 'machines', name: 'machines', component: MachineView},
-        {path: 'video', name: 'video', component: VideoView},
+        {path: 'video', name: 'video', redirect: '/webrtc-video'}, // 重定向到新视频通话页面
+        {path: 'webrtc-video', name: 'webrtc-video', component: WebrtcVideoView}, // 新增路由
         {path: 'drive', name: 'drive', component: DriveView}
       ]
     },
