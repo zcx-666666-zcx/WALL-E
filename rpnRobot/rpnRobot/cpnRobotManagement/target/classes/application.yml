@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/cpnrobot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
-    password: 1887418187M
+    password: 20250709
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -19,8 +19,20 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
 
+onenet:
+  # 在 OneNET 平台 HTTP 推送参数中配置的 Token，用于 URL 验证和消息签名校验
+  token: 123456789
+  # 若开启“安全模式”（AES 加密），这里填写 OneNET 控制台生成的 Base64 编码密钥；明文模式可以先留空
+  aes-key: your-onenet-aes-base64-key
+
 aliyun:
   oss:
     endpoint: "https://oss-cn-beijing.aliyuncs.com"
     bucketName: "lht-java-ai-edu"
     region: "cn-beijing"
+
+zzulicloud:
+  datasource:
+    url: jdbc:mysql://localhost:3306/zzulicloud?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 20250709
