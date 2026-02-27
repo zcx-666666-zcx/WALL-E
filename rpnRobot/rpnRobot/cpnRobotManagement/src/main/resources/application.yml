@@ -14,7 +14,7 @@ spring:
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.cpnrobot.cpnrobotmanagement.pojo
+  type-aliases-package: pojos
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true

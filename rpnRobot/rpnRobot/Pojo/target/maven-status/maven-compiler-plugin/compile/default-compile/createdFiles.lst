@@ -1,10 +1,15 @@
 pojos/Event.class
 pojos/SensorData.class
+pojos/SensorFall.class
 pojos/Result.class
 pojos/LoginInfo.class
+pojos/SensorBreathe.class
 pojos/ContractUser.class
+pojos/SensorRate.class
 pojos/User.class
 pojos/Command.class
 pojos/ContractMachine.class
+pojos/SensorHumidity.class
 pojos/DeviceMessage.class
 pojos/ListResult.class
+pojos/SensorTemperature.class

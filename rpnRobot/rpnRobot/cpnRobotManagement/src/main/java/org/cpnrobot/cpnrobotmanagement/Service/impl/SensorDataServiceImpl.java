@@ -2,11 +2,12 @@ package org.cpnrobot.cpnrobotmanagement.Service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cpnrobot.cpnrobotmanagement.Mapper.SensorDataMapper;
+import org.cpnrobot.cpnrobotmanagement.Mapper.*;
 import org.cpnrobot.cpnrobotmanagement.Service.SensorDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pojos.SensorData;
+import org.springframework.transaction.annotation.Transactional;
+import pojos.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,7 +19,19 @@ import java.util.List;
 public class SensorDataServiceImpl implements SensorDataService {
 
     @Autowired
-    private SensorDataMapper sensorDataMapper;
+    private SensorFallMapper sensorFallMapper;
+    
+    @Autowired
+    private SensorTemperatureMapper sensorTemperatureMapper;
+    
+    @Autowired
+    private SensorHumidityMapper sensorHumidityMapper;
+    
+    @Autowired
+    private SensorRateMapper sensorRateMapper;
+    
+    @Autowired
+    private SensorBreatheMapper sensorBreatheMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -35,27 +48,32 @@ public class SensorDataServiceImpl implements SensorDataService {
                 ", deviceId=" + sensorData.getDeviceId() +
                 ", timestamp=" + sensorData.getTimestamp());
 
-        sensorDataMapper.insert(sensorData);
+        // 这里可以根据需要决定是否还需要保存到旧表
+        // sensorDataMapper.insert(sensorData);
 
         System.out.println("[传感器数据][保存] 传感器数据保存完成");
     }
 
     @Override
     public List<SensorData> findByDeviceId(String deviceId) {
-        return sensorDataMapper.findByDeviceId(deviceId);
+        // 可以根据需要实现合并查询逻辑
+        return null;
     }
 
     @Override
     public SensorData findLatest() {
-        return sensorDataMapper.findLatest();
+        // 可以根据需要实现合并查询逻辑
+        return null;
     }
 
     @Override
     public List<SensorData> findByTimeRange(Long startTime, Long endTime) {
-        return sensorDataMapper.findByTimeRange(startTime, endTime);
+        // 可以根据需要实现合并查询逻辑
+        return null;
     }
 
     @Override
+    @Transactional
     public void parseAndSaveFromOneNetMessage(String msg, Long timestamp, String messageId) {
         try {
             System.out.println("[传感器数据][解析] 开始解析OneNET消息: " + msg);
@@ -66,38 +84,100 @@ public class SensorDataServiceImpl implements SensorDataService {
             String devName = rootNode.path("dev_name").asText();
             String pid = rootNode.path("pid").asText();
             String dsId = rootNode.path("ds_id").asText();
+            String valueStr = rootNode.path("value").asText();
             
-            // 提取传感器数据
-            JsonNode dpNode = rootNode.path("dp");
-            JsonNode ceshiArray = dpNode.path(dsId);
+            System.out.println("[传感器数据][解析] 解析到的数据: dev_name=" + devName + ", pid=" + pid + ", ds_id=" + dsId + ", value=" + valueStr);
             
-            if (ceshiArray.isArray() && ceshiArray.size() > 0) {
-                JsonNode firstDataPoint = ceshiArray.get(0);
-                int value = firstDataPoint.path("v").asInt();
-                
-                // 创建传感器数据对象
-                SensorData sensorData = new SensorData();
-                sensorData.setId(timestamp); // 使用时间戳作为ID
-                sensorData.setDeviceId(pid); // 使用设备PID作为设备ID
-                sensorData.setTimestamp(timestamp);
-                
-                // 根据您的测试数据，value=666，这里需要确定具体映射关系
-                // 暂时将value映射到rate字段作为示例
-                sensorData.setRate(value);
-                // 其他字段暂时设置默认值
-                sensorData.setFall(false);
-                sensorData.setTemperature(0.0);
-                sensorData.setHumidity(0.0);
-                sensorData.setBreathe(0);
-                
-                System.out.println("[传感器数据][解析] 解析完成，准备保存数据");
-                save(sensorData);
-            } else {
-                System.out.println("[传感器数据][解析] 未找到有效的传感器数据");
+            // 根据ds_id判断数据类型并保存到对应表
+            switch (dsId.toLowerCase()) {
+                case "fall": // 跌倒传感器
+                    try {
+                        boolean fallValue = Boolean.parseBoolean(valueStr);
+                        SensorFall fallData = new SensorFall();
+                        fallData.setDeviceId(pid);
+                        fallData.setFall(fallValue);
+                        fallData.setTimestamp(timestamp);
+                        fallData.setMessageId(messageId);
+                        sensorFallMapper.insert(fallData);
+                        System.out.println("[传感器数据][解析] 跌倒数据保存完成: " + fallValue);
+                    } catch (Exception e) {
+                        System.err.println("[传感器数据][解析] 插入sensor_fall表失败: " + e.getMessage());
+                    }
+                    break;
+                    
+                case "temperature": // 温度传感器
+                    try {
+                        double tempValue = Double.parseDouble(valueStr);
+                        SensorTemperature tempData = new SensorTemperature();
+                        tempData.setDeviceId(pid);
+                        tempData.setTemperature(tempValue);
+                        tempData.setTimestamp(timestamp);
+                        tempData.setMessageId(messageId);
+                        sensorTemperatureMapper.insert(tempData);
+                        System.out.println("[传感器数据][解析] 温度数据保存完成: " + tempValue);
+                    } catch (Exception e) {
+                        System.err.println("[传感器数据][解析] 插入sensor_temperature表失败: " + e.getMessage());
+                    }
+                    break;
+                    
+                case "humidity": // 湿度传感器
+                    try {
+                        double humidityValue = Double.parseDouble(valueStr);
+                        SensorHumidity humidityData = new SensorHumidity();
+                        humidityData.setDeviceId(pid);
+                        humidityData.setHumidity(humidityValue);
+                        humidityData.setTimestamp(timestamp);
+                        humidityData.setMessageId(messageId);
+                        sensorHumidityMapper.insert(humidityData);
+                        System.out.println("[传感器数据][解析] 湿度数据保存完成: " + humidityValue);
+                    } catch (Exception e) {
+                        System.err.println("[传感器数据][解析] 插入sensor_humidity表失败: " + e.getMessage());
+                    }
+                    break;
+                    
+                case "rate": // 心率传感器
+                    try {
+                        int rateValue = Integer.parseInt(valueStr);
+                        SensorRate rateData = new SensorRate();
+                        rateData.setDeviceId(pid);
+                        rateData.setRate(rateValue);
+                        rateData.setTimestamp(timestamp);
+                        rateData.setMessageId(messageId);
+                        sensorRateMapper.insert(rateData);
+                        System.out.println("[传感器数据][解析] 心率数据保存完成: " + rateValue);
+                    } catch (Exception e) {
+                        System.err.println("[传感器数据][解析] 插入sensor_rate表失败: " + e.getMessage());
+                    }
+                    break;
+                    
+                case "breathe": // 呼吸频率传感器
+                    try {
+                        int breatheValue = Integer.parseInt(valueStr);
+                        SensorBreathe breatheData = new SensorBreathe();
+                        breatheData.setDeviceId(pid);
+                        breatheData.setBreathe(breatheValue);
+                        breatheData.setTimestamp(timestamp);
+                        breatheData.setMessageId(messageId);
+                        sensorBreatheMapper.insert(breatheData);
+                        System.out.println("[传感器数据][解析] 呼吸频率数据保存完成: " + breatheValue);
+                    } catch (Exception e) {
+                        System.err.println("[传感器数据][解析] 插入sensor_breathe表失败: " + e.getMessage());
+                    }
+                    break;
+                    
+                case "online_status": // 设备在线状态
+                    // 静默丢弃，不做处理
+                    System.out.println("[传感器数据][解析] 收到设备在线状态信息，已静默丢弃: " + valueStr);
+                    break;
+                    
+                default:
+                    System.out.println("[传感器数据][解析] 未知的传感器类型: " + dsId + "，已静默丢弃");
+                    break;
             }
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("[传感器数据][解析] 解析OneNET消息失败: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
