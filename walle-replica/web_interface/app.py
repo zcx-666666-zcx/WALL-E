@@ -1,6 +1,6 @@
 # ==============================================================================
-# Pi Agent Ultimate (Fixed Version + Spring Boot Integration)
-# 严格基于 pi_agent_with_ui_V1.1.py 整合 Flask 与本地 Spring Boot 后端
+# Pi Agent Ultimate (Fixed Version)
+# 严格基于 pi_agent_with_ui_V1.1.py 整合 Flask
 # ==============================================================================
 
 import asyncio
@@ -17,7 +17,6 @@ import json
 import sys
 import os
 import paho.mqtt.client as mqtt
-import requests  # 【新增】用于发送 HTTP 请求到 Spring Boot
 from queue import Queue
 from threading import Thread, Event, Lock
 from flask import Flask, request, session, redirect, url_for, jsonify, render_template, Response
@@ -27,6 +26,7 @@ from aiortc import RTCPeerConnection, RTCSessionDescription, RTCIceCandidate
 from aiortc.contrib.media import MediaPlayer
 
 # ================= 配置区域 =================
+# 注意：这里根据你提供的 server.py 将端口修正为 8081
 SERVER_URL = "http://zhangchenxideMacBook-Pro.local:8081" 
 ROOM_ID = "0001"
 CAMERA_DEVICE = '/dev/video0'
@@ -40,132 +40,28 @@ DEV_NAME = "WALEE_1"
 TOKEN = "version=2018-10-31&res=products%2FkCx33ym0Dt%2Fdevices%2FWALEE_1&et=1956499200&method=sha1&sign=7KSXNzQm%2BNfVDMCxOyQL4FrE%2FnE%3D"
 TOPIC_PUB = "$sys/kCx33ym0Dt/WALEE_1/dp/post/json"
 
-# === 【新增】Spring Boot 后端配置 ===
-SPRINGBOOT_URL = "http://localhost:7001"
-SPRINGBOOT_DEVICE_ID = None  # 将在启动时自动获取
-
 # ================= 日志与全局状态 =================
 logging.basicConfig(level=logging.INFO, format='[%(name)s] %(message)s')
 logger = logging.getLogger("System")
 
 class RobotState:
     def __init__(self):
-        self.mode = "PATROL" 
+        self.mode = "PATROL" # PATROL(AI检测) | CALL(视频通话) | WEB_CONTROL(网页遥控)
         self.ai_camera_released = Event()
-        self.ai_camera_released.set() 
+        self.ai_camera_released.set() # 初始设为True，让AI线程能拿到锁（逻辑反转：Set=Released/Available? 不，原逻辑是Wait wait()）
+        # 修正：原代码中 set() 表示 "已释放"， WebRTC wait() 等待它被 set。
+        # AI线程占用时应 clear()。
+        
         self.battery = "Unknown"
+        
+        # === Flask 视频流专用 ===
         self.flask_frame = None
         self.flask_lock = Lock()
 
 state = RobotState()
 ui_queue = Queue()
 
-# ================= 【新增】Spring Boot 数据同步逻辑 =================
-def init_springboot_device():
-    """在系统启动时，向 Spring Boot 注册设备并获取 Device ID"""
-    global SPRINGBOOT_DEVICE_ID
-    url = f"{SPRINGBOOT_URL}/api/device/register"
-    payload = {
-        "deviceName": DEV_NAME,
-        "deviceType": "health_monitor", 
-        "description": "WALL-E 机器人 AI 监控端"
-    }
-    try:
-        response = requests.post(url, json=payload, timeout=5)
-        if response.status_code == 200:
-            result = response.json()
-            SPRINGBOOT_DEVICE_ID = result.get('data', {}).get('deviceId')
-            logger.info(f">>> [Spring Boot] 设备注册成功! ID: {SPRINGBOOT_DEVICE_ID}")
-        else:
-            logger.error(f">>> [Spring Boot] 设备注册失败: {response.text}")
-    except Exception as e:
-        logger.error(f">>> [Spring Boot] 无法连接到后端 (请检查 Spring Boot 是否启动): {e}")
-
-def upload_to_springboot(is_fall):
-    """向 Spring Boot 上传 WALL-E 的真实监测数据"""
-    if not SPRINGBOOT_DEVICE_ID:
-        logger.warning(">>> [Spring Boot] 缺少 Device ID，跳过上传。")
-        return
-        
-    # 1. 解析真实的电池电量（来自 Arduino 串口）
-    battery_level = 100
-    if str(state.battery).isdigit():
-        battery_level = int(state.battery)
-        
-    # 2. 只打包 app.py 真正拥有的核心数据
-    real_data = {
-        "fallDetected": is_fall,
-        "batteryLevel": battery_level,
-        "currentMode": state.mode  # 顺便记录设备当前处于 PATROL 还是 CALL 模式
-    }
-    
-    # 3. 构造请求体（参考了你的测试脚本结构，但只放真实数据）
-    payload = {
-        "deviceId": SPRINGBOOT_DEVICE_ID,
-        "sensorType": "walle_ai_camera", # 明确标识这是树莓派AI节点发来的数据
-        "data": real_data,
-        "timestamp": int(time.time() * 1000)
-    }
-    
-    try:
-        url = f"{SPRINGBOOT_URL}/api/data/upload"
-        response = requests.post(url, json=payload, timeout=5)
-        if response.json().get("code") == 200:
-            logger.info(f">>> [Spring Boot] 真实状态上传成功! 跌倒: {is_fall}, 电量: {battery_level}%")
-        else:
-            logger.error(f">>> [Spring Boot] 数据上传失败: {response.text}")
-    except Exception as e:
-        logger.error(f"Spring Boot 上传请求失败: {e}")
-    """向 Spring Boot 上传健康监测数据"""
-    if not SPRINGBOOT_DEVICE_ID:
-        logger.warning(">>> [Spring Boot] 缺少 Device ID，跳过上传。")
-        return
-        
-    # 获取真实电池电量，如果是未知则给默认值
-    battery_level = 100
-    if str(state.battery).isdigit():
-        battery_level = int(state.battery)
-        
-    # 构造兼容后端的假数据与真实跌倒状态
-    health_data = {
-        "temperature": 36.5,
-        "humidity": 45.0,
-        "heartRate": 75,
-        "respiratoryRate": 16,
-        "oxygenSaturation": 98,
-        "bloodPressure": {
-            "systolic": 120,
-            "diastolic": 80
-        },
-        "fallDetection": {
-            "detected": is_fall,
-            "confidence": 0.95 if is_fall else 0.1,
-            "activityStatus": "跌倒" if is_fall else "正常活动"
-        },
-        "deviceStatus": {
-            "batteryLevel": battery_level,
-            "signalStrength": -60
-        }
-    }
-    
-    payload = {
-        "deviceId": SPRINGBOOT_DEVICE_ID,
-        "sensorType": "health_monitor",
-        "data": health_data,
-        "timestamp": int(time.time() * 1000)
-    }
-    
-    try:
-        url = f"{SPRINGBOOT_URL}/api/data/upload"
-        response = requests.post(url, json=payload, timeout=5)
-        if response.json().get("code") == 200:
-            logger.info(">>> [Spring Boot] 跌倒报警数据上传成功!")
-        else:
-            logger.error(f">>> [Spring Boot] 数据上传失败: {response.text}")
-    except Exception as e:
-        logger.error(f"Spring Boot 上传请求失败: {e}")
-
-# ================= 1. MQTT 初始化 (保持原样) =================
+# ================= MQTT 初始化 (保持原样) =================
 mqtt_client = mqtt.Client(client_id=DEV_NAME, protocol=mqtt.MQTTv311)
 mqtt_client.username_pw_set(username=PROD_ID, password=TOKEN)
 
@@ -288,12 +184,13 @@ def update_ui(face=None, status=None):
     if status: data['status'] = status
     ui_queue.put(data)
 
-# ================= 4. AI 线程 =================
+# ================= 4. AI 线程 (逻辑微调以支持 Flask) =================
+# 核心逻辑与 V1.1 保持一致，但增加了对 WEB_CONTROL 模式的判断
 def ai_thread():
     logger.info(">>> AI Thread Started")
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(model_complexity=0, min_detection_confidence=0.5)
-    mp_drawing = mp.solutions.drawing_utils 
+    mp_drawing = mp.solutions.drawing_utils # 加回 drawing utils
     cap = None
     
     fall_detected = False
@@ -302,17 +199,21 @@ def ai_thread():
     CONFIRM_TIME = 1.0
 
     while True:
+        # === 场景 1: 视频通话 (CALL) ===
+        # 必须完全释放摄像头，逻辑不变
         if state.mode == "CALL":
             if cap is not None:
                 cap.release()
                 cap = None
-                state.ai_camera_released.set()
+                state.ai_camera_released.set() # 通知 WebRTC 可以用了
                 update_ui(face="> 📞 <", status="Video Call in Progress")
             time.sleep(1)
             continue
 
-        state.ai_camera_released.clear()
+        # === 场景 2: 巡逻 (PATROL) 或 网页控制 (WEB_CONTROL) ===
+        state.ai_camera_released.clear() # 锁定，不让 WebRTC 抢
         
+        # 摄像头初始化 (复用原逻辑)
         if cap is None:
             try:
                 cap = cv2.VideoCapture(CAMERA_DEVICE)
@@ -333,16 +234,24 @@ def ai_thread():
                 cap = None
                 continue
             
+            # --- 分支 A: 网页控制模式 (无AI，无红框) ---
             if state.mode == "WEB_CONTROL":
+                # 只传画面给 Flask，不跑 pose.process
                 with state.flask_lock:
                     state.flask_frame = frame.copy()
+                
+                # UI 显示控制状态
                 update_ui(face="> 📞 <", status="Remote Control Mode")
-                time.sleep(0.03) 
+                time.sleep(0.03) # 简单限流
                 continue
 
+            # --- 分支 B: 巡逻模式 (有AI，有红框) ---
             try:
                 img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 res = pose.process(img_rgb)
+                
+                # 无论是否检测到人，都给 Flask 一份带骨架的图(可选)或者原图
+                # 这里我们给 Flask 一份画了骨架的图，方便调试，或者你可以改成 frame.copy() 给原图
                 debug_frame = frame.copy()
 
                 if res.pose_landmarks:
@@ -352,6 +261,7 @@ def ai_thread():
                     xs = [lm.x for lm in res.pose_landmarks.landmark]
                     h, w = (max(ys)-min(ys)), (max(xs)-min(xs))
                     
+                    # 跌倒检测
                     if h < w * 0.9: 
                         if not fall_detected:
                             fall_start_time = time.time()
@@ -359,14 +269,11 @@ def ai_thread():
                         
                         if time.time() - fall_start_time > CONFIRM_TIME:
                             update_ui(face="! HELP !", status="⚠️ FALL DETECTED ⚠️")
-                            cv2.rectangle(debug_frame, (0,0), (320,240), (0,0,255), 5) 
+                            cv2.rectangle(debug_frame, (0,0), (320,240), (0,0,255), 5) # 画个红框给 Flask 看
                             
                             if not is_alarm_sent:
-                                logger.warning(">>> Fall Detected! Sending MQTT & Spring Boot...")
-                                # 【修改点】1. 发送 MQTT
+                                logger.warning(">>> Fall Detected! Sending MQTT...")
                                 threading.Thread(target=lambda: mqtt_client.publish(TOPIC_PUB, json.dumps({"id": 123, "dp": {"status": [{"v": "fall_detected"}]}}))).start()
-                                # 【修改点】2. 同时发送 HTTP 给 Spring Boot
-                                threading.Thread(target=lambda: upload_to_springboot(True)).start()
                                 is_alarm_sent = True
                     else:
                         fall_detected = False
@@ -375,6 +282,7 @@ def ai_thread():
                 else:
                     update_ui(face="O  _  O", status="AI Safety Guarding")
                 
+                # 将处理后的画面传给 Flask
                 with state.flask_lock:
                     state.flask_frame = debug_frame
 
@@ -383,7 +291,8 @@ def ai_thread():
             
             time.sleep(0.05)
 
-# ================= 5. 网络线程 (WebRTC - 保持原样) =================
+# ================= 5. 网络线程 (WebRTC - 保持 V1.1 原样) =================
+# 绝对不修改核心逻辑，确保能连上
 async def network_main():
     sio = socketio.AsyncClient()
     pc_container = {"pc": None}
@@ -392,6 +301,7 @@ async def network_main():
         pc = RTCPeerConnection()
         pc_container["pc"] = pc
 
+        # 如果当前是 CALL 模式，等待 AI 线程释放摄像头
         if state.mode == "CALL":
             logger.info("WebRTC waiting for camera...")
             while not state.ai_camera_released.is_set():
@@ -399,6 +309,7 @@ async def network_main():
             logger.info("Camera acquired by WebRTC")
 
         try:
+            # 使用硬件设备流
             player = MediaPlayer(CAMERA_DEVICE, format='v4l2', options={
                 'video_size': '640x480', 'framerate': '30'
             })
@@ -412,7 +323,7 @@ async def network_main():
         async def on_ice_change():
             if pc.iceConnectionState in ['failed', 'closed']:
                 logger.info("WebRTC closed, resuming AI")
-                state.mode = "PATROL" 
+                state.mode = "PATROL" # 挂断后自动恢复 AI
 
         return pc
 
@@ -425,9 +336,11 @@ async def network_main():
     @sio.event
     async def message(data):
         if data['type'] == 'offer':
+            # 收到来电：1. 切换模式 2. UI 响应
             state.mode = "CALL"
             update_ui(face="> 📞 <", status="Incoming Call...")
             
+            # 给一点时间让 AI 线程退出循环并释放摄像头
             await asyncio.sleep(1.0)
 
             if not pc_container["pc"]: await create_pc()
@@ -450,7 +363,7 @@ async def network_main():
             if pc_container["pc"]:
                 await pc_container["pc"].close()
                 pc_container["pc"] = None
-            state.mode = "PATROL" 
+            state.mode = "PATROL" # 对方挂断，恢复巡逻
             update_ui(face="O  _  O", status="Call Ended")
 
     @sio.event
@@ -469,7 +382,7 @@ async def network_main():
             update_ui(status="Connecting to Server...")
             await asyncio.sleep(5)
 
-# ================= 6. Flask Web App =================
+# ================= 6. Flask Web App (Web 遥控功能) =================
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'walle_secret'
 
@@ -477,6 +390,8 @@ app.config['SECRET_KEY'] = 'walle_secret'
 def index():
     if not session.get('active'): return redirect(url_for('login'))
     
+    # 当用户打开网页时，如果不是在通话中，切换到 WEB_CONTROL
+    # 这样可以停止 AI 跌倒检测，只传画面
     if state.mode != "CALL":
         state.mode = "WEB_CONTROL"
     
@@ -494,16 +409,18 @@ def login_request():
         return redirect(url_for('index'))
     return render_template('login.html', incorrectPassword=True)
 
+# 视频流：从 Global State 拿 AI 线程(或Camera线程) 读到的图
 def generate_frame():
     while True:
         if state.mode == "CALL":
-            time.sleep(1) 
+            time.sleep(1) # 通话时 Flask 暂停流
             continue
             
         with state.flask_lock:
             if state.flask_frame is None:
                 time.sleep(0.01)
                 continue
+            # 编码图片
             (flag, encodedImage) = cv2.imencode(".jpg", state.flask_frame)
         
         if flag:
@@ -524,10 +441,12 @@ def motor():
         return jsonify({'status': 'OK'})
     return jsonify({'status': 'Error'})
 
+# 允许手动切换模式 (可选)
 @app.route('/settings', methods=['POST'])
 def settings():
     stype = request.form.get('type')
     if stype == "streamer":
+        # 简单切换：如果现在是 Control，切回 Patrol
         if state.mode == "WEB_CONTROL":
             state.mode = "PATROL"
             return jsonify({'status': 'OK', 'streamer': 'Active'})
@@ -541,19 +460,17 @@ def run_flask():
 
 # ================= 7. 主程序入口 =================
 if __name__ == "__main__":
-    # 【新增】0. 启动时自动向 Spring Boot 注册设备获取 ID
-    init_springboot_device()
-    
     # 1. 硬件连接
     arduino.connect()
     
-    # 2. 启动 AI 线程 
+    # 2. 启动 AI 线程 (负责读摄像头 + AI算法/透传画面)
     Thread(target=ai_thread, daemon=True).start()
     
-    # 3. 启动 Flask 线程
+    # 3. 启动 Flask 线程 (Web UI)
     Thread(target=run_flask, daemon=True).start()
     
-    # 4. 启动 网络线程
+    # 4. 启动 网络线程 (WebRTC + SocketIO)
+    # 必须创建新的 Event Loop 给 asyncio
     loop = asyncio.new_event_loop()
     def run_network():
         asyncio.set_event_loop(loop)
@@ -561,7 +478,7 @@ if __name__ == "__main__":
     
     Thread(target=run_network, daemon=True).start()
     
-    # 5. 主线程运行 UI
+    # 5. 主线程运行 UI (必须)
     try:
         RobotUI().run()
     except KeyboardInterrupt:
