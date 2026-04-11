@@ -5,7 +5,7 @@ import { getFallApi, getRateApi, getHumidityApi, getBreatheApi, getTemperatureAp
 
 const deviceId = ref('kCx33ym0Dt'); //请替换为实际的设备ID
 let isFall = ref();
-let fall = ref("未识别到目标");
+let fall = ref("跌倒");
 let userid = ref(localStorage.getItem('Id'));
 let picture_url = ref();
 const Machines = ref([]);

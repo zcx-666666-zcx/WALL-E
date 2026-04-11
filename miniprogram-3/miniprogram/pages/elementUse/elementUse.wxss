@@ -1,277 +1,158 @@
-/* pages/elementUse/elementUse.wxss */
+/* 全局页面 —— 与项目完全统一 */
 .page-container {
-  min-height: 100vh;
-  background-color: #1e6bc7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx;
-}
-text{
-  color: rgb(173, 173, 173);
-  font-size: 25rpx;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  background: #746e63;
+  padding: 30rpx;
+  box-sizing: border-box;
 }
 
+/* 背景图 */
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.75;
+}
 
+/* 表单卡片 —— 强化对比 */
 .form-card {
-  width: 90%;
-  max-width: 700rpx;
-  background-color: white;
-  border-radius: 20rpx;
-  padding: 50rpx 40rpx;
-  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  border-radius: 10rpx;
+  padding: 44rpx 32rpx;
+  box-shadow: 0 12rpx 36rpx rgba(0,0,0,0.15); /* 更强阴影 → 卡片悬浮感 */
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
+/* 标题 */
 .form-title {
-  font-size: 48rpx;
-  font-weight: bold;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #2c261e;
   text-align: center;
-  margin-bottom: 40rpx;
-  color: #000;
-  width: 100%;
+  margin-bottom: 48rpx;
+  letter-spacing: 3rpx;
 }
 
+/* 表单项 —— 拉大间距，视觉分组更清晰 */
 .form-section {
-  width: 100%;
-  margin-bottom: 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-bottom: 40rpx; /* 增加间距，强化区块对比 */
 }
 
 .section-label {
-  font-size: 36rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2c261e;
   margin-bottom: 20rpx;
-  color: #000;
-  font-weight: 500;
-  text-align: center;
-  width: 100%;
 }
 
-.text-input {
+/* 输入框 —— 更强内阴影、更干净 */
+.text-input{
   width: 100%;
-  padding: 25rpx;
-  font-size: 32rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  background-color: #f9f9f9;
-  color: #000;
-  text-align: center;
-  height: 80rpx;
+  height: 60rpx;
+  background: #f9f9f9;
+  border-radius: 5rpx;
+  padding: 0 20rpx;
+  font-size: 29rpx;
+  border: 1rpx solid #cecece;
   box-sizing: border-box;
-  white-space: nowrap; /* 添加这一行，防止文本换行 */
-  overflow: hidden; /* 添加这一行，隐藏超出部分的文本 */
-  text-overflow: ellipsis; /* 可选：如果文本太长显示省略号 */
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
 }
-
-.text-input:focus {
-  border-color: #1e6bc7;
-}
-
-.hint-text {
-  font-size: 28rpx;
-  color: #666;
-  margin-top: 15rpx;
-  text-align: center;
+.textarea {
   width: 100%;
+  background: #f9f9f9;
+  border-radius: 5rpx;
+  padding: 18rpx;
+  font-size: 29rpx;
+  border: 1rpx solid #cecece;
+  box-sizing: border-box;
 }
 
+.textarea {
+  min-height: 180rpx;
+}
+
+/* 选择器 */
 .picker {
   width: 100%;
 }
 
 .picker-display {
-  width: 100%;
-  padding: 25rpx;
-  font-size: 32rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  background-color: #f9f9f9;
-  color: #000;
-  text-align: center;
-  height: 80rpx;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #f9f9f9;
+  border-radius: 5rpx;
+  padding: 28rpx 30rpx;
+  font-size: 29rpx;
+  color: #444;
+  border: 1rpx solid #cecece;
 }
 
+/* 优先级选项 —— 强化选中对比 */
 .priority-container {
   display: flex;
-  width: 100%;
-  justify-content: center;
   gap: 20rpx;
+  margin-bottom: 16rpx;
 }
 
 .priority-option {
   flex: 1;
-  max-width: 180rpx;
-  text-align: center;
-  padding: 25rpx;
-  background-color: #f9f9f9;
-  border-radius: 12rpx;
-  border: 2rpx solid #e0e0e0;
-  font-size: 32rpx;
-  color: #000;
-  transition: all 0.3s;
-  height: 80rpx;
+  height: 84rpx;
+  background: #f1f1f1;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 29rpx;
+  color: #666;
 }
 
 .priority-option.active {
-  background-color: #1e6bc7;
-  color: white;
-  border-color: #1e6bc7;
-  transform: scale(1.05);
+  background: #E2A975;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6rpx 16rpx rgba(226, 169, 117, 0.3);
 }
 
-.textarea {
-  width: 100%;
-  padding: 25rpx;
-  font-size: 32rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  background-color: #f9f9f9;
-  height: 180rpx;
-  color: #000;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.textarea:focus {
-  border-color: #1e6bc7;
-}
-
-/* 按钮容器 */
+/* 按钮组 —— 视觉权重拉开 */
 .button-container {
   display: flex;
-  width: 100%;
-  justify-content: space-between;
-  margin-top: 40rpx;
-  gap: 30rpx;
+  gap: 24rpx;
+  margin-top: 48rpx;
 }
 
 .button {
   flex: 1;
-  text-align: center;
-  border-radius: 12rpx;
-  font-size: 36rpx;
-  font-weight: 500;
-  transition: all 0.3s;
-  height: 90rpx;
+  height: 92rpx;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 32rpx;
+  font-weight: 600;
 }
 
+/* 主按钮：强对比 */
 .save-button {
-  background-color: #1e6bc7;
-  color: white;
+  background: #E2A975;
+  color: #fff;
+  box-shadow: 0 8rpx 20rpx rgba(226, 169, 117, 0.35);
 }
 
+/* 次按钮：弱对比 */
 .back-button {
-  background-color: #8E8E93;
+  background: #eeeeee;
+  color: #444;
 }
 
 .back-button navigator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: white;
-  text-decoration: none;
-}
-
-.button:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-/* 响应式设计 */
-@media (max-width: 750rpx) {
-  .page-container {
-    padding: 20rpx;
-  }
-  
-  .form-card {
-    padding: 40rpx 30rpx;
-    width: 95%;
-  }
-  
-  .form-title {
-    font-size: 42rpx;
-    margin-bottom: 30rpx;
-  }
-  
-  .section-label {
-    font-size: 32rpx;
-  }
-  
-  .text-input, .picker-display, .priority-option, .textarea {
-    font-size: 30rpx;
-    padding: 20rpx;
-  }
-  
-  .text-input, .picker-display, .priority-option {
-    height: 70rpx;
-  }
-  
-  .textarea {
-    height: 150rpx;
-  }
-  
-  .button {
-    font-size: 32rpx;
-    height: 80rpx;
-  }
-  
-  .priority-container {
-    flex-direction: row;
-    gap: 15rpx;
-  }
-  
-  .priority-option {
-    max-width: none;
-  }
-  
-  /* 在小屏幕上确保按钮垂直排列 */
-  .button-container {
-    flex-direction: column;
-    gap: 20rpx;
-  }
-}
-
-/* 针对超小屏幕的额外调整 */
-@media (max-width: 400rpx) {
-  .form-card {
-    padding: 30rpx 20rpx;
-  }
-  
-  .form-title {
-    font-size: 38rpx;
-  }
-  
-  .section-label {
-    font-size: 28rpx;
-  }
-  
-  .text-input, .picker-display, .priority-option, .textarea {
-    font-size: 26rpx;
-    padding: 15rpx;
-  }
-  
-  .button {
-    font-size: 28rpx;
-  }
-  
-  .priority-container {
-    flex-direction: column;
-  }
+  color: inherit;
 }

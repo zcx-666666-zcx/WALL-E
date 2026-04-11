@@ -88,7 +88,7 @@ def periodic_task():
     while True:
         send_sensor_data()
         # 等待1分钟 (10秒)
-        time.sleep(10)
+        time.sleep(2)
 
 def start_periodic_send():
     """启动定时发送任务"""

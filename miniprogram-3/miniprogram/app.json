@@ -5,19 +5,18 @@
     "pages/registion/registion",
     "pages/menu/menu",
     "pages/user/user",
-    "pages/videoCall/videoCall",
     "pages/elementList/elementList",
     "pages/elementUse/elementUse",
     "pages/agent/agent",
     "pages/commandList/commandList",
-    "pages/body/body",
     "pages/Star/Star",
     "pages/machine/machine",
     "pages/drive/drive",
     "pages/info/info",
     "pages/CallChoice/CallChoice",
     "pages/set/set",
-    "pages/contact/contact"
+    "pages/contact/contact",
+    "pages/healthy/healthy"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -31,7 +30,7 @@
     "scope.camera": {
       "desc": "用于视频通话功能"
     },
-    "scope.record":{
+    "scope.record": {
       "desc": "用于语音通话功能"
     }
   }

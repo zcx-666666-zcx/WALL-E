@@ -17,7 +17,6 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="Pojo" />
-        <module name="cpnRobotManagement" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="22" />

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { GetNameApi } from '../../api/users';
 import { SetStyleOnCozeApi } from '../../api/users';
 
@@ -9,13 +9,21 @@ let Content = ref('');
 let Style = ref('');
 let GET = ref('获取当前人设');
 let SEND = ref('发送');
-let SUBMIT = ref('提交');
+let SUBMIT = ref('提交人设');
 let chatMessages = ref([]);
 let SET = ref(true);
+let chatContainer = ref(null);
 
 onMounted(() => {
     getname();
 });
+
+const scrollToBottom = async () => {
+    await nextTick();
+    if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    }
+};
 
 const getname = async () => {
     const id = userid.value;
@@ -23,584 +31,576 @@ const getname = async () => {
     if (result && result.code === 1) {
         if (result.data) {
             userName.value = result.data.username;
-            console.log(userName.value);
             return;
         }
         alert("获取用户名失败");
-        return;
     }
 }
 
 const sendStyle = async () => {
-    SUBMIT.value = '提交中';
+    SUBMIT.value = '提交中…';
     const username = userName.value;
     const content = Content.value;
     const style = Style.value;
     const time = new Date();
-    const set = SET.value;
-    const gets = false;
-    const del = false;
-    const workflow_id = '7598072302836482048';
-    const parameters = {
-        username,
-        content,
-        style,
-        time,
-        set,
-        gets,
-        del
-    };
-    const data = {
-        workflow_id,
-        parameters
-    }
-
-    const result = await SetStyleOnCozeApi(data)
-    console.log(result);
-    if (result.status === 200) {
-        SUBMIT.value = '提交';
-        clear();
-        alert("设置成功");
-    } else {
-        SUBMIT.value = '提交';
-        alert("设置失败");
-    }
+    const result = await SetStyleOnCozeApi({
+        workflow_id: '7598072302836482048',
+        parameters: { username, content, style, time, set: true, gets: false, del: false }
+    });
+    SUBMIT.value = '提交人设';
+    if (result.status === 200) { clear(); alert("设置成功"); }
+    else alert("设置失败");
 }
 
 const getStyle = async () => {
-    GET.value = '获取中...'
+    GET.value = '获取中…';
     const username = userName.value;
-    const content = '';
-    const style = '';
-    const time = new Date();
-    const set = SET.value;
-    const gets = true;
-    const del = false;
-    const workflow_id = '7598072302836482048';
-    const parameters = {
-        username,
-        content,
-        style,
-        time,
-        set,
-        gets,
-        del
-    };
-    const data = {
-        workflow_id,
-        parameters
-    }
-    const result = await SetStyleOnCozeApi(data)
-    if (result.status === 200) {
-        if (result.data) {
-            let extractedStyle = '';
-            const sseData = result.data;
-            const messageBlocks = sseData.split('\n\n').filter(block => block.trim());
-            for (const block of messageBlocks) {
-                const dataLine = block.split('\n').find(line => line.trim().startsWith('data:'));
-                if (!dataLine) continue;
+    const result = await SetStyleOnCozeApi({
+        workflow_id: '7598072302836482048',
+        parameters: { username, content: '', style: '', time: new Date(), set: true, gets: true, del: false }
+    });
+    GET.value = '获取当前人设';
+    if (result.status === 200 && result.data) {
+        let extractedStyle = '';
+        const messageBlocks = result.data.split('\n\n').filter(b => b.trim());
+        for (const block of messageBlocks) {
+            const dataLine = block.split('\n').find(l => l.trim().startsWith('data:'));
+            if (!dataLine) continue;
+            try {
                 const dataObj = JSON.parse(dataLine.replace('data:', '').trim());
                 if (dataObj.content) {
                     const contentObj = JSON.parse(dataObj.content);
-                    if (contentObj.style) {
-                        extractedStyle = contentObj.style;
-                        GET.value = '获取当前人设';
-                        break;
-                    }
+                    if (contentObj.style) { extractedStyle = contentObj.style; break; }
                 }
-            }
-            if (extractedStyle) {
-                Style.value = extractedStyle;
-                GET.value = '获取当前人设';
-            }
-        } else {
-            GET.value = '获取当前人设';
-            alert("获取失败");
+            } catch (e) { continue; }
         }
-
-    } else {
-        GET.value = '获取当前人设';
-        alert("获取失败");
-    }
+        if (extractedStyle) Style.value = extractedStyle;
+        else alert("获取失败");
+    } else alert("获取失败");
 }
 
 const sendMessage = async () => {
+    if (!Content.value.trim()) { alert("请输入信息"); return; }
     SEND.value = '发送中';
     try {
-        if (!Content.value.trim()) {
-            alert("请输入信息");
-            return;
-        }
         const currentTime = new Date();
         const timeStr = currentTime.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
+        chatMessages.value.push({ type: 'user', content: Content.value.trim(), time: timeStr });
+        scrollToBottom();
 
-        const userMessage = {
-            type: 'user',
-            content: Content.value.trim(),
-            time: timeStr
-        };
-        chatMessages.value.push(userMessage);
-
-        const username = userName.value;
-        const content = Content.value.trim();
-        const style = '';
-        const set = SET.value;
-        const gets = false;
-        const del = false;
-        const workflow_id = '7598072302836482048';
-        const parameters = {
-            username,
-            content,
-            style,
-            time: currentTime,
-            set,
-            gets,
-            del
-        };
-        const data = {
-            workflow_id,
-            parameters
-        }
-
-        const result = await SetStyleOnCozeApi(data);
-        console.log("接口返回：", result.data);
+        const result = await SetStyleOnCozeApi({
+            workflow_id: '7598072302836482048',
+            parameters: { username: userName.value, content: Content.value.trim(), style: '', time: currentTime, set: true, gets: false, del: false }
+        });
 
         let aiReply = '暂无回复';
         if (result && result.status === 200 && result.data) {
-            const sseData = result.data;
-            const messageBlocks = sseData.split('\n\n').filter(block => block.trim());
-
+            const messageBlocks = result.data.split('\n\n').filter(b => b.trim());
             for (const block of messageBlocks) {
-                const dataLine = block.split('\n').find(line => line.trim().startsWith('data:'));
+                const dataLine = block.split('\n').find(l => l.trim().startsWith('data:'));
                 if (!dataLine) continue;
-
-                let dataObj = {};
                 try {
-                    dataObj = JSON.parse(dataLine.replace('data:', '').trim());
-                } catch (e) {
-                    console.error("解析data失败：", e);
-                    continue;
-                }
-
-                if (dataObj.content) {
-                    let contentObj = {};
-                    try {
-                        contentObj = JSON.parse(dataObj.content);
-                    } catch (e) {
-                        console.error("解析content失败：", e);
-                        continue;
+                    const dataObj = JSON.parse(dataLine.replace('data:', '').trim());
+                    if (dataObj.content) {
+                        const contentObj = JSON.parse(dataObj.content);
+                        if (contentObj.contentOutput) { aiReply = contentObj.contentOutput; break; }
                     }
-                    if (contentObj.contentOutput) {
-                        aiReply = contentObj.contentOutput;
-                        console.log("AI回复：", aiReply);
-                        break;
-                    }
-                }
+                } catch (e) { continue; }
             }
         }
-        const aiMessage = {
-            type: 'ai',
-            content: aiReply,
-            time: timeStr
-        };
-        chatMessages.value.push(aiMessage);
+        chatMessages.value.push({ type: 'ai', content: aiReply, time: timeStr });
         clear();
-
+        scrollToBottom();
     } catch (error) {
-        console.error("发送消息失败：", error);
         alert("发送失败：" + error.message);
     } finally {
         SEND.value = '发送';
     }
 }
 
-// 清空聊天
-function clearChat() {
-    chatMessages.value = []
+function clearChat() { chatMessages.value = []; }
+
+const deleteData = async () => {
+    if (confirm('确定删除云端所有测试记录？此操作不可撤销。')) {
+        const result = await SetStyleOnCozeApi({
+            workflow_id: '7598072302836482048',
+            parameters: { username: userName.value, content: '', style: '', time: new Date(), set: SET.value, gets: false, del: true }
+        });
+        if (result.status === 200) { alert("删除成功"); clearChat(); }
+        else alert("删除失败");
+    }
 }
 
-// 删除测试记录
-const deleteData = async()=> {
-  if(confirm('确定删除测试记录？')){
-    const username = userName.value;
-    const content = Content.value.trim();
-    const style = '';
-    const set = SET.value;
-    const gets = false;
-    const del = true;
-    const workflow_id = '7598072302836482048';
-    const parameters = {
-        username,
-        content,
-        style,
-        time: currentTime,
-        set,
-        gets,
-        del
-    };
-    const data = {
-        workflow_id,
-        parameters
-    }
-    const result = await SetStyleOnCozeApi(data)
-    if (result.status === 200){
-        alert("删除成功");
-        clearChat();
-    }
-    else{
-        alert("删除失败");
-    }
-
-  }
-}
-
-function clear() {
-    Content.value = '';
-    Style.value = '';
-}
+function clear() { Content.value = ''; Style.value = ''; }
 </script>
 
 <template>
-    <div class="agent_container1">
+  <div class="agent-root">
 
-        <!-- 左侧：人设设置 -->
-        <div class="style_set">
-            <div id="Agent_title1">AI人设设置</div>
-            <div id="style_input">
-                <div id="A">请输入AI人设:</div>
-                <textarea name="style" id="AI_style" v-model="Style"
-                    placeholder="请在此输入你希望呈现的AI人设，或者聊天风格。例如：用户是男性，年龄为70岁，你是一名女性，年龄为75岁。你平时待人和善，乐于助人，每次说完话喜欢询问对方意见。系统默认风格为”大模型自适应“。支持自然语言描述与markdown格式"></textarea>
-                <div id="style_send">
-                    <button class="set" @click="sendStyle">{{SUBMIT}}</button>
-                    <button class="set" id="get" @click="getStyle">{{ GET }}</button>
-                </div>
-            </div>
-            <div class="style_container2">
-                提示：若未获取当前人设且直接提交AI人设，会覆盖之前的人设版本。建议先获取当前人设后再在其基础上进行编辑
-            </div>
+    <!-- ══ 左侧：人设设置 ══ -->
+    <div class="panel panel-style">
+      <div class="panel-header">
+        <div class="panel-header-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5" r="3" stroke="white" stroke-width="1.5"/>
+            <path d="M2 13c0-3 2.5-5 6-5s6 2 6 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>AI 人设设置</span>
+      </div>
+
+      <div class="panel-body">
+        <div class="field-label">
+          <span class="label-dot"></span>
+          当前人设描述
+        </div>
+        <textarea
+          class="styled-textarea"
+          v-model="Style"
+          placeholder="请描述 AI 的人设与聊天风格。&#10;&#10;例：用户是男性，70 岁。AI 是一位75 岁的温和女性，乐于助人，每次发言后会询问对方感受。&#10;&#10;若首次使用，请先点击「获取当前人设」再编辑。支持自然语言或 Markdown 格式。"
+        ></textarea>
+
+        <div class="btn-row">
+          <button class="btn-primary" @click="sendStyle">{{ SUBMIT }}</button>
+          <button class="btn-ghost" @click="getStyle">{{ GET }}</button>
         </div>
 
-        <!-- 中间：聊天窗口 -->
-        <div class="chat_window">
-            <div id="Agent_title2">聊天调试窗口</div>
-            <div id="chat_input">
-                <div id="B">聊天窗口</div>
-                <div id="chat">
-                    <div class="message-item"
-                        :class="{ 'user-message': item.type === 'user', 'ai-message': item.type === 'ai' }"
-                        v-for="(item, index) in chatMessages" :key="index">
-                        <div class="avatar">
-                            {{ item.type === 'user' ? '我' : 'AI' }}
-                        </div>
-                        <div class="message-bubble">
-                            <div class="message-content">{{ item.content }}</div>
-                            <div class="message-time">{{ item.time }}</div>
-                        </div>
-                    </div>
-                    <div v-if="chatMessages.length === 0" class="empty-tip">
-                        暂无聊天记录，输入消息开始对话吧～
-                    </div>
-                </div>
-                <div id="C">注：请文明用语，避免因违规言语造成不必要的麻烦</div>
-            </div>
-            <div class="chat_container2">
-                <textarea name="chat" id="chat_info" v-model="Content" placeholder="请输入信息"></textarea>
-                <button id="send" @click="sendMessage" :disabled="SEND === '发送中'">{{ SEND }}</button>
-            </div>
+        <div class="tip-box">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px">
+            <circle cx="7" cy="7" r="6" stroke="#E07050" stroke-width="1.2"/>
+            <path d="M7 6v4M7 4.5v.5" stroke="#E07050" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          直接提交会覆盖旧人设。建议先获取当前版本，再在此基础上修改。
         </div>
-
-        <!-- 右侧：功能按钮 → 与聊天窗口平级！并排！等高！ -->
-        <div class="chat_control_bar">
-            <button class="control_btn" @click="clearChat">清屏</button>
-            清理所有聊天记录的显示
-            <button class="control_btn red" @click="deleteData">删除测试记录</button>
-            删除已存储在云端数据库中所有用于调试的聊天记录并清屏，不影响正常使用
-        </div>
-
+      </div>
     </div>
+
+    <!-- ══ 中间：聊天调试 ══ -->
+    <div class="panel panel-chat">
+      <div class="panel-header">
+        <div class="panel-header-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v7a1 1 0 01-1 1H9l-3 2v-2H3a1 1 0 01-1-1V3z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span>聊天调试窗口</span>
+        <div class="header-badge">
+          <span class="live-dot"></span>
+          实时对话
+        </div>
+      </div>
+
+      <div class="chat-messages" ref="chatContainer">
+        <div v-if="chatMessages.length === 0" class="empty-state">
+          <div class="empty-icon">💬</div>
+          <div class="empty-text">暂无聊天记录</div>
+          <div class="empty-sub">在下方输入消息，开始调试 AI 人设吧</div>
+        </div>
+        <div
+          v-for="(item, index) in chatMessages"
+          :key="index"
+          class="msg-row"
+          :class="item.type === 'user' ? 'msg-user' : 'msg-ai'"
+        >
+          <div class="msg-avatar" :class="item.type === 'user' ? 'avatar-user' : 'avatar-ai'">
+            {{ item.type === 'user' ? '我' : 'AI' }}
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble" :class="item.type === 'user' ? 'bubble-user' : 'bubble-ai'">
+              {{ item.content }}
+            </div>
+            <div class="msg-time">{{ item.time }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea
+          class="chat-textarea"
+          v-model="Content"
+          placeholder="输入消息，测试 AI 人设效果…"
+          @keydown.enter.ctrl="sendMessage"
+        ></textarea>
+        <div class="chat-input-footer">
+          <span class="input-hint">Ctrl + Enter 发送</span>
+          <button
+            class="btn-send"
+            @click="sendMessage"
+            :disabled="SEND === '发送中'"
+          >
+            <svg v-if="SEND === '发送'" width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
+              <path d="M1 7l11-5-4 5 4 5L1 7z" fill="white"/>
+            </svg>
+            {{ SEND }}
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-disclaimer">
+        请文明用语，避免因违规内容造成不必要的影响
+      </div>
+    </div>
+
+    <!-- ══ 右侧：操作面板 ══ -->
+    <div class="panel panel-control">
+      <div class="panel-header panel-header-sm">
+        <div class="panel-header-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1.2" stroke="white" stroke-width="1.3"/>
+            <rect x="8" y="1" width="5" height="5" rx="1.2" stroke="white" stroke-width="1.3"/>
+            <rect x="1" y="8" width="5" height="5" rx="1.2" stroke="white" stroke-width="1.3"/>
+            <rect x="8" y="8" width="5" height="5" rx="1.2" stroke="white" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <span>操作面板</span>
+      </div>
+
+      <div class="control-body">
+        <div class="control-item">
+          <button class="ctrl-btn ctrl-orange" @click="clearChat">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
+              <path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M6 7v3M8 7v3M3 4l.7 7.2a.8.8 0 00.8.8h5a.8.8 0 00.8-.8L11 4" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            清屏
+          </button>
+          <p class="ctrl-desc">清除当前页面所有聊天记录的显示，不影响云端数据</p>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-item">
+          <button class="ctrl-btn ctrl-red" @click="deleteData">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
+              <path d="M7 1a6 6 0 100 12A6 6 0 007 1zM5 7h4" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            删除测试记录
+          </button>
+          <p class="ctrl-desc">永久删除云端数据库中的调试聊天记录并清屏，不影响正式使用数据</p>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-info">
+          <div class="info-row">
+            <span class="info-label">当前用户</span>
+            <span class="info-value">{{ userName || '加载中…' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">消息条数</span>
+            <span class="info-value">{{ chatMessages.length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </template>
 
-<style>
-/* ===== 整体布局 ===== */
-.agent_container1 {
-  background: linear-gradient(135deg, #FFF8F3, #FFEFE6);
+<style scoped>
+/* ══ 根容器 ══ */
+.agent-root {
   width: 100%;
   height: 100%;
   display: flex;
-  gap: 16px;
-  padding: 16px;
+  gap: 14px;
   box-sizing: border-box;
   overflow: hidden;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
-/* ===== 左侧 & 中间 卡片统一 ===== */
-.style_set,
-.chat_window {
+/* ══ 卡片通用 ══ */
+.panel {
   background: #FFFFFF;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(255, 138, 101, 0.08);
+  border: 1px solid rgba(255, 160, 120, 0.12);
+  box-shadow: 0 4px 20px rgba(200, 90, 50, 0.07);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 14px;
-  box-sizing: border-box;
   overflow: hidden;
-}
-
-.style_set {
-  width: 32%;
-}
-
-.chat_window {
-  width: 56%;
-}
-
-/* ===== 右侧控制栏 ===== */
-.chat_control_bar {
-  width: 12%;
-  background: #FFFFFF;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 18px;
-  box-shadow: 0 8px 24px rgba(255, 138, 101, 0.08);
-  font-size: 13px;
-  color: #666;
-  line-height: 1.6;
-}
-
-/* 控制按钮 */
-.control_btn {
-  width: 100%;
-  height: 40px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #FF8A65, #FF7043);
-  color: #fff;
-  cursor: pointer;
-  margin-bottom: 10px;
-  transition: 0.25s;
-}
-
-.control_btn:hover {
-  transform: scale(1.05);
-}
-
-.control_btn.red {
-  background: linear-gradient(90deg, #E57373, #D32F2F);
-}
-
-/* ===== 标题统一 ===== */
-#Agent_title1,
-#Agent_title2 {
-  height: 60px;
-  width: 100%;
-  background: linear-gradient(90deg, #FFB199, #FF8A65);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 10px;
-}
-
-/* ===== 内容区域 ===== */
-#style_input,
-#chat_input {
-  height: calc(100% - 70px);
-  width: 100%;
-  background: #FFF7F3;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
   box-sizing: border-box;
 }
 
-/* 标题文字 */
-#A,
-#B {
-  height: 30px;
-  color: #E64A19;
+.panel-style  { width: 30%; }
+.panel-chat   { width: 54%; }
+.panel-control{ width: 16%; }
+
+/* ══ Panel Header ══ */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(90deg, #FF9A76, #FF6B40);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.panel-header-sm { padding: 12px 16px; font-size: 14px; }
+
+.panel-header-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 
-#B {
-  text-align: center;
+.header-badge {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #A8FFCA;
+  box-shadow: 0 0 5px rgba(168,255,202,0.8);
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ══ 人设面板 body ══ */
+.panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow: hidden;
 }
 
-#C {
-  color: #999;
-  font-size: 12px;
-  margin-top: 5px;
+.field-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: #5A3020;
+}
+.label-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF9A76, #FF6040);
+  flex-shrink: 0;
 }
 
-/* ===== 输入框统一 ===== */
-#AI_style,
-#chat_info {
-  border: 1px solid #FFD6C8;
-  border-radius: 10px;
-  padding: 10px;
-  background-color: #fff;
-  outline-color: #FF8A65;
-}
-
-#AI_style {
+.styled-textarea {
   flex: 1;
   resize: none;
-}
-
-#chat_info {
-  height: 70px;
-  flex: 1;
-}
-
-/* ===== 按钮（人设区） ===== */
-.set {
-  width: 110px;
-  height: 34px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.25s;
-}
-
-/* 主按钮 */
-.set:not(#get) {
-  background: linear-gradient(90deg, #FF8A65, #FF7043);
-  color: white;
-}
-
-.set:not(#get):hover {
-  transform: scale(1.05);
-}
-
-/* 获取按钮 */
-#get {
-  background: #FFE0D6;
-  color: #E64A19;
-}
-
-#get:hover {
-  background: #FFD0C0;
-}
-
-/* ===== 聊天输入区 ===== */
-.chat_container2 {
-  height: 90px;
-  width: 100%;
-  background: #FFF7F3;
+  border: 1px solid rgba(255, 160, 120, 0.3);
   border-radius: 12px;
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  box-sizing: border-box;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #3A2010;
+  background: #FFFAF7;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.styled-textarea:focus { border-color: #FF8A65; background: #FFFFFF; }
+.styled-textarea::placeholder { color: #C4A898; }
+
+.btn-row {
+  display: flex; gap: 8px;
+}
+.btn-primary {
+  flex: 1; height: 38px;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  color: white; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(255,96,64,0.25);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,96,64,0.32); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  flex: 1; height: 38px;
+  background: #FFF0E8; color: #E06030;
+  border: 1px solid rgba(255,140,100,0.3); border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.btn-ghost:hover { background: #FFE4D4; border-color: #FF8A65; }
+
+.tip-box {
+  display: flex; gap: 7px; align-items: flex-start;
+  background: #FFF8F5;
+  border: 1px solid rgba(255,140,100,0.2);
+  border-left: 3px solid #FF9A76;
+  border-radius: 0 8px 8px 0;
+  padding: 9px 12px;
+  font-size: 12px; color: #8A5040; line-height: 1.6;
 }
 
-/* 发送按钮 */
-#send {
-  width: 70px;
-  height: 60%;
-  background: linear-gradient(90deg, #FF8A65, #FF7043);
-  color: white;
-  font-weight: 600;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-#send:hover {
-  transform: scale(1.05);
-}
-
-#send:disabled {
-  background: #ccc;
-}
-
-/* ===== 聊天框 ===== */
-#chat {
+/* ══ 聊天区 ══ */
+.chat-messages {
   flex: 1;
-  background-color: #ffffff;
-  border: 1px solid #FFE0D6;
-  border-radius: 12px;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #FFFAF7;
+  border-top: 1px solid rgba(255,160,120,0.1);
+  border-bottom: 1px solid rgba(255,160,120,0.1);
 }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,160,120,0.3); border-radius: 4px; }
 
 /* 空状态 */
-.empty-tip {
-  color: #bbb;
-  text-align: center;
-  margin-top: 30%;
+.empty-state {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; padding: 40px 0;
 }
+.empty-icon { font-size: 32px; filter: grayscale(0.2); }
+.empty-text { font-size: 14px; font-weight: 600; color: #B09080; }
+.empty-sub  { font-size: 12px; color: #C4B0A8; }
 
-/* ===== 聊天气泡 ===== */
-.message-item {
-  display: flex;
-  margin-bottom: 14px;
+/* 消息行 */
+.msg-row {
+  display: flex; gap: 10px; align-items: flex-end;
   max-width: 80%;
 }
+.msg-user { flex-direction: row-reverse; align-self: flex-end; }
+.msg-ai   { flex-direction: row; align-self: flex-start; }
 
-/* 用户 */
-.user-message {
-  flex-direction: row-reverse;
-  margin-left: auto;
+.msg-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0;
 }
+.avatar-user { background: linear-gradient(135deg, #FF9A76, #FF6040); color: white; }
+.avatar-ai   { background: linear-gradient(135deg, #FFD4B8, #FFBFA0); color: #C05030; }
 
-/* AI */
-.ai-message {
-  flex-direction: row;
-  margin-right: auto;
-}
+.msg-body { display: flex; flex-direction: column; gap: 3px; }
+.msg-user .msg-body { align-items: flex-end; }
+.msg-ai   .msg-body { align-items: flex-start; }
 
-/* 头像 */
-.avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #FF8A65;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 8px;
-}
-
-/* 气泡 */
-.message-bubble {
-  background: #FFF3EE;
-  border-radius: 14px;
+.msg-bubble {
   padding: 10px 14px;
-  line-height: 1.5;
+  border-radius: 14px;
+  font-size: 13.5px; line-height: 1.65; color: #3A2010;
+  word-break: break-word;
+}
+.bubble-user {
+  background: linear-gradient(135deg, #FF9A76, #FF7050);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.bubble-ai {
+  background: white;
+  border: 1px solid rgba(255,160,120,0.2);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(200,90,50,0.06);
+}
+.msg-time { font-size: 10px; color: #C4B0A8; padding: 0 4px; }
+
+/* 输入区 */
+.chat-input-area {
+  padding: 12px 16px 8px;
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.chat-textarea {
+  width: 100%; height: 70px;
+  resize: none; border: 1px solid rgba(255,160,120,0.3);
+  border-radius: 12px; padding: 10px 14px;
+  font-size: 13px; line-height: 1.6; font-family: inherit;
+  color: #3A2010; background: #FFFAF7; outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.chat-textarea:focus { border-color: #FF8A65; background: white; }
+.chat-textarea::placeholder { color: #C4A898; }
+
+.chat-input-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.input-hint { font-size: 11px; color: #C4A898; }
+
+.btn-send {
+  display: flex; align-items: center;
+  justify-content: center;
+  height: 34px; padding: 0 18px;
+  width: 15%;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  color: white; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(255,96,64,0.25);
+}
+.btn-send:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,96,64,0.32); }
+.btn-send:disabled { background: #DDD; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.chat-disclaimer {
+  text-align: center;
+  font-size: 11px; color: #C4A898;
+  padding: 6px 16px 10px;
+  flex-shrink: 0;
 }
 
-.user-message .message-bubble {
-  background: #FFDCC8;
+/* ══ 右侧控制面板 ══ */
+.control-body {
+  flex: 1;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 0;
+  overflow-y: auto;
 }
 
-/* 时间 */
-.message-time {
-  font-size: 11px;
-  color: #999;
-  margin-top: 4px;
+.control-item {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 4px 0 12px;
 }
 
-/* 滚动条隐藏 */
-#chat::-webkit-scrollbar {
-  width: 0;
+.ctrl-btn {
+  width: 80%; height: 38px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  color: white; cursor: pointer;
+  transition: all 0.2s ease;
 }
+.ctrl-orange {
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  box-shadow: 0 3px 10px rgba(255,96,64,0.22);
+}
+.ctrl-orange:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,96,64,0.3); }
+.ctrl-red {
+  background: linear-gradient(90deg, #E57373, #D32F2F);
+  box-shadow: 0 3px 10px rgba(200,50,50,0.18);
+}
+.ctrl-red:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(200,50,50,0.28); }
+
+.ctrl-desc {
+  font-size: 11.5px; color: #A09088; line-height: 1.6; margin: 0;
+}
+
+.control-divider {
+  height: 1px;
+  background: rgba(255,160,120,0.12);
+  margin: 4px 0 14px;
+}
+
+.control-info {
+  background: #FFF8F5;
+  border-radius: 10px;
+  border: 1px solid rgba(255,160,120,0.15);
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.info-label { font-size: 11px; color: #B09080; }
+.info-value  { font-size: 13px; font-weight: 600; color: #5A3020; }
 </style>

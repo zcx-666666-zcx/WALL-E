@@ -1,0 +1,27 @@
+<view class="container1">
+    <image class="bg-image" src="http://localhost:8080/images/index_container1.png"></image>
+    <view class="picture">
+        <!-- 轮播图组件 -->
+        <swiper class="content-swiper" indicator-dots="{{true}}" autoplay="{{true}}" interval="{{3000}}" duration="{{500}}">
+            <swiper-item>
+                <image class="content-image" src="http://localhost:8080/images/index_picture.png" mode="aspectFill"></image>
+            </swiper-item>
+            <swiper-item>
+                <image class="content-image" src="http://localhost:8080/images/index_picture2.png" mode="aspectFill"></image>
+            </swiper-item>
+            <swiper-item>
+                <image class="content-image" src="http://localhost:8080/images/index_picture3.png" mode="aspectFill"></image>
+            </swiper-item>
+            <!-- 未来可以继续添加更多 swiper-item -->
+        </swiper>
+        <view id="title">TITLE</view>
+    </view>
+
+    <view class="container2">
+        <view id="Registion"><navigator url="/pages/registion/registion">注册</navigator></view>
+        <view id="line"></view>
+        <view id="Login"><navigator url="/pages/login/login">登录</navigator></view>
+    </view>
+
+    <view id="info"><text>郑州轻工业大学原件天团队开发</text></view>
+</view>

@@ -1,113 +1,172 @@
-<view class="page">
-  <!-- 🔥 和menu页面完全一致的全屏背景图 -->
-  <image class="bg-image" src="http://localhost:8080/images/menu_container1.jpg" mode=""/>
+<view class="root">
 
-  <!-- 2x2 专业指标卡片 -->
-  <view class="grid-box">
-    <!-- 心率 -->
-    <view class="card card-{{rate >= 170 ? 'danger' : rate >= 120 ? 'warning' : 'normal'}}">
-      <view class="card-header">
-        <view class="card-icon">❤️</view>
-        <view class="card-title">心率</view>
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题区 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">健康监测</text>
+    <text class="header-sub">实时体征 · 每 2 秒刷新</text>
+  </view>
+  <view class="device-chip">
+    <text class="device-chip-dot"></text>
+    <text class="device-chip-text">{{deviceId || '未选择'}}</text>
+  </view>
+</view>
+
+<!-- ══ 四项指标卡片 ══ -->
+<view class="cards-grid">
+
+  <!-- 心率 -->
+  <view class="metric-card {{rate >= 170 ? 'card-danger' : rate >= 120 ? 'card-warn' : rate > 0 ? 'card-normal' : 'card-idle'}}">
+    <view class="metric-top">
+      <view class="metric-icon-wrap">
+        <text class="metric-icon">❤️</text>
       </view>
-      <view class="card-value">
-        <text class="value-main">{{ rate === -1 ? '--' : rate }}</text>
-        <text class="value-unit">次/分</text>
-      </view>
-      <view class="card-progress">
-        <view class="progress-bar" style="width: {{ (rate / 200) * 100 }}%"></view>
-      </view>
-      <view class="card-range">
-        <text>正常 60-120</text>
+      <view class="metric-status-badge">
+        <view class="status-dot"></view>
+        <text class="status-text">{{rate >= 170 ? '异常' : rate >= 120 ? '注意' : rate > 0 ? '正常' : '等待'}}</text>
       </view>
     </view>
-
-    <!-- 湿度 -->
-    <view class="card card-{{humidity >= 80 ? 'danger' : humidity <= 39 ? 'warning' : 'normal'}}">
-      <view class="card-header">
-        <view class="card-icon">💧</view>
-        <view class="card-title">湿度</view>
-      </view>
-      <view class="card-value">
-        <text class="value-main">{{ humidity === -1 ? '--' : humidity }}</text>
-        <text class="value-unit">%</text>
-      </view>
-      <view class="card-progress">
-        <view class="progress-bar" style="width: {{ humidity }}%"></view>
-      </view>
-      <view class="card-range">
-        <text>正常 40-79</text>
-      </view>
+    <view class="metric-value-row">
+      <text class="metric-value">{{rate === -1 ? '--' : rate}}</text>
+      <text class="metric-unit">次/分</text>
     </view>
-
-    <!-- 呼吸 -->
-    <view class="card card-{{breath >= 30 ? 'danger' : breath <= 11 ? 'warning' : 'normal'}}">
-      <view class="card-header">
-        <view class="card-icon">🫁</view>
-        <view class="card-title">呼吸</view>
-      </view>
-      <view class="card-value">
-        <text class="value-main">{{ breath === -1 ? '--' : breath }}</text>
-        <text class="value-unit">次/分</text>
-      </view>
-      <view class="card-progress">
-        <view class="progress-bar" style="width: {{ (breath / 40) * 100 }}%"></view>
-      </view>
-      <view class="card-range">
-        <text>正常 12-29</text>
-      </view>
+    <view class="metric-bar-track">
+      <view class="metric-bar-fill" style="width: {{rate > 0 ? (rate / 200) * 100 : 0}}%"></view>
     </view>
-
-    <!-- 体温 -->
-    <view class="card card-{{temperature >= 37.1 ? 'danger' : temperature <= 35.8 ? 'warning' : 'normal'}}">
-      <view class="card-header">
-        <view class="card-icon">🌡️</view>
-        <view class="card-title">体温</view>
-      </view>
-      <view class="card-value">
-        <text class="value-main">{{ temperature === -1 ? '--' : temperature }}</text>
-        <text class="value-unit">℃</text>
-      </view>
-      <view class="card-progress">
-        <view class="progress-bar" style="width: {{ ((temperature - 35) / 5) * 100 }}%"></view>
-      </view>
-      <view class="card-range">
-        <text>正常 35.9-37.0</text>
-      </view>
+    <view class="metric-footer-row">
+      <text class="metric-name">心率</text>
+      <text class="metric-range">正常 60–120</text>
     </view>
   </view>
 
-  <!-- 跌倒状态（保留并优化质感） -->
-  <view class="fall-box">
-    <view class="fall-left">
-      <view class="fall-title fall-title-{{fall === '未识别到目标' ? 'warning' : fall === '正常' ? 'normal' : 'danger'}}">
-        {{fall === '未识别到目标' ? '⚠️ 未识别' : fall === '正常' ? '✅ 正常' : '🚨 跌倒！'}}
+  <!-- 湿度 -->
+  <view class="metric-card {{humidity >= 80 ? 'card-danger' : humidity <= 39 && humidity >= 0 ? 'card-warn' : humidity > 0 ? 'card-normal' : 'card-idle'}}">
+    <view class="metric-top">
+      <view class="metric-icon-wrap">
+        <text class="metric-icon">💧</text>
       </view>
-      <view class="fall-desc">
-        设备实时监测姿态，异常时自动抓拍并推送预警
+      <view class="metric-status-badge">
+        <view class="status-dot"></view>
+        <text class="status-text">{{humidity >= 80 ? '异常' : humidity <= 39 && humidity >= 0 ? '注意' : humidity > 0 ? '正常' : '等待'}}</text>
       </view>
-      <image class="fall-image" src="{{ picture_url || '/images/default.png' }}"></image>
     </view>
-    <view class="fall-right">
-      <button class="fall-btn">刷新</button>
-      <button class="fall-btn fall-btn-alarm">紧急报警</button>
-      <button class="fall-btn fall-btn-request">查看图片</button>
+    <view class="metric-value-row">
+      <text class="metric-value">{{humidity === -1 ? '--' : humidity}}</text>
+      <text class="metric-unit">%</text>
+    </view>
+    <view class="metric-bar-track">
+      <view class="metric-bar-fill" style="width: {{humidity > 0 ? humidity : 0}}%"></view>
+    </view>
+    <view class="metric-footer-row">
+      <text class="metric-name">体表湿度</text>
+      <text class="metric-range">正常 40–79</text>
     </view>
   </view>
 
-  <!-- 设备模块（优化排版） -->
-  <view class="device-box">
-    <view class="device-header">设备选择</view>
-    <view class="device-content">
-      <view class="device-list">
-        <view wx:for="{{Machines}}" wx:key="id" class="device-item" bindtap="changeDeviceId" data-id="{{item.id}}">
-          {{item.machines}}
-        </view>
+  <!-- 呼吸 -->
+  <view class="metric-card {{breath >= 30 ? 'card-danger' : breath <= 11 && breath >= 0 ? 'card-warn' : breath > 0 ? 'card-normal' : 'card-idle'}}">
+    <view class="metric-top">
+      <view class="metric-icon-wrap">
+        <text class="metric-icon">🫁</text>
       </view>
-      <view class="device-info">
-        <text>当前设备：{{deviceId}}</text>
-        <button bindtap="Reloading" class="global-refresh">刷新全部数据</button>
+      <view class="metric-status-badge">
+        <view class="status-dot"></view>
+        <text class="status-text">{{breath >= 30 ? '异常' : breath <= 11 && breath >= 0 ? '注意' : breath > 0 ? '正常' : '等待'}}</text>
       </view>
     </view>
+    <view class="metric-value-row">
+      <text class="metric-value">{{breath === -1 ? '--' : breath}}</text>
+      <text class="metric-unit">次/分</text>
+    </view>
+    <view class="metric-bar-track">
+      <view class="metric-bar-fill" style="width: {{breath > 0 ? (breath / 40) * 100 : 0}}%"></view>
+    </view>
+    <view class="metric-footer-row">
+      <text class="metric-name">呼吸频率</text>
+      <text class="metric-range">正常 12–29</text>
+    </view>
   </view>
+
+  <!-- 体温 -->
+  <view class="metric-card {{temperature >= 37.1 ? 'card-danger' : temperature <= 35.8 && temperature > 0 ? 'card-warn' : temperature > 0 ? 'card-normal' : 'card-idle'}}">
+    <view class="metric-top">
+      <view class="metric-icon-wrap">
+        <text class="metric-icon">🌡️</text>
+      </view>
+      <view class="metric-status-badge">
+        <view class="status-dot"></view>
+        <text class="status-text">{{temperature >= 37.1 ? '异常' : temperature <= 35.8 && temperature > 0 ? '注意' : temperature > 0 ? '正常' : '等待'}}</text>
+      </view>
+    </view>
+    <view class="metric-value-row">
+      <text class="metric-value">{{temperature === -1 ? '--' : temperature}}</text>
+      <text class="metric-unit">℃</text>
+    </view>
+    <view class="metric-bar-track">
+      <view class="metric-bar-fill" style="width: {{temperature > 0 ? ((temperature - 35) / 5) * 100 : 0}}%"></view>
+    </view>
+    <view class="metric-footer-row">
+      <text class="metric-name">体温</text>
+      <text class="metric-range">正常 35.9–37.0</text>
+    </view>
+  </view>
+
+</view>
+
+<!-- ══ 跌倒检测卡片 ══ -->
+<view class="section-label">跌倒检测</view>
+<view class="fall-card {{fall === '跌倒' ? 'fall-danger' : fall === '正常' ? 'fall-normal' : 'fall-idle'}}">
+  <view class="fall-left">
+    <view class="fall-status-row">
+      <view class="fall-icon-wrap">
+        <text class="fall-icon">{{fall === '跌倒' ? '🚨' : fall === '正常' ? '✅' : '⚠️'}}</text>
+      </view>
+      <view class="fall-status-info">
+        <text class="fall-status-text">{{fall === '跌倒' ? '检测到跌倒！' : fall === '正常' ? '姿态正常' : '未识别到目标'}}</text>
+        <text class="fall-status-sub">摄像头实时姿态识别</text>
+      </view>
+    </view>
+    <text class="fall-desc">摄像头检测到跌倒时自动抓拍并推送预警，无人时显示未识别</text>
+    <image class="fall-image" src="{{picture_url || ''}}" mode="aspectFill"></image>
+  </view>
+  <view class="fall-actions">
+    <button class="action-btn btn-refresh" bindtap="fetchAllData">刷新</button>
+    <button class="action-btn btn-alarm">紧急报警</button>
+    <button class="action-btn btn-photo">查看图片</button>
+  </view>
+</view>
+
+<!-- ══ 设备选择卡片 ══ -->
+<view class="section-label">设备管理</view>
+<view class="device-card">
+  <view class="device-card-header">
+    <text class="device-card-title">选择设备</text>
+    <button class="reload-btn" bindtap="Reloading">刷新全部</button>
+  </view>
+  <scroll-view class="device-list" scroll-x="{{false}}" scroll-y="{{true}}">
+    <view
+      wx:for="{{Machines}}" wx:key="id"
+      class="device-item {{item.id == deviceId ? 'device-item-active' : ''}}"
+      bindtap="changeDeviceId"
+      data-id="{{item.id}}"
+    >
+      <view class="device-item-dot"></view>
+      <text class="device-item-name">{{item.machines}}</text>
+    </view>
+    <view wx:if="{{!Machines.length}}" class="device-empty">暂无设备</view>
+  </scroll-view>
+  <view class="device-current">
+    <text class="device-current-label">当前设备</text>
+    <text class="device-current-val">{{deviceId || '未选择'}}</text>
+  </view>
+</view>
+
+<!-- 底部安全距离 -->
+<view style="height: 60rpx;"></view>
+
 </view>

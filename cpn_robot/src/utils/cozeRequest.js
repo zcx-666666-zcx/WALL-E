@@ -5,7 +5,7 @@ const cozerequest = axios.create({
     baseURL: 'https://api.coze.cn',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer pat_O6HTkT2wX8AWtMWSpmoGBQTsoBPBAoJhukzTLLtlh9BLxiowHO6N4ED4xdM804Nw`
+        'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo`
     },
     timeout: 60000
 })

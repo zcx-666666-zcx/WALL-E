@@ -1,4 +1,6 @@
 <view class="page-container">
+  <image class="bg-image" src="{{image_ip}}" mode=""/>
+  
   <view class="form-card">
     <view class="form-title">添加新事件</view>
     

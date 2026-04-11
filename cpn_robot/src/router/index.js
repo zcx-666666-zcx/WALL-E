@@ -12,9 +12,9 @@ import InfoView from '@/views/info/info.vue';
 import SetView from '@/views/set/set.vue'
 import MachineView from '@/views/machines/machines.vue'
 import WebrtcVideoView from '@/views/video/webrtc_video.vue'; 
-import DriveView from '@/views/drive/web_interface/templates/index.vue';
 import HealthyView from '@/views/healthy/healthy.vue';
-import regisView from '@/views/regis/regis.vue'
+import regisView from '@/views/regis/regis.vue';
+import DriveView from '@/views/drive/drive.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,7 +36,7 @@ const router = createRouter({
         {path: 'machines', name: 'machines', component: MachineView},
         {path: 'video', name: 'video', redirect: '/webrtc-video'}, // 重定向到新视频通话页面
         {path: 'webrtc-video', name: 'webrtc-video', component: WebrtcVideoView}, // 新增路由
-        {path: 'drive', name: 'drive', component: DriveView},
+        {path: 'drive', name: 'drive' ,component: DriveView},
         {path: 'healthy', name: 'healthy', component: HealthyView}
       ]
     },

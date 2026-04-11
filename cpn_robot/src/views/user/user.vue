@@ -1,331 +1,284 @@
 <script setup>
-    import{ref,onMounted} from 'vue';
-    import{GetContactsListApi} from '@/api/users.js';
-    import { AddContractUserApi } from '../../api/users';
-    import { DeleteContractUserApi } from '../../api/users';
-    import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { GetContactsListApi } from '@/api/users.js';
+import { AddContractUserApi } from '../../api/users';
+import { DeleteContractUserApi } from '../../api/users';
 
-    const route = useRoute()
-    let haveNot = ref(true)
-    let add = ref(false)
-    let canadd = ref("添加")
-    let userid = ref(localStorage.getItem('Id'))
+let haveNot = ref(true)
+let add = ref(false)
+let canadd = ref("添加")
+let userid = ref(localStorage.getItem('Id'))
+let UserInfo = ref({ userId: userid.value, contractName: '', contractPhoneNumber: '' })
 
-    let UserInfo = ref({
-        userId: userid.value,
-        contractName:'',
-        contractPhoneNumber:''
-    })
+onMounted(() => { getList() })
 
-    onMounted(()=>{
-        //userid.value = route.query.userId || '';
-        //console.log(userid.value);
-        //const userId = localStorage.getItem('Id');
-        //userid.value = userId;
-        
-        getList();
-    })
+const getList = async () => {
+    const result = await GetContactsListApi(userid.value);
+    if (result && result.code === 1) {
+        if (result.data?.rows?.length > 0) { tableData.value = result.data.rows; haveNot.value = false; }
+        else { tableData.value = []; haveNot.value = true; }
+    } else { alert("获取表格数据失败"); haveNot.value = true; }
+    canadd.value = "添加";
+}
 
-    //获取联系人表
-    const getList = async()=>{
-        const userId = userid.value
-        const result = await GetContactsListApi(userId);
-        if(result && result.code === 1){
-            if(result.data && result.data.rows && result.data.rows.length > 0){
-                tableData.value = result.data.rows;
-                haveNot.value=false;
-                canadd.value="添加";
-                return;
-            }
-            else{
-                tableData.value = [];
-                haveNot = ref(true);
-                return;
-            }
-        }
-        else{
-            alert("获取表格数据失败");
-            canadd.value="添加";
-            haveNot = ref(true);
-            return;
-        }
-    }
+const AddUser = async () => {
+    if (!UserInfo.value.contractName || !UserInfo.value.contractPhoneNumber) { alert("请输入完整信息"); return; }
+    canadd.value = "添加中…";
+    const result = await AddContractUserApi(UserInfo.value);
+    alert(result?.code ? "添加联系人成功" : "添加联系人失败");
+    canadd.value = "添加"; getList(); close();
+}
 
-    //添加联系人
-    const AddUser = async()=>{
-        console.log(UserInfo.value);
-        
-        if(!UserInfo.value.contractName || !UserInfo.value.contractPhoneNumber){
-            alert("请输入完整信息");
-            canadd.value="添加";
-            close();
-            return;
-        }
-        
-        canadd.value="添加中...";
-        const result = await AddContractUserApi(UserInfo.value);
-        if(result.code){
-            alert("添加联系人成功");
-            canadd.value="添加";
-            getList();
-            close();
-        }
-        else{
-            alert("添加联系人失败");
-            canadd.value="添加";
-            getList();
-            close();
-        }
-    }
+const deleteUser = async (contractName) => {
+    if (!confirm(`确定要删除联系人「${contractName}」吗？`)) return;
+    const result = await DeleteContractUserApi({ data: { contractName, userId: userid.value } });
+    alert(result?.code === 1 ? "删除成功" : "删除失败");
+    getList();
+}
 
-    //删除联系人
-    const deleteUser = async(contractName)=>{
+function adduser() { add.value = true }
+function close() { add.value = false; UserInfo = ref({ userId: userid.value, contractName: '', contractPhoneNumber: '' }); }
 
-        if(!confirm(`确定要删除事件 "${contractName}" 吗？`)){
-            return;
-        }
-        const userId = userid.value;
-        const result = await DeleteContractUserApi({
-            data:{
-                contractName,
-                userId
-            }
-        });
-        if(result && result.code === 1){
-            alert("删除成功");
-            getList();
-        }
-        else{
-            alert("删除失败")
-            getList();
-        }
-    }
-
-    function adduser(){
-        add.value = true
-    }
-
-    function close(){
-        add.value = false;
-        UserInfo = ref({
-            userId: userid.value,
-            contractName: '',
-            contractPhoneNumber: ''
-        })
-        
-    }
-
-    const tableData = ref([])
-
+const tableData = ref([])
 </script>
 
 <template>
-    <div class="element_container1">
-        <div id="title">联系人列表</div>
-        <div class="table">
-            <el-table :data="tableData" border style="width: 730" v-if="haveNot==false">
-                <el-table-column type="index" label="序号" width="80px" align="center"/>
-                <el-table-column prop="contractName" label="联系人" width="250px" align="center"/>
-                <el-table-column prop="contractPhoneNumber" label="手机号" width="250px" align="center"/>
-                <el-table-column prop="" label="操作" width="150px">
-                    <template #default="scoped">
-                        <el-button type="danger" size="large" @click="deleteUser(scoped.row.contractName)">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+  <div class="cl-root">
 
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-title-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="6" cy="5" r="2.5" stroke="white" stroke-width="1.4"/>
+            <path d="M1 13c0-3 2.5-5 5-5s5 2 5 5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M12 6v4M14 8h-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
         </div>
-        <div id="haveNot" v-if="haveNot">
-            还没有联系人，请添加联系人
+        <div>
+          <div class="page-title">联系人列表</div>
+          <div class="page-sub">共 {{ tableData.length }} 位联系人</div>
         </div>
-        <button id="addElement" @click="adduser">添加联系人</button>
-
-        <div v-if="add" class="addUser">
-            <p id="addElement_title">添加联系人</p>
-
-            <p class="s">联系人姓名</p>
-            <input v-model="UserInfo.contractName" type="text" class="textInput" placeholder="联系人姓名:">
-
-            <p class="s">联系人电话号码</p>
-            <input v-model="UserInfo.contractPhoneNumber" type="text" class="textInput" placeholder="电话号码:">
-
-            <div id="choice_container">
-                <button id="add_button" @click="AddUser">{{canadd}}</button>
-                <button id="add_button" @click="close">取消</button>
-            </div>
-        </div>
-
+      </div>
+      <button class="btn-add" @click="adduser">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
+          <path d="M7 2v10M2 7h10" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        添加联系人
+      </button>
     </div>
+
+    <div class="table-wrap" v-if="!haveNot">
+      <el-table
+        :data="tableData"
+        style="width:100%; border-radius:14px; overflow:hidden;"
+        :header-cell-style="{ background:'#FFF5F0', color:'#8A4030', fontWeight:'600', fontSize:'13px', padding:'14px 0', borderBottom:'1px solid rgba(255,160,120,0.2)' }"
+        :cell-style="{ fontSize:'13px', color:'#3A2010', padding:'14px 0', borderBottom:'1px solid rgba(255,160,120,0.08)' }"
+      >
+        <el-table-column type="index" label="#" width="60" align="center"/>
+        <el-table-column prop="contractName" label="联系人" align="left" min-width="200">
+          <template #default="{ row }">
+            <div class="contact-cell">
+              <div class="contact-avatar">{{ row.contractName?.[0] ?? '?' }}</div>
+              <span class="contact-name">{{ row.contractName }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="contractPhoneNumber" label="手机号码" align="center" min-width="180">
+          <template #default="{ row }">
+            <span class="phone-text">{{ row.contractPhoneNumber }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center">
+          <template #default="{ row }">
+            <button class="op-btn" @click="deleteUser(row.contractName)">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                <path d="M2 3h7M4 3V2h3v1M3 3l.5 6h4l.5-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              删除
+            </button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <div class="empty-state" v-if="haveNot">
+      <div class="empty-icon">👥</div>
+      <div class="empty-title">暂无联系人</div>
+      <div class="empty-sub">添加紧急联系人，异常时可第一时间通知家属</div>
+      <button class="btn-add" style="margin-top:20px" @click="adduser">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
+          <path d="M7 2v10M2 7h10" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        添加联系人
+      </button>
+    </div>
+
+    <transition name="mask-fade">
+      <div class="modal-mask" v-if="add" @click.self="close"></div>
+    </transition>
+
+    <transition name="modal-pop">
+      <div class="modal" v-if="add">
+        <div class="modal-header">
+          <div class="modal-title">添加联系人</div>
+          <button class="modal-close" @click="close">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="#A08070" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-label">联系人姓名</label>
+            <input class="form-input" v-model="UserInfo.contractName" placeholder="请输入姓名"/>
+          </div>
+          <div class="form-row">
+            <label class="form-label">手机号码</label>
+            <input class="form-input" v-model="UserInfo.contractPhoneNumber" type="tel" placeholder="请输入手机号码"/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn-cancel" @click="close">取消</button>
+          <button class="modal-btn-confirm" @click="AddUser">{{ canadd }}</button>
+        </div>
+      </div>
+    </transition>
+
+  </div>
 </template>
 
-<style>
-    /* 全局容器 - 百分比布局 + 无滚动条 */
-.element_container1 {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  padding: 1.5%;
-  margin: 0;
-  box-sizing: border-box;
-  background-color: #fdf6f0;
-  display: block;
-  overflow: hidden;
+<style scoped>
+.btn-add{
+    width: 8%;
 }
+.cl-root {
+  width: 100%; height: 100%;
+  padding: 20px 24px; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 16px;
+  overflow: hidden; position: relative;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+.page-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.page-header-left { display: flex; align-items: center; gap: 12px; }
+.page-title-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, #FF9A76, #FF6040);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(255,96,64,0.28); flex-shrink: 0;
+}
+.page-title { font-size: 18px; font-weight: 700; color: #3A2010; }
+.page-sub { font-size: 12px; color: #B09080; margin-top: 2px; }
+.btn-add {
+  display: flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 18px;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  color: white; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(255,96,64,0.28);
+}
+.btn-add:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,96,64,0.36); }
 
-/* 标题 */
-#title {
-  width: 100%;
-  height: 8%;
-  font-size: clamp(18px, 3vh, 28px);
-  font-weight: 700;
-  color: #855ce5;
-  text-align: left;
-  margin: 0 0 0.5% 0;
-  padding-left: 1.5%;
-  box-sizing: border-box;
-  line-height: 100%;
+.table-wrap {
+  flex: 1; overflow-y: auto; border-radius: 14px;
+  border: 1px solid rgba(255,160,120,0.15);
+  box-shadow: 0 4px 20px rgba(200,90,50,0.06); background: #FFFFFF;
 }
+.table-wrap::-webkit-scrollbar { width: 4px; }
+.table-wrap::-webkit-scrollbar-thumb { background: rgba(255,160,120,0.3); border-radius: 4px; }
 
-/* 表格区域 —— 从上到下 */
-.table {
-  width: 100%;
-  display: block;
-  margin: 0 0 1% 0;
-  padding: 0;
+.contact-cell { display: flex; align-items: center; gap: 10px; padding-left: 4px; }
+.contact-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #FFB899, #FF8A65);
+  color: white; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(255,112,67,0.2);
 }
+.contact-name { font-size: 13.5px; font-weight: 600; color: #3A2010; }
+.phone-text { font-size: 13px; color: #7A5040; font-family: monospace; letter-spacing: 0.04em; }
 
-/* 空数据提示 */
-#haveNot {
-  width: 97%;
-  height: 40vh;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: clamp(16px, 3vh, 24px);
-  color: #795548;
-  font-weight: 600;
-  margin: 0 1.5% 1% 1.5%;
+.op-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  height: 30px; padding: 0 12px; border: none; border-radius: 8px; width: 80%;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.18s ease;
+  background: #FFF0F0; color: #C03030;
 }
+.op-btn:hover { background: #FFE0E0; }
 
-/* 添加联系人按钮 —— 靠左 */
-#addElement {
-  width: 8%;
-  min-width: 120px;
-  height: 5%;
-  min-height: 36px;
-  background-color: #855ce5;
-  color: #fff;
-  font-size: clamp(13px, 1.8vh, 15px);
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: block;
-  margin: 0 0 0 1.5%;
-  transition: 0.2s;
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  background: #FFFFFF; border-radius: 14px;
+  border: 1px solid rgba(255,160,120,0.15);
+  box-shadow: 0 4px 20px rgba(200,90,50,0.06);
 }
-#addElement:hover {
-  background-color: #724bd1;
-}
+.empty-icon { font-size: 40px; }
+.empty-title { font-size: 16px; font-weight: 700; color: #5A3020; }
+.empty-sub { font-size: 13px; color: #B09080; }
 
-/* ========== 添加联系人弹窗 居中 统一风格 ========== */
-.addUser {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 460px;
-  height: auto;
-  max-height: 70vh;
-  background-color: #ffffff;
-  border: 1px solid #e5b3a1;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-  padding: 3% 2% 3%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
-  scrollbar-width: none;
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(40,20,10,0.35); backdrop-filter: blur(3px); z-index: 200;
 }
-.addUser::-webkit-scrollbar {
-  display: none;
+.modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 92%; max-width: 420px;
+  background: #FFFFFF; border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(100,40,10,0.18);
+  z-index: 201; display: flex; flex-direction: column; overflow: hidden;
 }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgba(255,160,120,0.12);
+}
+.modal-title { font-size: 16px; font-weight: 700; color: #3A2010; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 8px; background: #FFF5F0; border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.18s;
+}
+.modal-close:hover { background: #FFE8DC; }
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.form-row { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12.5px; font-weight: 600; color: #6A4030; }
+.form-input {
+  width: 100%; height: 40px;
+  border: 1px solid rgba(255,160,120,0.3); border-radius: 10px;
+  padding: 0 12px; font-size: 13px; font-family: inherit;
+  color: #3A2010; background: #FFFAF7; outline: none;
+  box-sizing: border-box; transition: border-color 0.2s, background 0.2s;
+}
+.form-input:focus { border-color: #FF8A65; background: #FFFFFF; }
+.form-input::placeholder { color: #C4A898; }
+.modal-footer {
+  display: flex; gap: 10px; padding: 14px 22px 18px;
+  border-top: 1px solid rgba(255,160,120,0.1);
+}
+.modal-btn-cancel {
+  flex: 1; height: 40px; background: #F5EDE8; color: #8A5040;
+  border: 1px solid rgba(200,130,100,0.2); border-radius: 10px;
+  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.18s;
+}
+.modal-btn-cancel:hover { background: #FFE4D4; }
+.modal-btn-confirm {
+  flex: 2; height: 40px;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  color: white; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(255,96,64,0.28);
+}
+.modal-btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,96,64,0.36); }
 
-/* 弹窗标题 */
-#addElement_title {
-  font-size: clamp(16px, 3vh, 20px);
-  font-weight: 600;
-  color: #855ce5;
-  margin-bottom: 6%;
-  text-align: center;
+.mask-fade-enter-active, .mask-fade-leave-active { transition: opacity 0.25s ease; }
+.mask-fade-enter-from, .mask-fade-leave-to { opacity: 0; }
+.modal-pop-enter-active { animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.modal-pop-leave-active { animation: popOut 0.2s ease forwards; }
+@keyframes popIn {
+  from { opacity:0; transform:translate(-50%,-46%) scale(0.92); }
+  to   { opacity:1; transform:translate(-50%,-50%) scale(1); }
 }
-
-/* 输入框标签 */
-.s {
-  width: 90%;
-  font-size: clamp(13px, 2vh, 15px);
-  font-weight: 500;
-  color: #5d4037;
-  margin: 3% 0 1.5%;
-  text-align: left;
-}
-
-/* 输入框样式（和上一页完全一样） */
-.textInput {
-  width: 90%;
-  height: 5vh;
-  min-height: 38px;
-  border: 1px solid #d1c7c2;
-  border-radius: 6px;
-  padding: 0 10px;
-  font-size: clamp(12px, 1.8vh, 14px);
-  background-color: #fffcf9;
-  box-sizing: border-box;
-  margin-bottom: 3%;
-  outline-color: #855ce5;
-}
-
-/* 按钮容器 */
-#choice_container {
-  width: 90%;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 6%;
-}
-
-/* 弹窗按钮（完全沿用你喜欢的样式） */
-#add_button {
-  width: 100px;
-  height: 38px;
-  font-size: clamp(12px, 1.8vh, 15px);
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-/* 确定按钮 */
-#add_button:first-of-type {
-  background-color: #855ce5;
-  color: #fff;
-}
-#add_button:first-of-type:hover {
-  background-color: #724bd1;
-}
-/* 取消按钮 */
-#add_button:last-of-type {
-  background-color: #d7ccc8;
-  color: #333;
-}
-#add_button:last-of-type:hover {
-  background-color: #c8b4ac;
-}
+@keyframes popOut { to { opacity:0; transform:translate(-50%,-46%) scale(0.94); } }
 </style>

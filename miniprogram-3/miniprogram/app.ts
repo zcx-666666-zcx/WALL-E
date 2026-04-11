@@ -8,7 +8,13 @@ App({
     is_AI: '开启',
     open_robot_camera: '开启',
     can_content: '开启',
-    user_phoneNumber:''
+    user_phoneNumber:'',
+    RATE: '',
+    HUMIDITY: '',
+    BREATHE: '',
+    TEMPERATURE: '',
+    FALL: '',
+    DEVICEID: 'kCx33ym0Dt'
   },
 
 
