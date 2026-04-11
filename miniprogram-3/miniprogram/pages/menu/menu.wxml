@@ -1,25 +1,109 @@
-<!--pages/menu/menu.wxml-->
-<view class="container1">
-  <image class="bg-image" src="{{image_ip}}" mode=""/>
-  <view id="hello">{{day_time}}好,{{username}}</view>
+<view class="root">
 
-  <view class="container2">
-    <view id="element"><navigator url="/pages/elementList/elementList">事件</navigator></view>
-    <view id="energy">
-      <image id="energywatch" src="" mode=""/>
-      <view id="energynumber">{{energy}}%</view>
+<!-- 顶部暖色渐变背景 -->
+<view class="top-bg"></view>
+<!-- 装饰光晕 -->
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- ══ 顶部问候区 ══ -->
+<view class="header">
+  <view class="header-left">
+    <view class="avatar">
+      <text class="avatar-text">{{username ? username[0] : 'U'}}</text>
     </view>
-    <view id="element"><navigator url="/pages/CallChoice/CallChoice">通话</navigator></view>
+    <view class="header-info">
+      <text class="greeting">{{day_time}}好，{{username}} 👋</text>
+      <text class="header-sub">今天也要好好照顾自己</text>
+    </view>
   </view>
+  <view class="time-chip">
+    <text class="time-text">{{currentTime}}</text>
+  </view>
+</view>
 
-  <view class="container3">
-    <view id="drive"><navigator url="/pages/drive/drive">遥控</navigator></view>
-    <view id="machine"><navigator url="/pages/machine/machine">更多连接</navigator></view>
-    <view id="info"><navigator url="/pages/info/info">说明</navigator></view>
-  </view>
+<!-- ══ 核心功能卡片（大三格） ══ -->
+<view class="section-label">核心功能</view>
+<view class="main-cards">
 
-  <view class="container4">
-    <view id="user"><navigator url="/pages/user/user">我的</navigator></view>
-    <view id="agent"><navigator url="/pages/agent/agent">AI调试</navigator></view>
+  <navigator class="main-card card-event" url="/pages/elementList/elementList" hover-class="card-hover">
+    <view class="main-card-icon">📋</view>
+    <view class="main-card-body">
+      <text class="main-card-title">事件提醒</text>
+      <text class="main-card-sub">管理日程</text>
+    </view>
+    <text class="main-card-arrow">→</text>
+  </navigator>
+
+  <navigator class="main-card card-health" url="/pages/healthy/healthy" hover-class="card-hover">
+    <view class="main-card-icon">❤️</view>
+    <view class="main-card-body">
+      <text class="main-card-title">健康监测</text>
+      <text class="main-card-sub">查看体征</text>
+    </view>
+    <text class="main-card-arrow">→</text>
+  </navigator>
+
+  <navigator class="main-card card-call" url="/pages/CallChoice/CallChoice" hover-class="card-hover">
+    <view class="main-card-icon">📹</view>
+    <view class="main-card-body">
+      <text class="main-card-title">视频通话</text>
+      <text class="main-card-sub">远程监护</text>
+    </view>
+    <text class="main-card-arrow">→</text>
+  </navigator>
+
+</view>
+
+<!-- ══ 次级功能（小三格） ══ -->
+<view class="section-label">更多功能</view>
+<view class="sub-cards">
+
+  <navigator class="sub-card" url="/pages/drive/drive" hover-class="sub-card-hover">
+    <text class="sub-card-icon">🕹️</text>
+    <text class="sub-card-title">远程遥控</text>
+  </navigator>
+
+  <navigator class="sub-card" url="/pages/machine/machine" hover-class="sub-card-hover">
+    <text class="sub-card-icon">🔗</text>
+    <text class="sub-card-title">更多连接</text>
+  </navigator>
+
+  <navigator class="sub-card" url="/pages/agent/agent" hover-class="sub-card-hover">
+    <text class="sub-card-icon">🤖</text>
+    <text class="sub-card-title">AI 调试</text>
+  </navigator>
+
+</view>
+
+<!-- ══ 底部标签栏 ══ -->
+<view class="tab-bar">
+  <navigator class="tab-item" url="/pages/user/user" hover-class="tab-hover">
+    <text class="tab-icon">👤</text>
+    <text class="tab-text">我的</text>
+  </navigator>
+  <navigator class="tab-item" url="/pages/set/set" hover-class="tab-hover">
+    <text class="tab-icon">⚙️</text>
+    <text class="tab-text">设置</text>
+  </navigator>
+  <navigator class="tab-item" url="/pages/info/info" hover-class="tab-hover">
+    <text class="tab-icon">📖</text>
+    <text class="tab-text">说明</text>
+  </navigator>
+</view>
+
+<!-- ══ 报警弹窗 ══ -->
+<view class="alert-mask" wx:if="{{Show}}"></view>
+<view class="alert-box" wx:if="{{Show}}">
+  <view class="alert-icon-wrap">
+    <text class="alert-icon">⚠️</text>
   </view>
+  <text class="alert-title">健康警告</text>
+  <text class="alert-content">检测到用户出现{{text}}，请及时关注</text>
+  <navigator class="alert-btn" url="/pages/healthy/healthy">
+    <text class="alert-btn-text">立即查看</text>
+    <text class="alert-btn-arrow">→</text>
+  </navigator>
+</view>
+
 </view>

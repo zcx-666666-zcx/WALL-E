@@ -1,138 +1,127 @@
+// pages/agent/agent.js
 Page({
   data: {
-    messages: [
-      {
-        type: 'ai',
-        content: '你好呀'
-      }
-    ],
     user_message: '',
-    styleConfig: ''
+    styleConfig: '',
+    messages: [],
+    isLoading: false,
+    image_ip: 'http://localhost:8080/images/menu_container1.jpg'
   },
 
   onLoad() {
-    //页面加载时的初始化
+    this.setData({ styleConfig: '' });
   },
 
-  onInputChange(e: any) {
-    this.setData({
-      user_message: e.detail.value
-    });
-  },//监听用户输入
-
-  onStyleConfigChange(e: any) {
-    this.setData({
-      styleConfig: e.detail.value
-    });
-  },//监听风格设置输入
-
-  //发送消息
-  sendMessage() {
-    const message = this.data.user_message.trim();
-    if (!message) {
-      wx.showToast({
-        title: '消息不能为空',
-        icon: 'none'
-      });
-      return;
-    }
-    //添加用户消息到列表
-    const userMsg = {
-      type: 'user',
-      content: message
-    };
-
-    this.setData({
-      messages: [...this.data.messages, userMsg],
-      user_message: '' //清空输入框
-    });
-
-    // 模拟AI回复（实际开发中这里应该是调用API）
-    setTimeout(() => {
-      const aiMsg = {
-        type: 'ai',
-        content: this.getAIResponse(message)
-      };
-      
-      this.setData({
-        messages: [...this.data.messages, aiMsg]
-      });
-
-      //滚动到底部
-      this.scrollToBottom();
-    }, 500);
+  onInputChange(e) {
+    this.setData({ user_message: e.detail.value });
   },
+  onStyleConfigChange(e) {
+    this.setData({ styleConfig: e.detail.value });
+  },
+  onSendTap() { this.sendMessage(); },
+  onConfirm()  { this.sendMessage(); },
 
-  // 模拟AI回复,应替换为真实的API调用
-  getAIResponse(userMessage: string): string {
-    // 可以根据styleConfig来调整回复风格
+  // ══ 提交人设 ══
+  submitStyle() {
+    const app = getApp();
     const style = this.data.styleConfig;
-    
-    if (style.includes('幽默')) {
-      return `用户说："${userMessage}"\n哈哈，这个问题真有趣！让我用幽默的方式回答你~`;
-    } else if (style.includes('专业') || style.includes('学术')) {
-      return `关于"${userMessage}"的问题，从专业角度分析，我认为...`;
-    } else {
-      return `收到你的消息："${userMessage}"。这是我根据当前设置的回复风格给出的回答。`;
-    }
+    if (!style) { wx.showToast({ title: '人设不能为空', icon: 'none' }); return; }
+
+    wx.request({
+      url: 'https://api.coze.cn/v1/workflow/run',
+      method: 'POST',
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
+      data: {
+        workflow_id: '7598072302836482048',
+        parameters: { username: app.globalData.USERNAME, content: '', style, time: this.formatTime(), set: true, gets: false, del: false }
+      },
+      success: (res) => {
+        if (res.statusCode === 200) { wx.showToast({ title: '设置成功', icon: 'success' }); this.setData({ styleConfig: '' }); }
+        else wx.showToast({ title: '设置失败', icon: 'none' });
+      },
+      fail: () => wx.showToast({ title: '请求失败', icon: 'none' })
+    });
   },
 
-  //提交风格设置
-  submitStyle(e: any) {
-    const styleConfig = e.detail.value.styleConfig.trim();
-    if (!styleConfig) {
-      wx.showToast({
-        title: '请输入风格设置',
-        icon: 'none'
-      });
-      return;
-    }
+  // ══ 获取当前人设 ══
+  getCurrentStyle() {
+    const app = getApp();
+    wx.showToast({ title: '获取中...', icon: 'loading' });
+    wx.request({
+      url: 'https://api.coze.cn/v1/workflow/run',
+      method: 'POST',
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
+      data: {
+        workflow_id: '7598072302836482048',
+        parameters: { username: app.globalData.USERNAME, content: '', style: '', time: this.formatTime(), set: true, gets: true, del: false }
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.data) {
+          try {
+            const data = JSON.parse(res.data.data);
+            this.setData({ styleConfig: data.style || '未获取到人设' });
+            wx.showToast({ title: '获取成功', icon: 'success' });
+          } catch (e) { wx.showToast({ title: '解析失败', icon: 'none' }); }
+        } else wx.showToast({ title: '获取失败', icon: 'none' });
+      },
+      fail: () => wx.showToast({ title: '请求失败', icon: 'none' })
+    });
+  },
+
+  // ══ 清屏 ══
+  clearChat() {
+    wx.showModal({
+      title: '提示', content: '确定清空聊天记录？',
+      success: (res) => { if (res.confirm) this.setData({ messages: [] }); }
+    });
+  },
+
+  // ══ 删除测试数据 ══
+  deleteAllMessages() {
+    wx.showModal({
+      title: '警告', content: '确定删除全部测试数据？此操作不可撤销',
+      confirmColor: '#FF5A36',
+      success: (res) => { if (res.confirm) this.setData({ messages: [] }); }
+    });
+  },
+
+  // ══ 发送消息 ══
+  sendMessage() {
+    const app = getApp();
+    const content = this.data.user_message.trim();
+    if (!content) { wx.showToast({ title: '消息不能为空', icon: 'none' }); return; }
+    if (this.data.isLoading) return;
 
     this.setData({
-      styleConfig: styleConfig
+      messages: [...this.data.messages, { type: 'user', content }],
+      user_message: '',
+      isLoading: true
     });
 
-    wx.showToast({
-      title: '风格设置成功',
-      icon: 'success'
+    wx.request({
+      url: 'https://api.coze.cn/v1/workflow/run',
+      method: 'POST',
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
+      data: {
+        workflow_id: '7598072302836482048',
+        parameters: { username: app.globalData.USERNAME || '测试', content, style: this.data.styleConfig, time: this.formatTime(), set: true, gets: false, del: false }
+      },
+      success: (res) => {
+        const aiContent = (res.statusCode === 200 && res.data.data)
+          ? (JSON.parse(res.data.data).contentOutput || '暂无回答')
+          : '请求失败';
+        this.setData({ messages: [...this.data.messages, { type: 'ai', content: aiContent }] });
+      },
+      fail: () => {
+        this.setData({ messages: [...this.data.messages, { type: 'ai', content: '网络异常，请重试' }] });
+      },
+      complete: () => { this.setData({ isLoading: false }); }
     });
-
-    //添加系统提示消息
-    const systemMsg = {
-      type: 'ai',
-      content: `聊天风格已更新为：${styleConfig}`
-    };
-
-    this.setData({
-      messages: [...this.data.messages, systemMsg]
-    });
-
-    this.scrollToBottom();
-  },
-  //滚动到底部
-  scrollToBottom() {
-    setTimeout(() => {
-      wx.createSelectorQuery()
-        .select('.talk')
-        .boundingClientRect()
-        .exec((res) => {
-          if (res[0]) {
-            wx.pageScrollTo({
-              scrollTop: res[0].height,
-              duration: 300
-            });
-          }
-        });
-    }, 100);
   },
 
-  // 点击发送按钮
-  onSendTap() {
-    this.sendMessage();
-  },
-
-  // 文本框确认发送（点击键盘发送按钮）
-  onConfirm() {
-    this.sendMessage();
+  formatTime() {
+    const d = new Date();
+    const p = n => n < 10 ? '0' + n : '' + n;
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 });

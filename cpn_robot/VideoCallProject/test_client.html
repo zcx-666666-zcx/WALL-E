@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>信令测试客户端 v4.0 (防断连版)</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .box { border: 2px solid #333; padding: 15px; margin: 10px; width: 42%; float: left; background: #f9f9f9; border-radius: 8px;}
+        .log { background: #fff; height: 300px; overflow-y: scroll; border: 1px solid #ccc; font-size: 12px; padding: 5px; font-family: monospace; margin-top: 10px;}
+        .tag { color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px;}
+        .tag-id { background: #007bff; }
+        .tag-room { background: #28a745; display: none; } /* 默认隐藏，加入后显示 */
+        button { cursor: pointer; padding: 8px 15px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h2>WebRTC 信令测试台 (自动重连修复版)</h2>
+    <div style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+        说明：如果 ID 发生变化，脚本会自动尝试重新加入房间。
+    </div>
+
+    <div class="box">
+        <h3>A 端 (树莓派) 
+            <span id="idA" class="tag tag-id">...</span>
+            <span id="roomA" class="tag tag-room">未入房</span>
+        </h3>
+        <button onclick="joinRoom('A')">1. 加入房间 0001</button>
+        <button onclick="sendOffer('A')">2. 发送 Offer</button>
+        <div class="log" id="logA"></div>
+    </div>
+
+    <div class="box">
+        <h3>B 端 (手机) 
+            <span id="idB" class="tag tag-id">...</span>
+            <span id="roomB" class="tag tag-room">未入房</span>
+        </h3>
+        <button onclick="joinRoom('B')">1. 加入房间 0001</button>
+        <div class="log" id="logB"></div>
+    </div>
+
+    <script>
+        const SERVER_URL = "http://localhost:8080";
+        const ROOM_ID = "0001";
+        
+        // 记录当前的房间状态，用于重连时恢复
+        const state = {
+            A: { joined: false, room: null },
+            B: { joined: false, room: null }
+        };
+
+        const socketA = io(SERVER_URL, { transports: ['websocket'] });
+        const socketB = io(SERVER_URL, { transports: ['websocket'] });
+
+        function log(who, msg) {
+            const el = document.getElementById('log' + who);
+            el.innerHTML += `<div>${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function updateUI(who, sock) {
+            document.getElementById('id' + who).innerText = "ID: " + (sock.id || "连接中...");
+            if (state[who].joined) {
+                const roomTag = document.getElementById('room' + who);
+                roomTag.innerText = "房: " + state[who].room;
+                roomTag.style.display = "inline-block";
+            }
+        }
+
+        function setupSocket(sock, who) {
+            // 1. 连接/重连成功
+            sock.on('connect', () => {
+                log(who, `✅ 连接服务器成功 (ID: ${sock.id})`);
+                updateUI(who, sock);
+
+                // 【核心修复】如果之前加入过房间，重连后立刻重新加入
+                if (state[who].joined) {
+                    log(who, `🔄 检测到重连，正在自动恢复加入房间 ${state[who].room}...`);
+                    sock.emit('join', { room: state[who].room });
+                }
+            });
+
+            // 2. 断开连接
+            sock.on('disconnect', (reason) => {
+                log(who, `❌ 连接断开: ${reason}`);
+                document.getElementById('id' + who).innerText = "断开";
+            });
+
+            // 3. 加入成功确认
+            sock.on('joined', (data) => {
+                state[who].joined = true;
+                state[who].room = data.room;
+                updateUI(who, sock);
+                log(who, `<span style="color:green; font-weight:bold">✔ 成功加入房间 ${data.room}</span>`);
+            });
+
+            // 4. 收到消息
+            sock.on('message', (data) => {
+                log(who, `📩 收到: ${JSON.stringify(data)}`);
+            });
+        }
+
+        setupSocket(socketA, 'A');
+        setupSocket(socketB, 'B');
+
+        function joinRoom(who) {
+            const sock = who === 'A' ? socketA : socketB;
+            log(who, `👉 请求加入房间 ${ROOM_ID}...`);
+            sock.emit('join', { room: ROOM_ID });
+        }
+
+        function sendOffer(who) {
+            log('A', '👉 正在发送 Offer...');
+            socketA.emit('message', { 
+                room: ROOM_ID, 
+                payload: { type: 'offer', sdp: 'test-sdp-content' } 
+            });
+        }
+    </script>
+</body>
+</html>

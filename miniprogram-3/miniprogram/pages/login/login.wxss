@@ -1,106 +1,262 @@
 /* pages/login/login.wxss */
-.container1{
-  height:100vh;
+
+.root {
+  min-height: 100vh;
   width: 100%;
   position: relative;
   overflow: hidden;
-  background-color: rgb(112, 112, 112); /*这行代码到时候会删掉*/
-}
-#title{
-  height: 50rpx;
-  width: 350rpx;
-  margin: 40rpx 200rpx 10rpx 200rpx;
-  z-index: 2;
-  position: absolute;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  font-size: 40rpx;
-  color: rgb(255, 255, 255);
+  box-sizing: border-box;
+  background-color: #0A0F1E;
 }
+
+/* 背景 */
 .bg-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.5;
+}
+.bg-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   z-index: 1;
-  opacity: 0.9;
+  background: linear-gradient(
+    180deg,
+    rgba(5,10,30,0.5) 0%,
+    rgba(5,10,30,0.35) 30%,
+    rgba(5,10,30,0.65) 70%,
+    rgba(5,10,30,0.88) 100%
+  );
 }
-.picture{
-  margin: 100rpx 0 20rpx 0;
-  height: 600rpx;
-  width: 100%;
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  
-}
-.pc-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.9;
+.orb {
+  position: fixed;
+  border-radius: 50%;
   z-index: 1;
+  pointer-events: none;
 }
-.ipt{
-  z-index: 2;
+.orb-1 {
+  width: 480rpx; height: 480rpx;
+  top: -120rpx; right: -80rpx;
+  background: radial-gradient(circle, rgba(255,120,60,0.13) 0%, transparent 70%);
+}
+.orb-2 {
+  width: 360rpx; height: 360rpx;
+  bottom: 160rpx; left: -80rpx;
+  background: radial-gradient(circle, rgba(60,100,255,0.1) 0%, transparent 70%);
+}
+
+/* 品牌区 */
+.brand-area {
   position: relative;
-  height: 70rpx; /* 调整输入框高度 */
-  width: 450rpx; /* 保持你的宽度 */
-  margin: 20rpx 0; /* 调整垂直间距，保持水平居中 */
-  background: rgba(179, 213, 236, 0.8);
-  border-radius: 5rpx;
+  z-index: 10;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  padding: 0 20rpx;
+  gap: 20rpx;
+  margin-top: 100rpx;
+  padding: 0 50rpx;
+  width: 100%;
   box-sizing: border-box;
 }
-
-.ipt input {
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 32rpx;
+.brand-logo {
+  width: 72rpx; height: 72rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, rgba(255,154,118,0.9), rgba(255,90,48,0.9));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(255,90,48,0.35);
+  flex-shrink: 0;
 }
+.logo-heart { font-size: 34rpx; color: white; }
+.brand-text { display: flex; flex-direction: column; gap: 4rpx; }
+.brand-name { font-size: 38rpx; font-weight: 800; color: #FFFFFF; letter-spacing: 2rpx; }
+.brand-sub { font-size: 22rpx; color: rgba(255,255,255,0.5); letter-spacing: 1rpx; }
 
-.ipt input::placeholder{
-  color: #333333;
-  font-size: 28rpx;
-}
-
-#login {
-  z-index: 2;
+/* 登录卡片 */
+.card {
   position: relative;
-  height: 80rpx;
+  z-index: 10;
   width: 650rpx;
-  margin: 10rpx 0;
-  font-weight: 300;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 40rpx;
+  margin-top: 56rpx;
+  background: rgba(255,255,255,0.07);
+  border: 1rpx solid rgba(255,255,255,0.12);
+  border-radius: 36rpx;
+  padding: 52rpx 48rpx 44rpx;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24rpx 64rpx rgba(0,0,0,0.4);
 }
 
-/* 注册链接样式 */
-.reg {
-  height: 50rpx;
-  width: 450rpx;
-  margin: 720rpx 150rpx;
-  z-index: 2;
-  position: relative;
-  text-align: center;
-  color: white;
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-bottom: 52rpx;
+}
+.card-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 2rpx;
+}
+.card-sub {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1rpx;
+}
+
+/* 输入字段 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-bottom: 32rpx;
+}
+.field-label {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1rpx;
+}
+.field-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 88rpx;
+  background: rgba(255,255,255,0.08);
+  border: 1rpx solid rgba(255,255,255,0.14);
+  border-radius: 20rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  gap: 16rpx;
+}
+.field-icon {
   font-size: 28rpx;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.field-input {
+  flex: 1;
+  height: 100%;
+  font-size: 28rpx;
+  color: #FFFFFF;
+  background: transparent;
+}
+.field-ph {
+  color: rgba(255,255,255,0.28);
+  font-size: 26rpx;
+}
+
+/* 登录按钮 */
+.btn-primary {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(90deg, #FF9A76, #FF5A30);
+  border-radius: 48rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  box-shadow: 0 12rpx 32rpx rgba(255,90,48,0.4);
+  margin-top: 12rpx;
+}
+.btn-primary:active { opacity: 0.85; }
+.btn-primary-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+}
+.btn-arrow {
+  font-size: 32rpx;
+  color: rgba(255,255,255,0.8);
+}
+
+/* 分割线 */
+.divider {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  margin: 36rpx 0 28rpx;
+}
+.divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: rgba(255,255,255,0.12);
+}
+.divider-text {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+}
+
+/* 幽灵按钮 */
+.btn-ghost {
+  width: 100%;
+  height: 88rpx;
+  background: rgba(255,255,255,0.06);
+  border: 1rpx solid rgba(255,255,255,0.18);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost-hover { background: rgba(255,255,255,0.12); }
+.btn-ghost-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 3rpx;
+}
+
+/* 特性标签行 */
+.tags-row {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 28rpx;
+  margin-top: 52rpx;
+}
+.tag-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10rpx;
+}
+.tag-dot {
+  width: 10rpx; height: 10rpx;
+  border-radius: 50%;
+  background: #FF9A76;
+  box-shadow: 0 0 8rpx rgba(255,154,118,0.6);
+  flex-shrink: 0;
+}
+.tag-label {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 1rpx;
+}
+.tag-sep {
+  width: 1rpx; height: 24rpx;
+  background: rgba(255,255,255,0.2);
+}
+
+/* 底部 */
+.footer {
+  position: relative;
+  z-index: 10;
+  margin-top: 48rpx;
+  margin-bottom: 48rpx;
+}
+.footer-text {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 1rpx;
 }

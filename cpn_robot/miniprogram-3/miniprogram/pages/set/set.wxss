@@ -1,0 +1,67 @@
+/* pages/user/user.wxss */
+.container1 {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #002544;
+}
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.75;
+}
+.container2{
+  padding: 1.5% 0;
+  margin: 6% 2.5% 15% 2.5%;
+  height: 88.5%;
+  width: 95%;
+  position: relative;
+  z-index: 2;
+  background-color: rgba(255, 255, 255,0.55);
+  border-radius: 30rpx;
+}
+#speak_control,
+#element_call,
+#AI,
+#robot_camera,
+#content{
+  margin: 2% 5%;
+  padding: 0 4%;
+  height: 6%;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 10rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333333;
+  font-size: 30rpx;
+  transition: all 0.3s ease;
+  border: 2rpx solid rgba(255, 255, 255, 0.8);
+}
+
+#speak_control:active,
+#element_call:active,
+#AI:active,
+#robot_camera:active,
+#content:active{
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: scale(0.98);
+}
+
+#speak_control text,
+#element_call text,
+#AI text,
+#robot_camera text,
+#content text{
+  font-size: 26rpx;
+  font-weight: 400;
+  color: #888;
+  margin-right: 20rpx; 
+}

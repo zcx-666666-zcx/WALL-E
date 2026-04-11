@@ -1,149 +1,126 @@
-<!-- pages/CallChoice/CallChoice.wxml -->
-<view class="container">
-  
-  <!-- 标题 -->
-  <view class="header">
-    <text class="title">AIoT设备通话</text>
+<view class="root">
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题区 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">远程监护</text>
+    <text class="header-sub">WebRTC 实时视频连接</text>
   </view>
-  
-  <!-- 联系人选择 -->
-  <view class="contact-section">
-    <view 
-      class="contact-selector {{selectedContactName ? 'has-contact' : ''}}"
-      bindtap="toggleContactList"
-    >
-      <text class="contact-text">
-        {{selectedContactName ? '呼叫: ' + selectedContactName : '点击选择AIoT设备'}}
-      </text>
-      <text class="arrow">▼</text>
-    </view>
-    
-    <!-- 联系人列表 -->
-    <view 
-      wx:if="{{showContactList}}" 
-      class="contact-list"
-    >
-      <view 
-        wx:for="{{contacts}}" 
-        wx:key="index"
-        class="contact-item"
-        data-index="{{index}}"
-        bindtap="selectContact"
-      >
-        <text class="contact-name">{{item.name}}</text>
-        <text class="contact-ip">{{item.ip}}</text>
-      </view>
-    </view>
+  <view class="status-chip status-chip-{{isJoined ? 'on' : 'off'}}">
+    <view class="status-chip-dot"></view>
+    <text class="status-chip-text">{{isJoined ? '已连接' : '未连接'}}</text>
   </view>
-  
-  <!-- 本地Camera预览区域 -->
-  <view wx:if="{{pageStatus === 'inVideoCall'}}" class="camera-section">
-    <view class="video-container">
-      <!-- 本地摄像头 -->
-      <view class="local-camera">
-        <camera
-          device-position="front"
-          flash="off"
-          binderror="onCameraError"
-          bindstop="onCameraStop"
-          bindinitdone="onCameraInitDone"
-          style="width: 100%; height: 300rpx;"
-        >
-          <view class="camera-overlay">
-            <text class="status-text">
-              {{cameraLoaded ? '本地画面' : '初始化中...'}}
-            </text>
-          </view>
-        </camera>
-      </view>
-      
-      <!-- 接收到的远程画面 -->
-      <view class="remote-video">
-        <view class="video-placeholder" wx:if="{{!currentVideoFrame}}">
-          <text class="placeholder-text">等待设备画面...</text>
-        </view>
-        <image 
-          wx:if="{{currentVideoFrame}}" 
-          src="data:image/jpeg;base64,{{currentVideoFrame}}"
-          mode="aspectFill"
-          class="video-frame"
-        />
-        <view class="video-overlay">
-          <text class="status-text">设备画面</text>
-        </view>
-      </view>
+</view>
+
+<!-- ══ 双视频区域 ══ -->
+<view class="video-section">
+
+  <!-- 远端大画面 -->
+  <view class="video-main">
+    <video
+      id="remoteVideo"
+      autoplay
+      show-center-play-btn="{{false}}"
+      object-fit="cover"
+      class="video-el"
+    ></video>
+    <view class="video-overlay"></view>
+    <view class="video-label">
+      <view class="label-dot"></view>
+      <text class="label-text">远端视频</text>
+    </view>
+    <view class="video-placeholder" wx:if="{{!isJoined}}">
+      <text class="placeholder-icon">📹</text>
+      <text class="placeholder-text">等待远端接入</text>
     </view>
   </view>
-  
-  <!-- 语音通话状态显示 -->
-  <view wx:if="{{pageStatus === 'inAudioCall'}}" class="audio-section">
-    <view class="audio-icon">
-      <view class="audio-wave">
-        <view class="wave-bar"></view>
-        <view class="wave-bar"></view>
-        <view class="wave-bar"></view>
-        <view class="wave-bar"></view>
-        <view class="wave-bar"></view>
-      </view>
+
+  <!-- 本地小画面（悬浮右下角） -->
+  <view class="video-pip">
+    <video
+      id="localVideo"
+      autoplay
+      muted
+      show-center-play-btn="{{false}}"
+      object-fit="cover"
+      class="video-el"
+    ></video>
+    <view class="pip-label">本地</view>
+    <view class="video-placeholder pip-placeholder" wx:if="{{!isJoined}}">
+      <text class="placeholder-icon-sm">👤</text>
     </view>
-    <text class="audio-text">语音通话中...</text>
-    <text class="audio-info">发送: {{debugInfo.sentAudio}} 接收: {{debugInfo.receivedAudio}}</text>
   </view>
-  
-  <!-- 控制按钮区域 -->
-  <view class="control-section">
-    <!-- 视频通话按钮 -->
-    <button
-      class="control-btn video-btn {{pageStatus === 'inVideoCall' ? 'active' : ''}}"
-      bindtap="onVideoButtonTap"
-    >
-      {{buttonTexts.video}}
+
+</view>
+
+<!-- ══ 控制面板 ══ -->
+<view class="section-label">通话控制</view>
+<view class="control-card">
+
+  <!-- 房间号 -->
+  <view class="field-group">
+    <text class="field-label">房间号</text>
+    <view class="field-wrap">
+      <text class="field-icon">🔑</text>
+      <input
+        class="field-input"
+        value="{{roomId}}"
+        bindinput="onRoomInput"
+        placeholder="请输入房间号"
+        placeholder-class="field-ph"
+      />
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="btn-row">
+    <button class="ctrl-btn btn-join" bindtap="joinRoom">
+      <text class="ctrl-btn-icon">🚪</text>
+      <text class="ctrl-btn-text">加入房间</text>
     </button>
-    
-    <!-- 语音通话按钮 -->
-    <button
-      class="control-btn audio-btn {{pageStatus === 'inAudioCall' ? 'active' : ''}}"
-      bindtap="onAudioButtonTap"
-    >
-      {{buttonTexts.audio}}
-    </button>
-    
-    <!-- 挂断按钮（仅在通话中显示） -->
-    <button
-      wx:if="{{pageStatus !== 'ready'}}"
-      class="control-btn stop-btn"
-      bindtap="onStopButtonTap"
-    >
-      {{buttonTexts.stop}}
+    <button class="ctrl-btn btn-call {{!isJoined ? 'btn-disabled' : ''}}" bindtap="startCall" disabled="{{!isJoined}}">
+      <text class="ctrl-btn-icon">🎥</text>
+      <text class="ctrl-btn-text">发起通话</text>
     </button>
   </view>
-  
-  <!-- 调试信息 -->
-  <view wx:if="{{pageStatus !== 'ready'}}" class="debug-section">
-    <view class="debug-item">
-      <text class="debug-label">连接状态:</text>
-      <text class="debug-value {{wsConnected ? 'connected' : 'disconnected'}}">
-        {{wsConnected ? '已连接' : '未连接'}}
-      </text>
+
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <view class="status-bar-dot status-bar-dot-{{isJoined ? 'on' : 'off'}}"></view>
+    <text class="status-bar-text">{{statusText}}</text>
+  </view>
+
+  <!-- 连接信息 -->
+  <view class="conn-info">
+    <view class="conn-row">
+      <text class="conn-label">服务器</text>
+      <text class="conn-val">{{SERVER_URL}}</text>
     </view>
-    <view class="debug-item" wx:if="{{pageStatus === 'inVideoCall'}}">
-      <text class="debug-label">视频帧:</text>
-      <text class="debug-value">发送 {{debugInfo.sentFrames}} | 接收 {{debugInfo.receivedFrames}}</text>
-    </view>
-    <view class="debug-item" wx:if="{{pageStatus === 'inAudioCall'}}">
-      <text class="debug-label">音频包:</text>
-      <text class="debug-value">发送 {{debugInfo.sentAudio}} | 接收 {{debugInfo.receivedAudio}}</text>
+    <view class="conn-row">
+      <text class="conn-label">协议</text>
+      <text class="conn-val">WebRTC / WebSocket</text>
     </view>
   </view>
-  
-  <!-- 状态提示 -->
-  <view class="hint-section">
-    <text wx:if="{{pageStatus === 'ready'}}" class="hint-text">
-      请选择要连接的AIoT设备
-    </text>
-    <text wx:if="{{pageStatus === 'inVideoCall' && !cameraLoaded}}" class="hint-text">
-      正在初始化本地摄像头...
-    </text>
-  </view>
-  
+
+</view>
+
+<!-- ══ 日志区 ══ -->
+<view class="section-label">通话日志</view>
+<view class="log-card">
+  <scroll-view class="log-scroll" scroll-y="{{true}}" scroll-into-view="log-bottom">
+    <view wx:for="{{logs}}" wx:key="index" class="log-item">
+      <text class="log-time">{{item.time}}</text>
+      <text class="log-msg">{{item.msg}}</text>
+    </view>
+    <view id="log-bottom"></view>
+  </scroll-view>
+</view>
+
+<view style="height: 60rpx;"></view>
+
 </view>

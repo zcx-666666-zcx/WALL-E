@@ -1,0 +1,113 @@
+<view class="page">
+  <!-- 🔥 和menu页面完全一致的全屏背景图 -->
+  <image class="bg-image" src="http://localhost:8080/images/menu_container1.jpg" mode=""/>
+
+  <!-- 2x2 专业指标卡片 -->
+  <view class="grid-box">
+    <!-- 心率 -->
+    <view class="card card-{{rate >= 170 ? 'danger' : rate >= 120 ? 'warning' : 'normal'}}">
+      <view class="card-header">
+        <view class="card-icon">❤️</view>
+        <view class="card-title">心率</view>
+      </view>
+      <view class="card-value">
+        <text class="value-main">{{ rate === -1 ? '--' : rate }}</text>
+        <text class="value-unit">次/分</text>
+      </view>
+      <view class="card-progress">
+        <view class="progress-bar" style="width: {{ (rate / 200) * 100 }}%"></view>
+      </view>
+      <view class="card-range">
+        <text>正常 60-120</text>
+      </view>
+    </view>
+
+    <!-- 湿度 -->
+    <view class="card card-{{humidity >= 80 ? 'danger' : humidity <= 39 ? 'warning' : 'normal'}}">
+      <view class="card-header">
+        <view class="card-icon">💧</view>
+        <view class="card-title">湿度</view>
+      </view>
+      <view class="card-value">
+        <text class="value-main">{{ humidity === -1 ? '--' : humidity }}</text>
+        <text class="value-unit">%</text>
+      </view>
+      <view class="card-progress">
+        <view class="progress-bar" style="width: {{ humidity }}%"></view>
+      </view>
+      <view class="card-range">
+        <text>正常 40-79</text>
+      </view>
+    </view>
+
+    <!-- 呼吸 -->
+    <view class="card card-{{breath >= 30 ? 'danger' : breath <= 11 ? 'warning' : 'normal'}}">
+      <view class="card-header">
+        <view class="card-icon">🫁</view>
+        <view class="card-title">呼吸</view>
+      </view>
+      <view class="card-value">
+        <text class="value-main">{{ breath === -1 ? '--' : breath }}</text>
+        <text class="value-unit">次/分</text>
+      </view>
+      <view class="card-progress">
+        <view class="progress-bar" style="width: {{ (breath / 40) * 100 }}%"></view>
+      </view>
+      <view class="card-range">
+        <text>正常 12-29</text>
+      </view>
+    </view>
+
+    <!-- 体温 -->
+    <view class="card card-{{temperature >= 37.1 ? 'danger' : temperature <= 35.8 ? 'warning' : 'normal'}}">
+      <view class="card-header">
+        <view class="card-icon">🌡️</view>
+        <view class="card-title">体温</view>
+      </view>
+      <view class="card-value">
+        <text class="value-main">{{ temperature === -1 ? '--' : temperature }}</text>
+        <text class="value-unit">℃</text>
+      </view>
+      <view class="card-progress">
+        <view class="progress-bar" style="width: {{ ((temperature - 35) / 5) * 100 }}%"></view>
+      </view>
+      <view class="card-range">
+        <text>正常 35.9-37.0</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 跌倒状态（保留并优化质感） -->
+  <view class="fall-box">
+    <view class="fall-left">
+      <view class="fall-title fall-title-{{fall === '未识别到目标' ? 'warning' : fall === '正常' ? 'normal' : 'danger'}}">
+        {{fall === '未识别到目标' ? '⚠️ 未识别' : fall === '正常' ? '✅ 正常' : '🚨 跌倒！'}}
+      </view>
+      <view class="fall-desc">
+        设备实时监测姿态，异常时自动抓拍并推送预警
+      </view>
+      <image class="fall-image" src="{{ picture_url || '/images/default.png' }}"></image>
+    </view>
+    <view class="fall-right">
+      <button class="fall-btn">刷新</button>
+      <button class="fall-btn fall-btn-alarm">紧急报警</button>
+      <button class="fall-btn fall-btn-request">查看图片</button>
+    </view>
+  </view>
+
+  <!-- 设备模块（优化排版） -->
+  <view class="device-box">
+    <view class="device-header">设备选择</view>
+    <view class="device-content">
+      <view class="device-list">
+        <view wx:for="{{Machines}}" wx:key="id" class="device-item" bindtap="changeDeviceId" data-id="{{item.id}}">
+          {{item.machines}}
+        </view>
+      </view>
+      <view class="device-info">
+        <text>当前设备：{{deviceId}}</text>
+        <button bindtap="Reloading" class="global-refresh">刷新全部数据</button>
+      </view>
+    </view>
+  </view>
+</view>

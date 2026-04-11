@@ -4,7 +4,7 @@
   width: 100%;
   position: relative;
   overflow: hidden;
-  background: #002544;
+  background: #746e63;
 }
 .bg-image {
   position: absolute;
