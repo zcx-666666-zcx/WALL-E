@@ -1,0 +1,160 @@
+/* ═══════════════════════════════════════════
+   陪伴机器人管理平台 — 全局基础样式 v2
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* 品牌色系 */
+  --c-primary:        #FF5A2E;
+  --c-primary-light:  #FF8A65;
+  --c-primary-lighter: #FFBBA0;
+  --c-primary-bg:     #FFF2EC;
+  --c-primary-bg-alt: #FFFBF8;
+  --c-primary-glass:  rgba(255, 255, 255, 0.7);
+
+  /* 功能色 */
+  --c-success:        #4CAF50;
+  --c-warning:        #FF9800;
+  --c-danger:         #E53935;
+  --c-info:           #2196F3;
+
+  /* 文字色 */
+  --c-text:           #2C1810;
+  --c-text-heading:   #1A0A04;
+  --c-text-secondary: #6B4030;
+  --c-text-muted:     #A08070;
+  --c-text-ghost:     #C4B0A0;
+
+  /* 背景色 */
+  --c-bg:             #FFF9F6;
+  --c-bg-warm:        #FFF3EC;
+  --c-bg-card:        #FFFFFF;
+
+  /* 边框 */
+  --c-border:         rgba(255, 140, 90, 0.12);
+  --c-border-light:   rgba(255, 140, 90, 0.06);
+  --c-border-input:   rgba(255, 140, 90, 0.25);
+
+  /* 圆角 */
+  --radius-xs:        6px;
+  --radius-sm:        10px;
+  --radius-md:        14px;
+  --radius-lg:        18px;
+  --radius-xl:        24px;
+  --radius-full:      9999px;
+
+  /* 阴影 */
+  --shadow-xs:        0 1px 3px rgba(180, 60, 20, 0.04);
+  --shadow-sm:        0 2px 8px rgba(180, 60, 20, 0.06);
+  --shadow-md:        0 4px 16px rgba(180, 60, 20, 0.08);
+  --shadow-lg:        0 8px 32px rgba(180, 60, 20, 0.12);
+  --shadow-xl:        0 16px 48px rgba(180, 40, 10, 0.16);
+  --shadow-glow:      0 0 20px rgba(255, 90, 46, 0.15);
+  --shadow-card-hover:0 8px 32px rgba(180, 60, 20, 0.14);
+  --shadow-btn:       0 4px 14px rgba(255, 90, 46, 0.28);
+  --shadow-btn-hover: 0 6px 20px rgba(255, 80, 40, 0.38);
+
+  /* 渐变 */
+  --grad-primary:     linear-gradient(135deg, #FF9A6C, #FF5A2E);
+  --grad-primary-h:   linear-gradient(90deg, #FF9A6C, #FF5A2E);
+  --grad-warm:        linear-gradient(160deg, #FFD4BB, #FFBBA0);
+  --grad-card:        linear-gradient(135deg, #FFFBF8, #FFF3EC);
+  --grad-glass:       linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,250,246,0.8));
+  --grad-gold:        linear-gradient(135deg, #FFB74D, #FF8A65, #FF6E40);
+
+  /* 字体 */
+  --font:             "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono:        "SF Mono", "Fira Code", "Cascadia Code", monospace;
+
+  /* 过渡 */
+  --ease-bounce:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:      cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:         cubic-bezier(0, 0, 0.2, 1);
+
+  /* 侧边栏 */
+  --sidebar-w:        232px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%; width: 100%; overflow: hidden;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 全局滚动条 */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 140, 90, 0.25);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 120, 70, 0.4); }
+
+::selection { background: rgba(255, 140, 90, 0.2); color: var(--c-text); }
+
+/* 全局 keyframes */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 90, 46, 0.2); }
+  50%      { box-shadow: 0 0 24px rgba(255, 90, 46, 0.4); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageOut {
+  to { opacity: 0; transform: translateY(-8px) scale(0.99); }
+}

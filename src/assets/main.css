@@ -1,0 +1,17 @@
+@import "./base.css";
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: var(--font);
+}
+
+a {
+  text-decoration: none;
+  color: var(--c-primary);
+  transition: color 0.2s;
+}
+a:hover { color: var(--c-primary-light); }
