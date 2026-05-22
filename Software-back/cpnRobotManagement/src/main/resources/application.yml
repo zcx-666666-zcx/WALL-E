@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cpnRobotManagement
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/cpnrobot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 1887418187M
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 1023MB
+      max-request-size: 2GB
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: pojos
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+onenet:
+  token: 123456789
+  aes-key: your-onenet-aes-base64-key
+
+aliyun:
+  oss:
+    endpoint: "https://oss-cn-beijing.aliyuncs.com"
+    bucketName: "lht-java-ai-edu"
+    region: "cn-beijing"
+
+zzulicloud:
+  datasource:
+    url: jdbc:mysql://localhost:3306/zzulicloud?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 20250709

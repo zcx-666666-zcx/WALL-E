@@ -1,0 +1,126 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题区 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">远程遥控</text>
+    <text class="header-sub">实时控制机器人移动</text>
+  </view>
+  <view class="conn-chip conn-chip-{{is_connect === '已连接' ? 'on' : 'off'}}">
+    <view class="conn-dot"></view>
+    <text class="conn-text">{{is_connect}}</text>
+  </view>
+</view>
+
+<!-- 视频预览区 -->
+<view class="video-card">
+  <view class="video-screen">
+    <text class="video-placeholder-icon">📷</text>
+    <text class="video-placeholder-text">{{vedio_connect}}</text>
+  </view>
+  <view class="video-label-row">
+    <view class="video-rec-dot"></view>
+    <text class="video-label-text">实时画面</text>
+  </view>
+</view>
+
+<!-- 遥控面板标题 -->
+<view class="section-label">方向控制</view>
+
+<!-- 遥控按键区 -->
+<view class="control-wrap">
+
+  <!-- 云台控制（左侧竖排） -->
+  <view class="gimbal-col">
+    <view class="gimbal-label">云台</view>
+    <view
+      class="ctrl-btn btn-gimbal {{up_isPressing ? 'btn-active' : ''}}"
+      bindtouchstart="onButtonPress_up"
+      bindtouchend="onButtonRelease_up"
+      bindtouchcancel="onButtonRelease_up"
+    >
+      <text class="btn-arrow">↑</text>
+      <text class="btn-label">抬头</text>
+    </view>
+    <view
+      class="ctrl-btn btn-gimbal {{down_isPressing ? 'btn-active' : ''}}"
+      bindtouchstart="onButtonPress_down"
+      bindtouchend="onButtonRelease_down"
+      bindtouchcancel="onButtonRelease_down"
+    >
+      <text class="btn-arrow">↓</text>
+      <text class="btn-label">低头</text>
+    </view>
+  </view>
+
+  <!-- 方向控制（右侧十字） -->
+  <view class="dpad">
+    <!-- 前进 -->
+    <view class="dpad-row dpad-top">
+      <view
+        class="ctrl-btn btn-dir btn-forward {{go_isPressing ? 'btn-active' : ''}}"
+        bindtouchstart="onButtonPress_go"
+        bindtouchend="onButtonRelease_go"
+        bindtouchcancel="onButtonRelease_go"
+      >
+        <text class="dpad-arrow">▲</text>
+        <text class="dpad-label">前进</text>
+      </view>
+    </view>
+    <!-- 左右 -->
+    <view class="dpad-row dpad-mid">
+      <view
+        class="ctrl-btn btn-dir {{left_isPressing ? 'btn-active' : ''}}"
+        bindtouchstart="onButtonPress_left"
+        bindtouchend="onButtonRelease_left"
+        bindtouchcancel="onButtonRelease_left"
+      >
+        <text class="dpad-arrow">◀</text>
+        <text class="dpad-label">左转</text>
+      </view>
+      <!-- 中心装饰 -->
+      <view class="dpad-center">
+        <view class="dpad-center-dot"></view>
+      </view>
+      <view
+        class="ctrl-btn btn-dir {{right_isPressing ? 'btn-active' : ''}}"
+        bindtouchstart="onButtonPress_right"
+        bindtouchend="onButtonRelease_right"
+        bindtouchcancel="onButtonRelease_right"
+      >
+        <text class="dpad-arrow">▶</text>
+        <text class="dpad-label">右转</text>
+      </view>
+    </view>
+    <!-- 后退 -->
+    <view class="dpad-row dpad-bot">
+      <view
+        class="ctrl-btn btn-dir btn-back {{back_isPressing ? 'btn-active' : ''}}"
+        bindtouchstart="onButtonPress_back"
+        bindtouchend="onButtonRelease_back"
+        bindtouchcancel="onButtonRelease_back"
+      >
+        <text class="dpad-arrow">▼</text>
+        <text class="dpad-label">后退</text>
+      </view>
+    </view>
+  </view>
+
+</view>
+
+<!-- 操作提示 -->
+<view class="hint-row">
+  <text class="hint-text">长按方向键持续移动，松开即停止</text>
+</view>
+
+<view style="height:60rpx;"></view>
+
+</view>

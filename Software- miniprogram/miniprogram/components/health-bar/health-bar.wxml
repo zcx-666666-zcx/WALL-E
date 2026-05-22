@@ -1,0 +1,75 @@
+<view class="hb-root anim-slideInDown" wx:if="{{visible}}">
+  <view class="hb-track">
+    <view class="hb-item {{rateStatus}}" wx:if="{{rate !== -1}}">
+      <text class="hb-icon">❤️</text>
+      <text class="hb-val {{rateFlash ? 'hb-flash' : ''}}">{{rate}}</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item {{rateStatus}}" wx:else>
+      <text class="hb-icon">❤️</text>
+      <text class="hb-val hb-idle-val">--</text>
+      <view class="hb-dot"></view>
+    </view>
+
+    <view class="hb-sep"></view>
+
+    <view class="hb-item {{tempStatus}}" wx:if="{{temp !== -1}}">
+      <text class="hb-icon">🌡️</text>
+      <text class="hb-val">{{temp}}°</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item {{tempStatus}}" wx:else>
+      <text class="hb-icon">🌡️</text>
+      <text class="hb-val hb-idle-val">--</text>
+      <view class="hb-dot"></view>
+    </view>
+
+    <view class="hb-sep"></view>
+
+    <view class="hb-item {{humidStatus}}" wx:if="{{humidity !== -1}}">
+      <text class="hb-icon">💧</text>
+      <text class="hb-val">{{humidity}}%</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item {{humidStatus}}" wx:else>
+      <text class="hb-icon">💧</text>
+      <text class="hb-val hb-idle-val">--</text>
+      <view class="hb-dot"></view>
+    </view>
+
+    <view class="hb-sep"></view>
+
+    <view class="hb-item {{breatheStatus}}" wx:if="{{breathe !== -1}}">
+      <text class="hb-icon">🫁</text>
+      <text class="hb-val">{{breathe}}</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item {{breatheStatus}}" wx:else>
+      <text class="hb-icon">🫁</text>
+      <text class="hb-val hb-idle-val">--</text>
+      <view class="hb-dot"></view>
+    </view>
+
+    <view class="hb-sep"></view>
+
+    <view class="hb-item {{fallStatus}}" wx:if="{{fall === true}}">
+      <text class="hb-icon">🛠️</text>
+      <text class="hb-val hb-danger-text">跌</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item {{fallStatus}}" wx:elif="{{fall === false}}">
+      <text class="hb-icon">🛠️</text>
+      <text class="hb-val">OK</text>
+      <view class="hb-dot"></view>
+    </view>
+    <view class="hb-item idle" wx:else>
+      <text class="hb-icon">🛠️</text>
+      <text class="hb-val hb-idle-val">--</text>
+      <view class="hb-dot"></view>
+    </view>
+  </view>
+
+  <view class="hb-arrow" bindtap="onTapNavigate" hover-class="hb-arrow-hover">
+    <text>›</text>
+  </view>
+</view>

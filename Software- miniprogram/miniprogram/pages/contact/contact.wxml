@@ -1,0 +1,48 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">联系人</text>
+    <text class="header-sub">管理紧急联系人和常用联系人</text>
+  </view>
+</view>
+
+<view class="section-label">紧急联系人</view>
+<view class="card-list">
+  <view class="contact-card anim-fadeInUp anim-delay-1" wx:for="{{contacts}}" wx:key="id">
+    <view class="contact-avatar">
+      <text class="contact-avatar-text">{{item.name[0]}}</text>
+    </view>
+    <view class="contact-body">
+      <text class="contact-name">{{item.name}}</text>
+      <text class="contact-phone">{{item.phone}}</text>
+    </view>
+    <view class="contact-call" bindtap="callContact" data-phone="{{item.phone}}">
+      <text class="contact-call-icon">📞</text>
+    </view>
+  </view>
+
+  <view class="empty-state anim-fadeInUp anim-delay-2" wx:if="{{contacts.length === 0}}">
+    <text class="empty-icon">👥</text>
+    <text class="empty-title">暂无联系人</text>
+    <text class="empty-desc">添加紧急联系人以便在异常时及时通知</text>
+  </view>
+</view>
+
+<view class="section-label">快速操作</view>
+<view class="action-row">
+  <view class="action-btn" bindtap="addContact">
+    <text class="action-btn-icon">＋</text>
+    <text class="action-btn-text">添加联系人</text>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

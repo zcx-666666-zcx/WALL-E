@@ -1,0 +1,49 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">星闪连接</text>
+    <text class="header-sub">智能连接设备管理</text>
+  </view>
+</view>
+
+<view class="section-label">已连接设备</view>
+<view class="card-list">
+  <view class="empty-state anim-fadeInUp" wx:if="{{devices.length === 0}}">
+    <text class="empty-icon">⭐</text>
+    <text class="empty-title">暂无星闪设备</text>
+    <text class="empty-desc">请确保设备已开启星闪功能并处于配对模式</text>
+  </view>
+
+  <view class="device-card anim-fadeInUp anim-delay-{{index}}" wx:for="{{devices}}" wx:key="id" wx:for-index="index">
+    <view class="device-icon-wrap">
+      <text class="device-icon">📡</text>
+    </view>
+    <view class="device-body">
+      <text class="device-name">{{item.name}}</text>
+      <text class="device-id">{{item.deviceId}}</text>
+    </view>
+    <view class="device-status {{item.connected ? 'conn-on' : 'conn-off'}}">
+      <view class="device-status-dot"></view>
+      <text class="device-status-text">{{item.connected ? '已连接' : '未连接'}}</text>
+    </view>
+  </view>
+</view>
+
+<view class="section-label">快速操作</view>
+<view class="action-row">
+  <view class="action-btn" bindtap="scanDevice">
+    <text class="action-btn-icon">🔍</text>
+    <text class="action-btn-text">搜索设备</text>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

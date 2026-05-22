@@ -1,0 +1,86 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">添加事件</text>
+    <text class="header-sub">创建新的定时提醒</text>
+  </view>
+</view>
+
+<!-- 表单卡片 -->
+<view class="form-card anim-fadeInUp">
+  <!-- 事件名称 -->
+  <view class="form-section">
+    <view class="form-label">事件名称</view>
+    <input class="form-input" type="text" placeholder="请输入事件名称" placeholder-class="form-ph" value="{{eventName}}" bindinput="event_name_input"/>
+  </view>
+
+  <!-- 提醒日期 -->
+  <view class="form-section">
+    <view class="form-label">事件提醒日期</view>
+    <picker class="form-picker" mode="date" value="{{eventDate}}" bindchange="eventDateInput">
+      <view class="form-picker-display">{{eventDate || '请选择日期'}}</view>
+    </picker>
+  </view>
+
+  <!-- 重复提醒 -->
+  <view class="form-section">
+    <view class="form-label">重复提醒</view>
+    <picker class="form-picker" range="{{repeatOptions}}" value="{{repeatIndex}}" bindchange="onRepeatChange">
+      <view class="form-picker-display">{{repeatOptions[repeatIndex] || '请选择重复周期'}}</view>
+    </picker>
+  </view>
+
+  <!-- 事件时间 -->
+  <view class="form-section">
+    <view class="form-label">事件时间</view>
+    <picker class="form-picker" mode="time" value="{{eventTime}}" bindchange="eventTimeInput">
+      <view class="form-picker-display">{{eventTime || '请选择时间'}}</view>
+    </picker>
+  </view>
+
+  <!-- 优先级 -->
+  <view class="form-section">
+    <view class="form-label">优先级</view>
+    <view class="priority-row">
+      <view class="pri-opt {{priorityIndex === 0 ? 'pri-active pri-low' : ''}}" data-index="0" bindtap="onPriorityChange">低</view>
+      <view class="pri-opt {{priorityIndex === 1 ? 'pri-active pri-mid' : ''}}" data-index="1" bindtap="onPriorityChange">中</view>
+      <view class="pri-opt {{priorityIndex === 2 ? 'pri-active pri-high' : ''}}" data-index="2" bindtap="onPriorityChange">高</view>
+    </view>
+    <text class="form-hint">多个事件同时提醒时，将按优先级依次播报</text>
+  </view>
+
+  <!-- 绑定设备号 -->
+  <view class="form-section">
+    <view class="form-label">绑定设备号</view>
+    <input class="form-input" type="text" placeholder="请输入设备号" placeholder-class="form-ph" value="{{machines}}" bindinput="machines_input"/>
+  </view>
+
+  <!-- 事件描述 -->
+  <view class="form-section">
+    <view class="form-label">事件描述</view>
+    <textarea class="form-textarea" placeholder="请输入事件描述（实际提醒话语）" placeholder-class="form-ph" value="{{description}}" bindinput="event_info_input"/>
+  </view>
+
+  <!-- 按钮组 -->
+  <view class="form-actions">
+    <view class="btn-save" bindtap="save_event">
+      <text class="btn-save-text">保存事件</text>
+    </view>
+    <navigator class="btn-back" url="/pages/elementList/elementList" open-type="navigateBack">
+      <text class="btn-back-text">返回列表</text>
+    </navigator>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

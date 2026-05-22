@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "health-bar": "/components/health-bar/health-bar",
+    "alert-modal": "/components/alert-modal/alert-modal"
+  }
+}

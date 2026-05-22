@@ -1,0 +1,39 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">功能说明</text>
+    <text class="header-sub">了解各项功能的使用方法</text>
+  </view>
+</view>
+
+<!-- 说明卡片列表 -->
+<view class="info-list">
+  <view class="info-card anim-fadeInUp anim-delay-1" wx:for="{{sections}}" wx:key="id" bindtap="toggleSection" data-id="{{item.id}}">
+    <view class="info-card-header">
+      <view class="info-card-icon-wrap" style="background: {{item.color}};">
+        <text class="info-card-icon">{{item.icon}}</text>
+      </view>
+      <view class="info-card-body">
+        <text class="info-card-title">{{item.title}}</text>
+        <text class="info-card-hint">点击查看详情</text>
+      </view>
+      <text class="info-card-toggle {{item.open ? 'toggle-open' : ''}}">▼</text>
+    </view>
+    <view class="info-card-content {{item.open ? 'content-open' : ''}}">
+      <text class="info-card-desc">{{item.desc}}</text>
+    </view>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

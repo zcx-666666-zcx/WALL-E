@@ -1,0 +1,131 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题区 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">AI 调试</text>
+    <text class="header-sub">人设配置与对话测试</text>
+  </view>
+  <view class="header-actions">
+    <view class="icon-btn" bindtap="clearChat">
+      <text class="icon-btn-icon">🗑️</text>
+    </view>
+  </view>
+</view>
+
+<!-- ══ 聊天区域 ══ -->
+<view class="chat-card">
+  <scroll-view class="chat-scroll" scroll-y="{{true}}" scroll-into-view="msg-bottom">
+
+    <!-- 空状态 -->
+    <view class="chat-empty" wx:if="{{messages.length === 0}}">
+      <text class="chat-empty-icon">🤖</text>
+      <text class="chat-empty-text">发送消息开始调试 AI 人设</text>
+    </view>
+
+    <!-- 消息列表 -->
+    <block wx:for="{{messages}}" wx:key="index">
+
+      <!-- 用户消息 -->
+      <view class="msg-row msg-row-user" wx:if="{{item.type === 'user'}}">
+        <view class="msg-bubble msg-bubble-user">
+          <text class="msg-text">{{item.content}}</text>
+        </view>
+        <view class="msg-avatar msg-avatar-user">
+          <text class="avatar-text">我</text>
+        </view>
+      </view>
+
+      <!-- AI 消息 -->
+      <view class="msg-row msg-row-ai" wx:if="{{item.type === 'ai'}}">
+        <view class="msg-avatar msg-avatar-ai">
+          <text class="avatar-text">AI</text>
+        </view>
+        <view class="msg-bubble msg-bubble-ai">
+          <text class="msg-text">{{item.content}}</text>
+        </view>
+      </view>
+
+    </block>
+
+    <!-- 加载中 -->
+    <view class="msg-row msg-row-ai" wx:if="{{isLoading}}">
+      <view class="msg-avatar msg-avatar-ai">
+        <text class="avatar-text">AI</text>
+      </view>
+      <view class="msg-bubble msg-bubble-ai msg-loading">
+        <text class="loading-dot">●</text>
+        <text class="loading-dot">●</text>
+        <text class="loading-dot">●</text>
+      </view>
+    </view>
+
+    <view id="msg-bottom" style="height:1rpx;"></view>
+  </scroll-view>
+
+  <!-- 输入栏 -->
+  <view class="input-bar">
+    <input
+      class="input-field"
+      placeholder="输入消息测试..."
+      placeholder-class="input-ph"
+      value="{{user_message}}"
+      bindinput="onInputChange"
+      bindconfirm="onConfirm"
+      confirm-type="send"
+    />
+    <view class="send-btn {{isLoading ? 'send-btn-disabled' : ''}}" bindtap="onSendTap">
+      <text class="send-btn-text">发送</text>
+    </view>
+  </view>
+</view>
+
+<!-- ══ 快捷操作栏 ══ -->
+<view class="action-row">
+  <view class="act-chip act-clear" bindtap="clearChat">
+    <text class="act-chip-icon">🗑️</text>
+    <text class="act-chip-text">清空对话</text>
+  </view>
+  <view class="act-chip act-del" bindtap="deleteAllMessages">
+    <text class="act-chip-icon">⛔</text>
+    <text class="act-chip-text">删除测试数据</text>
+  </view>
+</view>
+
+<!-- ══ 人设配置卡片 ══ -->
+<view class="setting-card">
+  <view class="setting-header">
+    <view class="setting-header-left">
+      <view class="setting-dot"></view>
+      <text class="setting-title">人设配置</text>
+    </view>
+    <view class="get-btn" bindtap="getCurrentStyle">
+      <text class="get-btn-text">获取当前人设</text>
+    </view>
+  </view>
+
+  <textarea
+    class="setting-textarea"
+    placeholder="描述 AI 的性格、说话风格和背景信息…"
+    placeholder-class="setting-ph"
+    value="{{styleConfig}}"
+    bindinput="onStyleConfigChange"
+  ></textarea>
+
+  <view class="submit-btn" bindtap="submitStyle">
+    <text class="submit-btn-text">提交人设设置</text>
+    <text class="submit-btn-arrow">→</text>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+
+</view>

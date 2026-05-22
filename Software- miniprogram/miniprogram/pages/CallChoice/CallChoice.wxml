@@ -1,0 +1,129 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题区 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">远程监护</text>
+    <text class="header-sub">WebRTC 实时视频连接</text>
+  </view>
+  <view class="status-chip status-chip-{{isJoined ? 'on' : 'off'}}">
+    <view class="status-chip-dot"></view>
+    <text class="status-chip-text">{{isJoined ? '已连接' : '未连接'}}</text>
+  </view>
+</view>
+
+<!-- ══ 双视频区域 ══ -->
+<view class="video-section">
+
+  <!-- 远端大画面 -->
+  <view class="video-main">
+    <video
+      id="remoteVideo"
+      autoplay
+      show-center-play-btn="{{false}}"
+      object-fit="cover"
+      class="video-el"
+    ></video>
+    <view class="video-overlay"></view>
+    <view class="video-label">
+      <view class="label-dot"></view>
+      <text class="label-text">远端视频</text>
+    </view>
+    <view class="video-placeholder" wx:if="{{!isJoined}}">
+      <text class="placeholder-icon">📹</text>
+      <text class="placeholder-text">等待远端接入</text>
+    </view>
+  </view>
+
+  <!-- 本地小画面（悬浮右下角） -->
+  <view class="video-pip">
+    <video
+      id="localVideo"
+      autoplay
+      muted
+      show-center-play-btn="{{false}}"
+      object-fit="cover"
+      class="video-el"
+    ></video>
+    <view class="pip-label">本地</view>
+    <view class="video-placeholder pip-placeholder" wx:if="{{!isJoined}}">
+      <text class="placeholder-icon-sm">👤</text>
+    </view>
+  </view>
+
+</view>
+
+<!-- ══ 控制面板 ══ -->
+<view class="section-label">通话控制</view>
+<view class="control-card">
+
+  <!-- 房间号 -->
+  <view class="field-group">
+    <text class="field-label">房间号</text>
+    <view class="field-wrap">
+      <text class="field-icon">🔑</text>
+      <input
+        class="field-input"
+        value="{{roomId}}"
+        bindinput="onRoomInput"
+        placeholder="请输入房间号"
+        placeholder-class="field-ph"
+      />
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="btn-row">
+    <button class="ctrl-btn btn-join" bindtap="joinRoom">
+      <text class="ctrl-btn-icon">🚪</text>
+      <text class="ctrl-btn-text">加入房间</text>
+    </button>
+    <button class="ctrl-btn btn-call {{!isJoined ? 'btn-disabled' : ''}}" bindtap="startCall" disabled="{{!isJoined}}">
+      <text class="ctrl-btn-icon">🎥</text>
+      <text class="ctrl-btn-text">发起通话</text>
+    </button>
+  </view>
+
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <view class="status-bar-dot status-bar-dot-{{isJoined ? 'on' : 'off'}}"></view>
+    <text class="status-bar-text">{{statusText}}</text>
+  </view>
+
+  <!-- 连接信息 -->
+  <view class="conn-info">
+    <view class="conn-row">
+      <text class="conn-label">服务器</text>
+      <text class="conn-val">{{SERVER_URL}}</text>
+    </view>
+    <view class="conn-row">
+      <text class="conn-label">协议</text>
+      <text class="conn-val">WebRTC / WebSocket</text>
+    </view>
+  </view>
+
+</view>
+
+<!-- ══ 日志区 ══ -->
+<view class="section-label">通话日志</view>
+<view class="log-card">
+  <scroll-view class="log-scroll" scroll-y="{{true}}" scroll-into-view="log-bottom">
+    <view wx:for="{{logs}}" wx:key="index" class="log-item">
+      <text class="log-time">{{item.time}}</text>
+      <text class="log-msg">{{item.msg}}</text>
+    </view>
+    <view id="log-bottom"></view>
+  </scroll-view>
+</view>
+
+<view style="height: 60rpx;"></view>
+
+</view>
