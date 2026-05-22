@@ -104,6 +104,9 @@
     localStorage.removeItem('Id')
     router.push('/login')
   }
+  const openPiCamera = () => {
+    window.open('http://10.163.217.97:5000', '_blank')
+  }
 
   const menuItems = [
     { path: '/index', icon: 'HomeFilled', label: '首页', class: 'menu-home' },
@@ -117,7 +120,8 @@
     { path: '/command', icon: 'List', label: '命令查询' },
     { type: 'label', label: '监护功能' },
     { path: '/video', icon: 'VideoCamera', label: '远程监护' },
-    { path: '/drive', icon: 'Switch', label: '远程遥控' },
+    //{ path: '/drive', icon: 'Switch', label: '远程遥控' },
+    { action: openPiCamera, icon: 'VideoCamera', label: '远程遥控' },
     { path: '/healthy', icon: 'CirclePlusFilled', label: '健康监测' },
     { type: 'label', label: '系统' },
     { path: '/connections', icon: 'Link', label: '更多连接' },
