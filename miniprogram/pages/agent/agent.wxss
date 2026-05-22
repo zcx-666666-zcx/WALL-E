@@ -1,158 +1,262 @@
 /* pages/agent/agent.wxss */
-.container1{
-  height: 100%;
+
+/* ══ 根容器 ══ */
+.root {
+  min-height: 100vh;
   width: 100%;
-  position: absolute;
-  background-color: #d6d6d6;
-}
-.chat{
-  height: 65%;
-  width: 94%;
-  margin: 2.5% 3%;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  border: 2rpx solid rgb(82, 82, 82);
-  background-color: #ffffff;
+  background: #e9e3df;
   display: flex;
   flex-direction: column;
-}
-#title{
-  height: 8%;
-  width: 100%;
-  border-bottom: 2rpx solid #e0e0e0;
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  background-color: #4a90e2;
-  color: white;
-  font-weight: bold;
-  font-size: 32rpx;
-}
-.talk{
-  height: 80%;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 20rpx;
-  overflow-y: auto;
   box-sizing: border-box;
+  padding-bottom: 40rpx;
+  position: relative;
+  overflow: hidden;
 }
-#send {
-  height: 12%;
-  width: 100%;
-  background: rgb(241, 241, 241);
-  border-top: 1rpx solid #f0f0f0;
-  border-radius: 0 0 20rpx 20rpx;
-  box-sizing: border-box;
-  display: flex;
-  text-align: left;
-  justify-content: center;
-  align-items: center;
+
+/* ══ 顶部背景 ══ */
+.top-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 320rpx;
+  background: linear-gradient(160deg, #FF9A76 0%, #FF6040 60%, #E84020 100%);
+  z-index: 0;
+  border-radius: 0 0 56rpx 56rpx;
 }
-#send_text {
-  flex: 1;
-  height: 50%;
-  width: 75%;
-  margin: 0 1.5% 0 2%;
-  background: #f8f9fa;
-  border: 2rpx solid #cacaca;
-  border-radius: 10rpx;
-  padding: 20rpx 32rpx;
-  font-size: 30rpx;
-  color: #333;
+.orb {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; z-index: 1;
 }
-#send_button {
-  width: 20%;
-  height: 80rpx;
-  color: white;
-  background-color: rgb(37, 187, 0);
-  margin: 0 2% 0 1.5%;
-  border-radius: 10rpx;
-  font-size: 29rpx;
-  font-weight: 600;
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
+.orb-1 {
+  width: 360rpx; height: 360rpx;
+  top: -100rpx; right: -60rpx;
+  background: radial-gradient(circle, rgba(255,220,180,0.2) 0%, transparent 70%);
 }
-#send_button:active{
-  background-color: rgb(25, 128, 0);
+.orb-2 {
+  width: 260rpx; height: 260rpx;
+  top: 160rpx; left: -50rpx;
+  background: radial-gradient(circle, rgba(255,160,100,0.12) 0%, transparent 70%);
 }
-.set{
-  height: 31%;
-  width: 94%;
-  margin: 2.5% 3%;
-  border: 2rpx solid rgb(82, 82, 82);
-  border-radius: 8rpx;
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
+
+/* ══ 顶部标题 ══ */
+.header {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: space-between;
+  padding: 188rpx 40rpx 24rpx;
 }
-#title_2{
-  height: 15%;
-  width: 100%;
-  border-bottom: 2rpx solid #e0e0e0;
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  background-color: #ca8a00;
-  color: white;
-  font-weight: bold;
-  font-size: 32rpx;
+.header-left { display: flex; flex-direction: column; gap: 6rpx; }
+.header-title { font-size: 44rpx; font-weight: 800; color: #FFFFFF; letter-spacing: 2rpx; }
+.header-sub   { font-size: 22rpx; color: rgba(255,255,255,0.65); }
+
+.header-actions { display: flex; flex-direction: row; gap: 12rpx; }
+.icon-btn {
+  width: 64rpx; height: 64rpx; border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1rpx solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
 }
-#set_text{
-  height: 82%;
-  width: 100%;
-  padding: 20rpx;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+.icon-btn-icon { font-size: 28rpx; }
+
+/* ══ 聊天卡片 ══ */
+.chat-card {
+  position: relative; z-index: 10;
+  margin: 0 32rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(255,160,120,0.12);
+  box-shadow: 0 4rpx 20rpx rgba(200,90,50,0.07);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  height: 560rpx;
 }
-#set_text textarea{
-  flex: 1;
-  width: 100%;
-  background-color: #f8f8f8;
-  border: 2rpx solid #ddd;
-  border-radius: 12rpx;
-  padding: 20rpx;
-  font-size: 28rpx;
-  margin-bottom: 20rpx;
-  box-sizing: border-box;
+
+.chat-scroll {
+  flex: 1; padding: 24rpx 20rpx 12rpx;
+  background: #FFFAF7;
 }
-#set_text button{
-  width: 90%;
-  height: 65rpx;
-  background-color: rgb(37, 187, 0);
-  color: white;
-  border: none;
-  border-radius: 10rpx;
-  font-size: 32rpx;
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
+
+/* 空状态 */
+.chat-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80rpx 40rpx; gap: 14rpx;
 }
-#set_text button:active{
-  background-color: rgb(25, 128, 0);
+.chat-empty-icon { font-size: 56rpx; }
+.chat-empty-text { font-size: 24rpx; color: #C4A898; text-align: center; }
+
+/* 消息行 */
+.msg-row {
+  display: flex; flex-direction: row;
+  margin-bottom: 24rpx; align-items: flex-end; gap: 12rpx;
 }
-/* 消息样式 */
-.message{
-  margin-bottom: 20rpx;
+.msg-row-user { justify-content: flex-end; }
+.msg-row-ai   { justify-content: flex-start; }
+
+/* 头像 */
+.msg-avatar {
+  width: 56rpx; height: 56rpx; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.msg-avatar-user {
+  background: linear-gradient(135deg, #FF9A76, #FF6040);
+  order: 2;
+}
+.msg-avatar-ai {
+  background: linear-gradient(135deg, #FFE0C8, #FFD0B0);
+}
+.avatar-text { font-size: 18rpx; font-weight: 700; color: white; }
+.msg-avatar-ai .avatar-text { color: #C06030; }
+
+/* 气泡 */
+.msg-bubble {
+  max-width: 72%;
+  padding: 18rpx 22rpx;
+  border-radius: 20rpx;
+  word-break: break-all;
+}
+.msg-bubble-user {
+  background: linear-gradient(135deg, #FF9A76, #FF6040);
+  border-bottom-right-radius: 6rpx;
+  order: 1;
+}
+.msg-bubble-ai {
+  background: #FFFFFF;
+  border: 1rpx solid rgba(255,160,120,0.2);
+  border-bottom-left-radius: 6rpx;
+  box-shadow: 0 2rpx 8rpx rgba(200,90,50,0.06);
+}
+.msg-text { font-size: 26rpx; line-height: 1.65; }
+.msg-bubble-user .msg-text { color: white; }
+.msg-bubble-ai   .msg-text { color: #3A2010; }
+
+/* 加载动画 */
+.msg-loading {
+  display: flex; flex-direction: row;
+  align-items: center; gap: 8rpx;
+  padding: 20rpx 28rpx;
+}
+.loading-dot {
+  font-size: 18rpx; color: #C4A898;
+  animation: blink 1.2s ease infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* 输入栏 */
+.input-bar {
+  display: flex; flex-direction: row; align-items: center;
   padding: 16rpx 20rpx;
+  background: #FFFFFF;
+  border-top: 1rpx solid rgba(255,160,120,0.1);
+  gap: 14rpx;
+}
+.input-field {
+  flex: 1; height: 72rpx;
+  background: #FFF8F5;
+  border: 1rpx solid rgba(255,160,120,0.2);
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  font-size: 26rpx; color: #3A2010;
+  box-sizing: border-box;
+}
+.input-ph { color: rgba(180,140,120,0.55); font-size: 26rpx; }
+
+.send-btn {
+  width: 120rpx; height: 72rpx;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  border-radius: 36rpx;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4rpx 14rpx rgba(255,96,64,0.3);
+  flex-shrink: 0;
+}
+.send-btn:active { opacity: 0.85; }
+.send-btn-disabled {
+  background: #EDE8E4 !important;
+  box-shadow: none !important;
+}
+.send-btn-text { font-size: 26rpx; font-weight: 700; color: white; }
+.send-btn-disabled .send-btn-text { color: #B0A098; }
+
+/* ══ 快捷操作栏 ══ */
+.action-row {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: row;
+  gap: 16rpx; padding: 20rpx 32rpx 0;
+}
+.act-chip {
+  flex: 1; height: 72rpx;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: center; gap: 8rpx;
   border-radius: 16rpx;
-  max-width: 80%;
-  word-wrap: break-word;
-  font-size: 28rpx;
-  line-height: 1.4;
 }
-.user-message{
-  background-color: #4a90e2;
-  color: white;
-  margin-left: auto;
+.act-chip:active { opacity: 0.8; }
+.act-clear {
+  background: #FFF0E8;
+  border: 1rpx solid rgba(220,120,80,0.2);
 }
-.ai-message{
-  background-color: #e0e0e0;
-  color: #333;
-  margin-right: auto;
+.act-del {
+  background: #FFF0F0;
+  border: 1rpx solid rgba(220,80,80,0.15);
 }
+.act-chip-icon { font-size: 24rpx; }
+.act-clear .act-chip-text { font-size: 24rpx; font-weight: 600; color: #C06030; }
+.act-del   .act-chip-text { font-size: 24rpx; font-weight: 600; color: #C03030; }
+
+/* ══ 人设配置卡片 ══ */
+.setting-card {
+  position: relative; z-index: 10;
+  margin: 20rpx 32rpx 0;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 28rpx 24rpx 20rpx;
+  border: 1rpx solid rgba(255,160,120,0.12);
+  box-shadow: 0 4rpx 16rpx rgba(200,90,50,0.06);
+  display: flex; flex-direction: column; gap: 18rpx;
+}
+
+.setting-header {
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: space-between;
+}
+.setting-header-left {
+  display: flex; flex-direction: row; align-items: center; gap: 10rpx;
+}
+.setting-dot {
+  width: 10rpx; height: 10rpx; border-radius: 50%;
+  background: linear-gradient(135deg, #FF9A76, #FF6040);
+}
+.setting-title { font-size: 28rpx; font-weight: 700; color: #3A2010; }
+
+.get-btn {
+  background: #FFF0E8;
+  border: 1rpx solid rgba(220,120,80,0.22);
+  border-radius: 100rpx; padding: 8rpx 20rpx;
+}
+.get-btn:active { background: #FFE4D4; }
+.get-btn-text { font-size: 22rpx; font-weight: 600; color: #C06030; }
+
+.setting-textarea {
+  width: 100%; height: 160rpx;
+  background: #FFF8F5;
+  border: 1rpx solid rgba(255,160,120,0.2);
+  border-radius: 16rpx;
+  padding: 18rpx 20rpx;
+  font-size: 26rpx; color: #3A2010;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+.setting-ph { color: rgba(180,140,120,0.55); font-size: 26rpx; }
+
+.submit-btn {
+  width: 100%; height: 88rpx;
+  background: linear-gradient(90deg, #FF9A76, #FF6040);
+  border-radius: 20rpx;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: center; gap: 10rpx;
+  box-shadow: 0 6rpx 20rpx rgba(255,96,64,0.3);
+}
+.submit-btn:active { opacity: 0.85; }
+.submit-btn-text  { font-size: 28rpx; font-weight: 700; color: white; letter-spacing: 2rpx; }
+.submit-btn-arrow { font-size: 28rpx; color: rgba(255,255,255,0.8); }

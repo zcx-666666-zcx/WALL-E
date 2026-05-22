@@ -1,0 +1,47 @@
+<view class="am-root" wx:if="{{show}}" catchtouchmove="preventTouchMove">
+  <view class="am-backdrop anim-fadeIn" bindtap="onDismiss"></view>
+
+  <view class="am-card {{dismissing ? 'am-card-out' : 'anim-scaleIn'}}">
+    <view class="am-close" bindtap="onDismiss" hover-class="am-close-hover">
+      <text>✕</text>
+    </view>
+
+    <view class="am-icon-wrap anim-pulseDanger">
+      <text class="am-icon">⚠️</text>
+    </view>
+
+    <text class="am-title">健康警告</text>
+    <text class="am-content">检测到用户出现{{alertText}}，请及时关注！</text>
+
+    <view class="am-stats">
+      <view class="am-stat">
+        <text class="am-stat-label">心率</text>
+        <text class="am-stat-val {{rateStatus}}">{{rate === -1 ? '--' : rate}}</text>
+      </view>
+      <view class="am-stat-sep"></view>
+      <view class="am-stat">
+        <text class="am-stat-label">体温</text>
+        <text class="am-stat-val {{tempStatus}}">{{temperature === -1 ? '--' : temperature}}</text>
+      </view>
+      <view class="am-stat-sep"></view>
+      <view class="am-stat">
+        <text class="am-stat-label">湿度</text>
+        <text class="am-stat-val {{humidStatus}}">{{humidity === -1 ? '--' : humidity}}</text>
+      </view>
+      <view class="am-stat-sep"></view>
+      <view class="am-stat">
+        <text class="am-stat-label">呼吸</text>
+        <text class="am-stat-val {{breatheStatus}}">{{breathe === -1 ? '--' : breathe}}</text>
+      </view>
+    </view>
+
+    <view class="am-btn" bindtap="onViewDetail" hover-class="am-btn-hover">
+      <text class="am-btn-text">立即查看</text>
+      <text class="am-btn-arrow">→</text>
+    </view>
+
+    <view class="am-snooze" bindtap="onSnooze" hover-class="am-snooze-hover">
+      <text>我已知晓，不再弹出</text>
+    </view>
+  </view>
+</view>

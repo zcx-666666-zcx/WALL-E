@@ -5,62 +5,33 @@ Page({
     can_element_call: '开启',
     is_AI: '开启',
     open_robot_camera: '开启',
-    can_content: '开启'
+    can_content: '开启',
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad() {
-
+    const app = getApp();
+    this.setData({
+      can_speak_control: app.globalData.can_speak_control || '开启',
+      can_element_call: app.globalData.can_element_call || '开启',
+      is_AI: app.globalData.is_AI || '开启',
+      open_robot_camera: app.globalData.open_robot_camera || '开启',
+      can_content: app.globalData.can_content || '开启',
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
+  toggleSetting(e: any) {
+    const key = e.currentTarget.dataset.key;
+    const app = getApp();
+    const current = this.data[key] || '开启';
+    const next = current === '开启' ? '关闭' : '开始';
 
+    app.globalData[key] = next;
+    this.setData({ [key]: next });
+
+    wx.showToast({
+      title: `${next === '开启' ? '已开启' : '已关闭'}`,
+      icon: 'none',
+      duration: 1200,
+    });
   },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
-})
+});

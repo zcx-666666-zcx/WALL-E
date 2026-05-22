@@ -1,13 +1,91 @@
-<!--pages/user/user.wxml-->
-<scroll-view class="container1" scroll-y="">
-  <image class="bg-image" src="{{image_ip}}" alt=""/>
-  <view id="user"><text style="{{username_style}}">{{username}}</text></view>
-  <view class="container2">
-    <view id="add_call_for">联系人</view>
-    <view id="set"><navigator url="/pages/set/set">功能设置</navigator></view>
-    <view id="events">事件提醒记录</view>
-    <view id="command">产品端指令记录</view>
-    <view id="Star">星闪智能连接设备管理</view>
-    <view id="exit" bind:tap="exit">退出登录</view>
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部用户区 -->
+<view class="header">
+  <view class="header-left">
+    <view class="avatar">
+      <text class="avatar-text">{{username ? username[0] : 'U'}}</text>
+    </view>
+    <view class="header-info">
+      <text class="header-name">{{username || '用户'}}</text>
+      <text class="header-sub">个人中心</text>
+    </view>
   </view>
-</scroll-view>
+</view>
+
+<!-- 功能菜单卡片 -->
+<view class="section-label">功能菜单</view>
+<view class="menu-cards">
+  <view class="menu-card anim-fadeInUp anim-delay-1" bindtap="goToContact">
+    <view class="menu-card-icon-wrap icon-contact">
+      <text class="menu-card-icon">👥</text>
+    </view>
+    <view class="menu-card-body">
+      <text class="menu-card-title">联系人</text>
+      <text class="menu-card-sub">管理紧急联系人</text>
+    </view>
+    <text class="menu-card-arrow">→</text>
+  </view>
+
+  <navigator class="menu-card anim-fadeInUp anim-delay-2" url="/pages/set/set" hover-class="card-hover">
+    <view class="menu-card-icon-wrap icon-settings">
+      <text class="menu-card-icon">⚙️</text>
+    </view>
+    <view class="menu-card-body">
+      <text class="menu-card-title">功能设置</text>
+      <text class="menu-card-sub">管理功能开关</text>
+    </view>
+    <text class="menu-card-arrow">→</text>
+  </navigator>
+
+  <view class="menu-card anim-fadeInUp anim-delay-3" bindtap="goToEvents">
+    <view class="menu-card-icon-wrap icon-events">
+      <text class="menu-card-icon">📋</text>
+    </view>
+    <view class="menu-card-body">
+      <text class="menu-card-title">事件提醒记录</text>
+      <text class="menu-card-sub">查看历史事件</text>
+    </view>
+    <text class="menu-card-arrow">→</text>
+  </view>
+
+  <view class="menu-card anim-fadeInUp anim-delay-4" bindtap="goToCommands">
+    <view class="menu-card-icon-wrap icon-commands">
+      <text class="menu-card-icon">📝</text>
+    </view>
+    <view class="menu-card-body">
+      <text class="menu-card-title">指令记录</text>
+      <text class="menu-card-sub">查看产品端指令</text>
+    </view>
+    <text class="menu-card-arrow">→</text>
+  </view>
+
+  <view class="menu-card anim-fadeInUp anim-delay-5" bindtap="goToStar">
+    <view class="menu-card-icon-wrap icon-star">
+      <text class="menu-card-icon">⭐</text>
+    </view>
+    <view class="menu-card-body">
+      <text class="menu-card-title">星闪连接</text>
+      <text class="menu-card-sub">智能连接设备管理</text>
+    </view>
+    <text class="menu-card-arrow">→</text>
+  </view>
+</view>
+
+<!-- 退出按钮 -->
+<view class="exit-area">
+  <view class="exit-btn anim-fadeInUp anim-delay-6" bindtap="exit">
+    <text class="exit-btn-text">退出登录</text>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

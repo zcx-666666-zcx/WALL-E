@@ -1,59 +1,19 @@
 // pages/commandList/commandList.ts
 Page({
   data: {
-    element_list: [],
+    commands: [] as { id: number; time: string; content: string; status: string; reply: string }[],
   },
-  
+
   onLoad() {
-
+    this.loadCommands();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
   onShow() {
-
+    this.loadCommands();
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  loadCommands() {
+    const stored = wx.getStorageSync('command_history') || [];
+    this.setData({ commands: stored.slice(0, 50) });
   },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
-})
+});

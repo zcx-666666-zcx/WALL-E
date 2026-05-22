@@ -1,11 +1,89 @@
-<!--pages/set/set.wxml-->
-<scroll-view scroll-y="" class="container1">
-  <image class="bg-image" src="/images/menu_container1.jpg" mode=""/>
-  <view class="container2">
-    <view id="speak_control" bindtap="can_speaak">机器人语音控制<text>{{can_speak_control}}</text></view>
-    <view id="element_call" bindtap="can_element">事件提醒<text>{{can_element_call}}</text></view>
-    <view id="AI" bindtap="can_AI">AI陪伴<text>{{is_AI}}</text></view>
-    <view id="robot_camera" bindtap="can_camera">机器人摄像头权限<text>{{open_robot_camera}}</text></view>
-    <view id="content" bindtap="can_content">更多连接<text>{{can_content}}</text></view>
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<!-- 顶部暖色背景 -->
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<!-- 顶部标题 -->
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">功能设置</text>
+    <text class="header-sub">管理各项功能的开关状态</text>
   </view>
-</scroll-view>
+</view>
+
+<!-- 设置列表 -->
+<view class="section-label">功能开关</view>
+<view class="setting-list">
+  <view class="setting-card anim-fadeInUp anim-delay-1" bindtap="toggleSetting" data-key="can_speak_control">
+    <view class="setting-icon-wrap icon-speak">
+      <text class="setting-icon">🎤</text>
+    </view>
+    <view class="setting-body">
+      <text class="setting-title">机器人语音控制</text>
+      <text class="setting-desc">允许通过语音指令控制机器人</text>
+    </view>
+    <view class="setting-toggle {{can_speak_control === '开启' ? 'toggle-on' : 'toggle-off'}}">
+      <view class="toggle-knob"></view>
+    </view>
+  </view>
+
+  <view class="setting-card anim-fadeInUp anim-delay-2" bindtap="toggleSetting" data-key="can_element_call">
+    <view class="setting-icon-wrap icon-event">
+      <text class="setting-icon">📋</text>
+    </view>
+    <view class="setting-body">
+      <text class="setting-title">事件提醒</text>
+      <text class="setting-desc">开启后机器人将按时播报事件提醒</text>
+    </view>
+    <view class="setting-toggle {{can_element_call === '开启' ? 'toggle-on' : 'toggle-off'}}">
+      <view class="toggle-knob"></view>
+    </view>
+  </view>
+
+  <view class="setting-card anim-fadeInUp anim-delay-3" bindtap="toggleSetting" data-key="is_AI">
+    <view class="setting-icon-wrap icon-ai">
+      <text class="setting-icon">🤖</text>
+    </view>
+    <view class="setting-body">
+      <text class="setting-title">AI 陪伴</text>
+      <text class="setting-desc">开启 AI 智能对话陪伴功能</text>
+    </view>
+    <view class="setting-toggle {{is_AI === '开启' ? 'toggle-on' : 'toggle-off'}}">
+      <view class="toggle-knob"></view>
+    </view>
+  </view>
+
+  <view class="setting-card anim-fadeInUp anim-delay-4" bindtap="toggleSetting" data-key="open_robot_camera">
+    <view class="setting-icon-wrap icon-camera">
+      <text class="setting-icon">📷</text>
+    </view>
+    <view class="setting-body">
+      <text class="setting-title">机器人摄像头权限</text>
+      <text class="setting-desc">允许 App 访问机器人摄像头画面</text>
+    </view>
+    <view class="setting-toggle {{open_robot_camera === '开启' ? 'toggle-on' : 'toggle-off'}}">
+      <view class="toggle-knob"></view>
+    </view>
+  </view>
+
+  <view class="setting-card anim-fadeInUp anim-delay-5" bindtap="toggleSetting" data-key="can_content">
+    <view class="setting-icon-wrap icon-connect">
+      <text class="setting-icon">🔗</text>
+    </view>
+    <view class="setting-body">
+      <text class="setting-title">更多连接</text>
+      <text class="setting-desc">开启星闪及其他设备连接功能</text>
+    </view>
+    <view class="setting-toggle {{can_content === '开启' ? 'toggle-on' : 'toggle-off'}}">
+      <view class="toggle-knob"></view>
+    </view>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

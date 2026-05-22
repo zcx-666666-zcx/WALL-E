@@ -1,66 +1,57 @@
 // pages/contact/contact.ts
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    contacts: [] as { id: number; name: string; phone: string }[],
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad() {
-
+    this.loadContacts();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
   onShow() {
-
+    this.loadContacts();
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  loadContacts() {
+    const stored = wx.getStorageSync('emergency_contacts') || [];
+    this.setData({ contacts: stored });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  addContact() {
+    wx.showModal({
+      title: '添加联系人',
+      editable: true,
+      placeholderText: '请输入联系人姓名',
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const name = res.content.trim();
+          wx.showModal({
+            title: '输入电话',
+            editable: true,
+            placeholderText: '请输入电话号码',
+            success: (res2) => {
+              if (res2.confirm && res2.content) {
+                const contacts = this.data.contacts;
+                contacts.push({
+                  id: Date.now(),
+                  name,
+                  phone: res2.content.trim(),
+                });
+                this.setData({ contacts });
+                wx.setStorageSync('emergency_contacts', contacts);
+                wx.showToast({ title: '添加成功', icon: 'success' });
+              }
+            }
+          });
+        }
+      }
+    });
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
+  callContact(e: any) {
+    const phone = e.currentTarget.dataset.phone;
+    if (phone) {
+      wx.makePhoneCall({ phoneNumber: phone });
+    }
   },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
-})
+});

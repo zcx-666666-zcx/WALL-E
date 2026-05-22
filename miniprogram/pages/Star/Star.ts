@@ -1,66 +1,26 @@
 // pages/Star/Star.ts
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    devices: [] as { id: number; name: string; deviceId: string; connected: boolean }[],
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad() {
-
+    this.loadDevices();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
   onShow() {
-
+    this.loadDevices();
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  loadDevices() {
+    const stored = wx.getStorageSync('star_devices') || [];
+    this.setData({ devices: stored });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  scanDevice() {
+    wx.showToast({ title: '搜索中...', icon: 'loading', duration: 2000 });
+    setTimeout(() => {
+      wx.showToast({ title: '暂未发现新设备', icon: 'none' });
+    }, 2000);
   },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
-})
+});

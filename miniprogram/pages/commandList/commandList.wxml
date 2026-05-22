@@ -1,0 +1,38 @@
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">指令记录</text>
+    <text class="header-sub">查看产品端指令历史</text>
+  </view>
+</view>
+
+<view class="card-list">
+  <view class="empty-state anim-fadeInUp" wx:if="{{commands.length === 0}}">
+    <text class="empty-icon">📝</text>
+    <text class="empty-title">暂无指令记录</text>
+    <text class="empty-desc">向机器人发送指令后，记录将在此显示</text>
+  </view>
+
+  <view class="cmd-card anim-fadeInUp anim-delay-{{index}}" wx:for="{{commands}}" wx:key="id" wx:for-index="index">
+    <view class="cmd-header">
+      <view class="cmd-dot"></view>
+      <text class="cmd-time">{{item.time}}</text>
+      <view class="cmd-status {{item.status === '成功' ? 'status-ok' : 'status-fail'}}">
+        <text class="cmd-status-text">{{item.status}}</text>
+      </view>
+    </view>
+    <text class="cmd-content">{{item.content}}</text>
+    <text class="cmd-reply" wx:if="{{item.reply}}">回复：{{item.reply}}</text>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>

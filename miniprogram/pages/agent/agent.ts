@@ -1,190 +1,127 @@
-// pages/agent/agent.ts
+// pages/agent/agent.js
 Page({
   data: {
     user_message: '',
     styleConfig: '',
-    messages: [] as Array<{ type: 'user' | 'ai', content: any }>,
+    messages: [],
     isLoading: false,
+    image_ip: 'https://fm98469zi591.vicp.fun/images/menu_container1.jpg'
   },
 
   onLoad() {
-    this.setData({
-      styleConfig: ''
-    });
+    this.setData({ styleConfig: '' });
   },
 
-  onInputChange(e: any) {
-    this.setData({
-      user_message: e.detail.value
-    });
+  onInputChange(e) {
+    this.setData({ user_message: e.detail.value });
   },
-
-  onStyleConfigChange(e: any) {
-    this.setData({
-      styleConfig: e.detail.value
-    });
+  onStyleConfigChange(e) {
+    this.setData({ styleConfig: e.detail.value });
   },
+  onSendTap() { this.sendMessage(); },
+  onConfirm()  { this.sendMessage(); },
 
-  onSendTap() {
-    this.sendMessage();
-  },
-
-  onConfirm() {
-    this.sendMessage();
-  },
-
-  //提交风格
-  submitStyle(e: any) {
+  // ══ 提交人设 ══
+  submitStyle() {
     const app = getApp();
     const style = this.data.styleConfig;
-    const username = app.globalData.USERNAME;
-    const content = "";
-    const time = this.formatTime()
-
-    if(!style){
-      wx.showToast({
-        title: '风格不能为空',
-        icon: 'none'
-      })
-      return;
-    }
+    if (!style) { wx.showToast({ title: '人设不能为空', icon: 'none' }); return; }
 
     wx.request({
       url: 'https://api.coze.cn/v1/workflow/run',
       method: 'POST',
-      header: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer pat_qjJdH6KguUMKmyhr9uDIr38KxfHVL9eMSfRHVOZKUiKujB4TWcKAvZfzsxbRIQuJ`
-      },
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
       data: {
         workflow_id: '7598072302836482048',
-        parameters: {
-          username,
-          content,
-          style,
-          time
-        },
+        parameters: { username: app.globalData.USERNAME, content: '', style, time: this.formatTime(), set: true, gets: false, del: false }
       },
-      success:(res)=>{
-        if (res.statusCode === 200){
-          wx.showToast({
-            title: '设置成功',
-            icon: 'none'
-          })
-          this.setData({
-            styleConfig: ''
-          })
-        }
-        else{
-          wx.showToast({
-            title: '设置失败',
-            icon: 'none'
-          })
-        }
+      success: (res) => {
+        if (res.statusCode === 200) { wx.showToast({ title: '设置成功', icon: 'success' }); this.setData({ styleConfig: '' }); }
+        else wx.showToast({ title: '设置失败', icon: 'none' });
       },
-      fail:(err)=>{
-        wx.showToast({
-          title: '请求错误',
-          icon: 'none'
-        })
-      }
-    })
+      fail: () => wx.showToast({ title: '请求失败', icon: 'none' })
+    });
   },
 
-  //获取当前时间
-  formatTime(): string {
-    const date = new Date();
-    const addZero = (num: number) => {
-      return num < 10 ? '0' + num : num.toString();
-    };
-
-    const year = date.getFullYear();
-    const month = addZero(date.getMonth() + 1);
-    const day = addZero(date.getDate());
-    const hours = addZero(date.getHours());
-    const minutes = addZero(date.getMinutes());
-    const seconds = addZero(date.getSeconds());
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  // ══ 获取当前人设 ══
+  getCurrentStyle() {
+    const app = getApp();
+    wx.showToast({ title: '获取中...', icon: 'loading' });
+    wx.request({
+      url: 'https://api.coze.cn/v1/workflow/run',
+      method: 'POST',
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
+      data: {
+        workflow_id: '7598072302836482048',
+        parameters: { username: app.globalData.USERNAME, content: '', style: '', time: this.formatTime(), set: true, gets: true, del: false }
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.data) {
+          try {
+            const data = JSON.parse(res.data.data);
+            this.setData({ styleConfig: data.style || '未获取到人设' });
+            wx.showToast({ title: '获取成功', icon: 'success' });
+          } catch (e) { wx.showToast({ title: '解析失败', icon: 'none' }); }
+        } else wx.showToast({ title: '获取失败', icon: 'none' });
+      },
+      fail: () => wx.showToast({ title: '请求失败', icon: 'none' })
+    });
   },
 
-  //发送信息
+  // ══ 清屏 ══
+  clearChat() {
+    wx.showModal({
+      title: '提示', content: '确定清空聊天记录？',
+      success: (res) => { if (res.confirm) this.setData({ messages: [] }); }
+    });
+  },
+
+  // ══ 删除测试数据 ══
+  deleteAllMessages() {
+    wx.showModal({
+      title: '警告', content: '确定删除全部测试数据？此操作不可撤销',
+      confirmColor: '#FF5A36',
+      success: (res) => { if (res.confirm) this.setData({ messages: [] }); }
+    });
+  },
+
+  // ══ 发送消息 ══
   sendMessage() {
     const app = getApp();
-    const username = app.globalData.USERNAME || '测试1';
     const content = this.data.user_message.trim();
-    const styleConfig = this.data.styleConfig.trim();
-
-    if (!content) {
-      wx.showToast({
-        title: '消息内容不能为空',
-        icon: 'none'
-      });
-      return;
-    }
+    if (!content) { wx.showToast({ title: '消息不能为空', icon: 'none' }); return; }
     if (this.data.isLoading) return;
 
-    //添加用户消息到列表
-    const userMsg = {
-      type: 'user' as const,
-      content
-    };
     this.setData({
-      messages: [...this.data.messages, userMsg],
+      messages: [...this.data.messages, { type: 'user', content }],
       user_message: '',
       isLoading: true
     });
-    
-    const style = this.data.styleConfig;
-    const time = this.formatTime()
+
     wx.request({
       url: 'https://api.coze.cn/v1/workflow/run',
       method: 'POST',
-      header: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer pat_qjJdH6KguUMKmyhr9uDIr38KxfHVL9eMSfRHVOZKUiKujB4TWcKAvZfzsxbRIQuJ`
-      },
+      header: { 'Content-Type': 'application/json', 'Authorization': `Bearer pat_hGQLZyKcpFQxn88rubPnaAodHjXbLmznqvdNvQtY5IqOMGYl9xi2eoXAKKkjtlVo` },
       data: {
         workflow_id: '7598072302836482048',
-        parameters: {
-          username,
-          content,
-          style,
-          time
-        },
+        parameters: { username: app.globalData.USERNAME || '测试', content, style: this.data.styleConfig, time: this.formatTime(), set: true, gets: false, del: false }
       },
-      
       success: (res) => {
-        if (res.statusCode === 200 && res.data) {
-          const aiContent = res.data.data;
-          console.log(aiContent);
-          const A = JSON.parse(aiContent);
-          const AI = A.contentOutput;
-          this.setData({
-            messages: [...this.data.messages, { type: 'ai', content: AI }]
-          });
-        } else {
-          wx.showToast({
-            title: '请求失败：' + res.statusCode,
-            icon: 'none'
-          });
-          this.setData({
-            messages: [...this.data.messages, { type: 'ai', content: '抱歉，请求失败～' }]
-          });
-        }
+        const aiContent = (res.statusCode === 200 && res.data.data)
+          ? (JSON.parse(res.data.data).contentOutput || '暂无回答')
+          : '请求失败';
+        this.setData({ messages: [...this.data.messages, { type: 'ai', content: aiContent }] });
       },
-      
-      fail: (err) => {
-        console.error('API调用失败：', err);
-        this.setData({
-          messages: [...this.data.messages, { type: 'ai', content: '网络异常，请稍后再试～' }]
-        });
+      fail: () => {
+        this.setData({ messages: [...this.data.messages, { type: 'ai', content: '网络异常，请重试' }] });
       },
-      
-      complete: () => {
-        this.setData({
-          isLoading: false
-        });
-      }
+      complete: () => { this.setData({ isLoading: false }); }
     });
   },
+
+  formatTime() {
+    const d = new Date();
+    const p = n => n < 10 ? '0' + n : '' + n;
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
 });

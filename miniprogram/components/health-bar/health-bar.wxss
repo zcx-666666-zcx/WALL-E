@@ -1,0 +1,89 @@
+.hb-root {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 90rpx 16rpx 14rpx 20rpx;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  border-bottom: 1rpx solid rgba(255, 160, 120, 0.15);
+  box-shadow: 0 4rpx 24rpx rgba(200, 90, 50, 0.1);
+  box-sizing: border-box;
+}
+
+.hb-track {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+.hb-track::-webkit-scrollbar { display: none; }
+
+.hb-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx 14rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+.hb-item.normal { background: rgba(76, 175, 132, 0.1); }
+.hb-item.warn   { background: rgba(255, 176, 32, 0.12); }
+.hb-item.danger { background: rgba(255, 90, 54, 0.12); animation: pulseDanger 2s ease-in-out infinite; }
+.hb-item.idle   { background: rgba(180, 140, 120, 0.06); }
+
+.hb-icon { font-size: 22rpx; line-height: 1; flex-shrink: 0; }
+
+.hb-val {
+  font-size: 24rpx; font-weight: 700;
+  color: #3A2010;
+  font-family: monospace;
+  min-width: 36rpx;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+.hb-idle-val { color: #C4A898; }
+.hb-danger-text { color: #FF5A36 !important; }
+.hb-item.danger .hb-val { color: #C03020; }
+.hb-item.warn   .hb-val { color: #A07010; }
+
+.hb-flash {
+  animation: valueFlash 0.5s ease;
+}
+
+.hb-dot {
+  width: 8rpx; height: 8rpx; border-radius: 50%; flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+.hb-item.normal .hb-dot { background: #4CAF84; }
+.hb-item.warn   .hb-dot { background: #FFB020; }
+.hb-item.danger .hb-dot { background: #FF5A36; animation: pulse 2s ease-in-out infinite; }
+.hb-item.idle   .hb-dot { background: #D0B0A0; }
+
+.hb-sep {
+  width: 1rpx; height: 22rpx;
+  background: rgba(200, 140, 100, 0.2);
+  flex-shrink: 0;
+}
+
+.hb-arrow {
+  width: 48rpx; height: 48rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,154,118,0.15), rgba(255,96,64,0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 8rpx;
+  transition: background 0.2s ease;
+}
+.hb-arrow-hover { background: rgba(255, 154, 118, 0.25); }
+.hb-arrow text { font-size: 28rpx; color: #C06030; font-weight: 700; }

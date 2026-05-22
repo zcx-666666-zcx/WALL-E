@@ -134,12 +134,10 @@ Page({
 
     // 发送到后端服务器
     wx.request({
-      url: `http://localhost:8080/events/add`,
+      url: `https://fm98469zi591.vicp.fun/api/events/add`,
       method: 'POST',
       data: eventData,
-      header: {
-        'content-type': 'application/json'
-      },
+      header: { 'content-type': 'application/json;charset=utf-8' },
       success: (res: any) => {
         wx.hideLoading();
         console.log('保存响应:', res.data);

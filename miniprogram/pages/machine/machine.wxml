@@ -1,2 +1,46 @@
-<!--pages/machine/machine.wxml-->
-<text>pages/machine/machine.wxml</text>
+<view class="root">
+
+<health-bar></health-bar>
+<alert-modal></alert-modal>
+
+<view class="top-bg"></view>
+<view class="orb orb-1"></view>
+<view class="orb orb-2"></view>
+
+<view class="header">
+  <view class="header-left">
+    <text class="header-title">更多连接</text>
+    <text class="header-sub">管理所有设备连接</text>
+  </view>
+</view>
+
+<view class="section-label">设备列表</view>
+<view class="card-list">
+  <view class="empty-state anim-fadeInUp" wx:if="{{devices.length === 0}}">
+    <text class="empty-icon">🔗</text>
+    <text class="empty-title">暂无连接设备</text>
+    <text class="empty-desc">机器人设备连接后将在此显示</text>
+  </view>
+
+  <view class="dev-card anim-fadeInUp anim-delay-{{index}}" wx:for="{{devices}}" wx:key="id" wx:for-index="index">
+    <view class="dev-icon-wrap" style="background: {{item.color}};">
+      <text class="dev-icon">{{item.icon}}</text>
+    </view>
+    <view class="dev-body">
+      <text class="dev-name">{{item.name}}</text>
+      <text class="dev-model">{{item.model}}</text>
+    </view>
+    <view class="dev-signal">
+      <view class="signal-bar s{{item.signal}}"></view>
+      <view class="signal-bar s{{item.signal}}"></view>
+      <view class="signal-bar s{{item.signal}}"></view>
+      <view class="signal-bar s{{item.signal}}"></view>
+    </view>
+    <view class="dev-connect {{item.connected ? 'dc-on' : 'dc-off'}}">
+      <view class="dev-connect-dot"></view>
+    </view>
+  </view>
+</view>
+
+<view style="height: 60rpx;"></view>
+</view>
