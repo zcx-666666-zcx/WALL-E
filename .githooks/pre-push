@@ -1,0 +1,15 @@
+#!/bin/sh
+
+remote_name="$1"
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/dev)
+      echo "禁止直接推送到 ${remote_ref#refs/heads/}，请通过 Pull Request 合并。"
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
