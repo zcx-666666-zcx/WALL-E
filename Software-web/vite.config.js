@@ -15,7 +15,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://fm98469zi591.vicp.fun', // 后端地址
+        target: 'http://117.50.44.170:8080', // 后端地址
         changeOrigin: true, // 修改请求头中的 Origin
         // rewrite: (path) => path.replace(/^\/api/, ''), // 后端路径本身包含 /api，不需要去掉
         // 更多配置选项

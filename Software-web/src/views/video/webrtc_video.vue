@@ -144,7 +144,7 @@
             <div class="conn-info">
               <div class="conn-row">
                 <span class="conn-label">服务器</span>
-                <span class="conn-val">https://lht20060712.yicp.fun</span>
+                <span class="conn-val">http://117.50.44.170:8081</span>
               </div>
               <div class="conn-row">
                 <span class="conn-label">协议</span>
@@ -185,8 +185,8 @@ import { toast } from '../../utils/toast';
 export default {
   name: 'WebrtcVideo',
   setup() {
-    const SERVER_URL = "wss://lht20060712.yicp.fun";
-    const LIVENESS_api= "http://117.50.44.170:6006"
+    const SERVER_URL = "http://117.50.44.170:8081";
+    const LIVENESS_api= "http://117.50.44.170:6006";
     let socket = null;
     let localStream = null;
     let peerConnection = null;
@@ -275,10 +275,10 @@ export default {
       log(`正在通过安全通道连接: ${socketUrl}`);
 
       // 初始化 Socket.IO
-      socket = io(socketUrl, { 
-        transports: ['websocket'], 
+      socket = io(socketUrl, {
+        transports: ['websocket'],
         path: '/socket.io/',
-        secure: true, 
+        secure: false,
         forceNew: true,
         reconnection: true,
         rejectUnauthorized: false
