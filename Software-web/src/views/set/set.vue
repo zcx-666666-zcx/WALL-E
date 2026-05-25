@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import { toast } from '../../utils/toast'
+import { useRouter } from 'vue-router'
+import { toast, confirm } from '../../utils/toast'
+import { DeleteAccountApi } from '../../api/users'
+
+const router = useRouter()
 
 const notiSwitch = ref(true)
 const autoSwitch = ref(false)
@@ -12,6 +16,23 @@ const voiceType = ref('温馨女声')
 function clearCache() { toast.success('缓存已清除') }
 function feedback() { toast.info('反馈功能即将上线～') }
 function about() { toast.success('智能陪伴机器人 v1.0') }
+
+async function deleteAccount() {
+  const ok = await confirm('注销后，您的账号、事件提醒、紧急联系人数据将全部被删除，且无法恢复。确定要继续吗？', '注销账号', {
+    confirmButtonText: '确定注销',
+    cancelButtonText: '取消',
+    type: 'error',
+  })
+  if (!ok) return
+  try {
+    await DeleteAccountApi()
+    localStorage.clear()
+    toast.success('账号已注销')
+    router.push('/login')
+  } catch {
+    toast.error('注销失败，请稍后重试')
+  }
+}
 </script>
 
 <template>
@@ -135,6 +156,15 @@ function about() { toast.success('智能陪伴机器人 v1.0') }
             <path d="M5 2l5 5-5 5" stroke="#E57373" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
+        <div class="item clickable delete-account-item" @click="deleteAccount">
+          <div>
+            <label class="delete-account-label">注销账号</label>
+            <div class="tip">删除账号及所有相关数据，不可恢复</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="arrow-icon">
+            <path d="M5 2l5 5-5 5" stroke="#D32F2F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
 
     </div>
@@ -199,6 +229,9 @@ function about() { toast.success('智能陪伴机器人 v1.0') }
 
 .logout-label { color: #E57373 !important; }
 .logout-item:hover { background: #FFF5F5 !important; }
+
+.delete-account-label { color: #D32F2F !important; }
+.delete-account-item:hover { background: #FFEBEE !important; }
 
 /* 滑块 */
 .slider-wrap { display: flex; align-items: center; gap: 10px; }

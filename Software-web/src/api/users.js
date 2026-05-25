@@ -38,3 +38,5 @@ export const RobotServoApi    = (data) => request.post('/robot/servo', data)
 export const RobotAnimateApi  = (data) => request.post('/robot/animate', data)
 export const RobotSettingsApi = (data) => request.post('/robot/settings', data)
 export const RobotIpApi       = (machineId) => request.get(`/robot/robotIp/${machineId}`)
+
+export const DeleteAccountApi = () => request.delete('/users/deleteAccount')
