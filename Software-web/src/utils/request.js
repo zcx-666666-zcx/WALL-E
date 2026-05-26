@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
 import router from "../router";
+import { getApiBaseUrl } from "./systemConfig";
 
 const request = axios.create({
     baseURL: '/api',
@@ -12,7 +13,13 @@ const request = axios.create({
 
 request.interceptors.request.use(
     (config)=>{
-        const loginUser = JSON.parse(localStorage.getItem('loginUserObject'))
+        config.baseURL = getApiBaseUrl()
+        let loginUser = null
+        try {
+            loginUser = JSON.parse(localStorage.getItem('loginUserObject'))
+        } catch {
+            loginUser = null
+        }
         if(loginUser && loginUser.token){
             config.headers.token = loginUser.token
         }

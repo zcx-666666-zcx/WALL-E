@@ -7,6 +7,7 @@ import ServoPanel from './components/ServoPanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import AudioPanel from './components/AudioPanel.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
+import { getRobotHttpPort } from '@/utils/systemConfig'
 
 const tabs = ['遥控','舵机','动画','音效','设置']
 const currentTab = ref('遥控')
@@ -14,6 +15,7 @@ const currentTab = ref('遥控')
 const machines = ref([])
 const selectedMachine = ref(null)
 const loadingMachines = ref(false)
+const robotHttpPort = getRobotHttpPort()
 
 onMounted(async () => {
   const userId = localStorage.getItem('Id')
@@ -68,7 +70,7 @@ onMounted(async () => {
             :value="m"
           />
         </el-select>
-        <span v-if="selectedMachine?.robotIp" class="device-ip">{{ selectedMachine.robotIp }}:5000</span>
+        <span v-if="selectedMachine?.robotIp" class="device-ip">{{ selectedMachine.robotIp }}:{{ robotHttpPort }}</span>
         <span v-else-if="selectedMachine" class="device-ip no-ip">未配置 IP</span>
       </div>
     </div>

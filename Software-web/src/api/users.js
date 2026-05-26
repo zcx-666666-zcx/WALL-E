@@ -1,6 +1,5 @@
 //import { data } from "element-plus/es/locales.mjs";
 import request from "../utils/request";
-import cozerequest from "../utils/cozeRequest"
 
 export const LoginApi = (loginInfo)=>{return request.post('/login',loginInfo)}
 export const RegisApi = (RegisInfo)=>{return request.post('/users/register',RegisInfo)}
@@ -30,7 +29,7 @@ export const getBreatheApi = (deviceId)=>{return request.get(`/healthy/getBreath
 export const getTemperatureApi = (deviceId)=>{return request.get(`/healthy/getTemperature/${deviceId}`)}
 export const getFallApi = (deviceId)=>{return request.get(`/healthy/getFall/${deviceId}`)}
 
-export const SetStyleOnCozeApi = (data)=>{return cozerequest.post('/v1/workflow/stream_run',data)}
+export const SetStyleOnCozeApi = (data)=>{return request.post('/coze/workflow/run',data)}
 
 // ── 机器人代理 API ──
 export const RobotMotorApi    = (data) => request.post('/robot/motor', data)

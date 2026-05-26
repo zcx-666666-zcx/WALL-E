@@ -13,8 +13,8 @@ let showPwd = ref(false);
 let focusUser = ref(false);
 let focusPwd = ref(false);
 
-const GoToPage = (loginInfo) => {
-    router.push({ path: '/index', query: { username: loginInfo.username } });
+const GoToPage = (loginUser) => {
+    router.push({ path: '/index', query: { username: loginUser.username } });
 }
 const GoToRegis = () => { router.push({ path: '/regis' }) }
 
@@ -28,8 +28,8 @@ const login = async () => {
     if (result.code) {
         log.value = "✓ 成功";
         localStorage.setItem('loginUserObject', JSON.stringify(result.data));
-        localStorage.setItem('Id', result.data.username);
-        setTimeout(() => GoToPage(loginInfo), 500);
+        localStorage.setItem('Id', result.data.id);
+        setTimeout(() => GoToPage(result.data), 500);
     } else {
         ElMessage.error(result.msg);
         log.value = "登 录";

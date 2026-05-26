@@ -3,9 +3,10 @@ import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { GetNameApi } from '../../api/users';
 import { toast, confirm as toastConfirm } from '../../utils/toast';
+import { getConfigValue } from '../../utils/systemConfig';
 
 // ── 后端地址（本地 FastAPI）──────────────────
-const API_BASE = 'http://117.50.44.170:6006';
+const getAgentApiBase = () => getConfigValue('ai.agent-api-url', '').replace(/\/$/, '');
 
 // ── 状态 ────────────────────────────────────
 let userName      = ref('');
@@ -65,7 +66,12 @@ function nowStr() {
 // ════════════════════════════════════════════
 const checkBackend = async () => {
   try {
-    const res = await fetch(`${API_BASE}/health`);
+    const apiBase = getAgentApiBase();
+    if (!apiBase) {
+      backendStatus.value = '● 未配置';
+      return;
+    }
+    const res = await fetch(`${apiBase}/health`);
     const data = await res.json();
     backendStatus.value = data.status === 'ok' ? '● 在线' : '● 异常';
   } catch {
@@ -81,7 +87,9 @@ const checkBackend = async () => {
 const getStyle = async () => {
   GET.value = '获取中…';
   try {
-    const res = await fetch(`${API_BASE}/personas/${currentPersonaId.value}`);
+    const apiBase = getAgentApiBase();
+    if (!apiBase) throw new Error('未配置 AI 服务地址');
+    const res = await fetch(`${apiBase}/personas/${currentPersonaId.value}`);
     if (!res.ok) throw new Error();  
     const data = await res.json();
     Style.value = data.persona_desc || data.personality || '暂无人设描述';
@@ -97,7 +105,9 @@ const sendStyle = async () => {
   if (!Style.value.trim()) { toast.warning('请先填写人设描述'); return; }
   SUBMIT.value = '提交中…';
   try {
-    const res = await fetch(`${API_BASE}/personas/${currentPersonaId.value}`, {
+    const apiBase = getAgentApiBase();
+    if (!apiBase) throw new Error('未配置 AI 服务地址');
+    const res = await fetch(`${apiBase}/personas/${currentPersonaId.value}`, {
       method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -135,8 +145,10 @@ const sendMessage = async () => {
   scrollToBottom();
 
   try {
+    const apiBase = getAgentApiBase();
+    if (!apiBase) throw new Error('未配置 AI 服务地址');
     // 不传 persona_id，后端自动用该用户绑定的瓦利
-    const res = await fetch(`${API_BASE}/chat/stream`, {
+    const res = await fetch(`${apiBase}/chat/stream`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -194,7 +206,9 @@ function clearChat() {
 const deleteData = async () => {
   if (!await toastConfirm('确定清除服务端对话历史记录？此操作不可撤销。')) return;
   try {
-    await fetch(`${API_BASE}/chat/clear`, {   // 去掉多余的 /api 前缀
+    const apiBase = getAgentApiBase();
+    if (!apiBase) throw new Error('未配置 AI 服务地址');
+    await fetch(`${apiBase}/chat/clear`, {   // 去掉多余的 /api 前缀
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ user_id: userName.value }),

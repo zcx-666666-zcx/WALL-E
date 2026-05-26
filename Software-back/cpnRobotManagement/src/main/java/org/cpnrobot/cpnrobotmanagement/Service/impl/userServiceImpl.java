@@ -24,11 +24,13 @@ public class userServiceImpl implements userService {
     public LoginInfo login(User user) {
         User u = usermapper.login(user);
         if(u!=null){
+            String role = (u.getRole() == null || u.getRole().isBlank()) ? "user" : u.getRole();
             Map<String,Object> claims = new HashMap<>();
             claims.put("id",u.getId());
             claims.put("name",u.getUsername());
+            claims.put("role", role);
             String token = JwtUtils.createJwt(claims);
-            return new LoginInfo(u.getId(),u.getUsername(),u.getPassword(),token);
+            return new LoginInfo(u.getId(),u.getUsername(),u.getPassword(),token,role);
         }
         return null;
     }

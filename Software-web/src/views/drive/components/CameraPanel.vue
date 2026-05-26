@@ -18,6 +18,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { getApiBaseUrl } from '@/utils/systemConfig'
 
 const props = defineProps({
   machine: { type: Object, default: null }
@@ -32,7 +33,7 @@ watch(() => props.machine?.id, (id) => {
   if (!id) { streamUrl.value = ''; return }
   loading.value = true
   // 通过 Java 后端代理，浏览器不需要和机器人在同一局域网
-  streamUrl.value = `/api/robot/video-feed/${id}`
+  streamUrl.value = `${getApiBaseUrl().replace(/\/$/, '')}/robot/video-feed/${id}`
 }, { immediate: true })
 
 function onLoad() { loading.value = false; error.value = '' }

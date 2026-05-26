@@ -17,9 +17,28 @@
 
   const Machines = ref([]);
 
+  const getLoginUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem('loginUserObject'))
+    } catch {
+      return null
+    }
+  }
+
+  const isAdmin = computed(() => {
+    return getLoginUser()?.role === 'admin'
+  });
+
   onMounted(() => {
-    userName.value = route.query.username || '';
-    getId();
+    const loginUser = getLoginUser();
+    userName.value = route.query.username || loginUser?.username || '';
+    if (loginUser?.id) {
+      userid.value = loginUser.id;
+      localStorage.setItem('Id', loginUser.id);
+      getMachinesList();
+    } else {
+      getId();
+    }
     checkScreen();
     window.addEventListener('resize', checkScreen);
     clockTimer = setInterval(() => { now.value = new Date(); }, 1000);
@@ -64,11 +83,13 @@
       '/connections': '更多连接',
       '/set': '设置',
       '/info': '说明',
+      '/admin': '系统配置',
     };
     return map[route.path] || '';
   });
 
   const getId = async () => {
+    if (!userName.value) return;
     const result = await GetIdApi(userName.value);
     if (result && result.code === 1) {
       userid.value = result.data.id;
@@ -122,8 +143,11 @@
     { type: 'label', label: '系统' },
     { path: '/connections', icon: 'Link', label: '更多连接' },
     { path: '/set', icon: 'Setting', label: '设置' },
+    { path: '/admin', icon: 'Tools', label: '系统配置', adminOnly: true },
     { path: '/info', icon: 'Tickets', label: '说明' },
   ];
+
+  const visibleMenuItems = computed(() => menuItems.filter((item) => !item.adminOnly || isAdmin.value));
 
   const isActive = (path) => route.path === path;
 </script>
@@ -174,7 +198,7 @@
 
       <!-- 导航菜单 -->
       <nav class="side-nav">
-        <template v-for="(item, i) in menuItems" :key="i">
+        <template v-for="(item, i) in visibleMenuItems" :key="i">
 
           <div v-if="item.type === 'label'" class="nav-label">{{ item.label }}</div>
 

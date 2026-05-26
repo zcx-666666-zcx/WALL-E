@@ -25,14 +25,16 @@ public class RobotProxyService {
     @Autowired
     private ContractMachineMapper contractMachineMapper;
 
-    private static final int ROBOT_PORT = 5000;
+    @Autowired
+    private SystemConfigService systemConfigService;
 
     private String getRobotUrl(Integer machineId, String path) {
         ContractMachine machine = contractMachineMapper.getById(machineId);
         if (machine == null || machine.getRobotIp() == null || machine.getRobotIp().isEmpty()) {
             throw new RuntimeException("机器人未找到或 IP 未配置，machineId: " + machineId);
         }
-        return "http://" + machine.getRobotIp() + ":" + ROBOT_PORT + path;
+        int robotPort = systemConfigService.getIntValue("robot.http-port", 5000);
+        return "http://" + machine.getRobotIp() + ":" + robotPort + path;
     }
 
     public String proxyPost(Integer machineId, String path, Map<String, String> formData) {

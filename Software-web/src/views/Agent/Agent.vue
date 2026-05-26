@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick } from 'vue';
 import { GetNameApi } from '../../api/users';
 import { SetStyleOnCozeApi } from '../../api/users';
 import { toast, confirm as toastConfirm } from '../../utils/toast';
+import { getConfigValue } from '../../utils/systemConfig';
 
 let userid = ref(localStorage.getItem('Id'));
 let userName = ref('');
@@ -15,6 +16,26 @@ let chatMessages = ref([]);
 let SET = ref(true);
 let chatContainer = ref(null);
 let isThinking = ref(false);
+
+const cozeWorkflowId = () => getConfigValue('coze.workflow-id', '');
+
+function buildWorkflowPayload(parameters) {
+    return {
+        workflow_id: cozeWorkflowId(),
+        parameters
+    };
+}
+
+function parseCozeData(result) {
+    if (!result || result.code !== 1 || !result.data) return null;
+    try {
+        const outer = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+        if (!outer.data) return outer;
+        return typeof outer.data === 'string' ? JSON.parse(outer.data) : outer.data;
+    } catch {
+        return null;
+    }
+}
 
 onMounted(() => {
     getname();
@@ -45,40 +66,25 @@ const sendStyle = async () => {
     const content = Content.value;
     const style = Style.value;
     const time = new Date();
-    const result = await SetStyleOnCozeApi({
-        workflow_id: '7598072302836482048',
-        parameters: { username, content, style, time, set: true, gets: false, del: false }
-    });
+    if (!cozeWorkflowId()) { toast.error("请先在系统配置中填写 Coze 工作流 ID"); SUBMIT.value = '提交人设'; return; }
+    const result = await SetStyleOnCozeApi(buildWorkflowPayload({ username, content, style, time, set: true, gets: false, del: false }));
     SUBMIT.value = '提交人设';
-    if (result.status === 200) { clear(); toast.success("设置成功"); }
-    else toast.error("设置失败");
+    if (result.code === 1) { clear(); toast.success("设置成功"); }
+    else toast.error(result.msg || "设置失败");
 }
 
 const getStyle = async () => {
     GET.value = '获取中…';
     const username = userName.value;
-    const result = await SetStyleOnCozeApi({
-        workflow_id: '7598072302836482048',
-        parameters: { username, content: '', style: '', time: new Date(), set: true, gets: true, del: false }
-    });
+    if (!cozeWorkflowId()) { toast.error("请先在系统配置中填写 Coze 工作流 ID"); GET.value = '获取当前人设'; return; }
+    const result = await SetStyleOnCozeApi(buildWorkflowPayload({ username, content: '', style: '', time: new Date(), set: true, gets: true, del: false }));
     GET.value = '获取当前人设';
-    if (result.status === 200 && result.data) {
-        let extractedStyle = '';
-        const messageBlocks = result.data.split('\n\n').filter(b => b.trim());
-        for (const block of messageBlocks) {
-            const dataLine = block.split('\n').find(l => l.trim().startsWith('data:'));
-            if (!dataLine) continue;
-            try {
-                const dataObj = JSON.parse(dataLine.replace('data:', '').trim());
-                if (dataObj.content) {
-                    const contentObj = JSON.parse(dataObj.content);
-                    if (contentObj.style) { extractedStyle = contentObj.style; break; }
-                }
-            } catch (e) { continue; }
-        }
+    if (result.code === 1 && result.data) {
+        const data = parseCozeData(result);
+        const extractedStyle = data?.style || data?.contentOutput || '';
         if (extractedStyle) Style.value = extractedStyle;
         else toast.error("获取失败");
-    } else toast.error("获取失败");
+    } else toast.error(result.msg || "获取失败");
 }
 
 const sendMessage = async () => {
@@ -90,35 +96,21 @@ const sendMessage = async () => {
             year: 'numeric', month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
-        chatMessages.value.push({ type: 'user', content: Content.value.trim(), time: timeStr });
+        const userText = Content.value.trim();
+        chatMessages.value.push({ type: 'user', content: userText, time: timeStr });
         Content.value = '';
         scrollToBottom();
 
         isThinking.value = true;
         scrollToBottom();
 
-        const result = await SetStyleOnCozeApi({
-            workflow_id: '7598072302836482048',
-            parameters: { username: userName.value, content: Content.value || '', style: '', time: currentTime, set: true, gets: false, del: false }
-        });
+        if (!cozeWorkflowId()) throw new Error("请先在系统配置中填写 Coze 工作流 ID");
+        const result = await SetStyleOnCozeApi(buildWorkflowPayload({ username: userName.value, content: userText, style: '', time: currentTime, set: true, gets: false, del: false }));
 
         isThinking.value = false;
 
-        let aiReply = '暂无回复';
-        if (result && result.status === 200 && result.data) {
-            const messageBlocks = result.data.split('\n\n').filter(b => b.trim());
-            for (const block of messageBlocks) {
-                const dataLine = block.split('\n').find(l => l.trim().startsWith('data:'));
-                if (!dataLine) continue;
-                try {
-                    const dataObj = JSON.parse(dataLine.replace('data:', '').trim());
-                    if (dataObj.content) {
-                        const contentObj = JSON.parse(dataObj.content);
-                        if (contentObj.contentOutput) { aiReply = contentObj.contentOutput; break; }
-                    }
-                } catch (e) { continue; }
-            }
-        }
+        const data = parseCozeData(result);
+        const aiReply = data?.contentOutput || data?.content || '暂无回复';
         chatMessages.value.push({ type: 'ai', content: aiReply, time: timeStr });
         scrollToBottom();
     } catch (error) {
@@ -133,12 +125,10 @@ function clearChat() { chatMessages.value = []; isThinking.value = false; }
 
 const deleteData = async () => {
     if (await toastConfirm('确定删除云端所有测试记录？此操作不可撤销。')) {
-        const result = await SetStyleOnCozeApi({
-            workflow_id: '7598072302836482048',
-            parameters: { username: userName.value, content: '', style: '', time: new Date(), set: SET.value, gets: false, del: true }
-        });
-        if (result.status === 200) { toast.success("删除成功"); clearChat(); }
-        else toast.error("删除失败");
+        if (!cozeWorkflowId()) { toast.error("请先在系统配置中填写 Coze 工作流 ID"); return; }
+        const result = await SetStyleOnCozeApi(buildWorkflowPayload({ username: userName.value, content: '', style: '', time: new Date(), set: SET.value, gets: false, del: true }));
+        if (result.code === 1) { toast.success("删除成功"); clearChat(); }
+        else toast.error(result.msg || "删除失败");
     }
 }
 

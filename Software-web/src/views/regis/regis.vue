@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { RegisApi } from '@/api/users.js';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { getConfigValue } from '@/utils/systemConfig';
 
 const router = useRouter()
 let log = ref("注 册")
@@ -32,7 +33,8 @@ const regis = async () => {
         log.value = "✓ 成功";
 
         try {
-            await fetch(`http://117.50.178.228:6006/user/init_wali?user_id=${username.value}`, {
+            const aiBase = getConfigValue('ai.agent-api-url', '')
+            if (aiBase) await fetch(`${aiBase.replace(/\/$/, '')}/user/init_wali?user_id=${username.value}`, {
                 method: 'POST'
             })
         } catch (e) {
@@ -214,7 +216,7 @@ const handleKeydown = (e) => { if (e.key === 'Enter') regis(); }
 
 .bg-image {
   position: absolute; inset: 0;
-  background: url("http://localhost:8080/images/index_picture.png") center / cover no-repeat;
+  background: url("/images/index_picture.png") center / cover no-repeat;
   transform: scale(1.05);
   filter: brightness(0.75) saturate(0.9);
 }

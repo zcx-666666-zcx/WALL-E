@@ -10,7 +10,7 @@ import pojos.User;
 @Mapper
 public interface userMapper {
 
-    @Select("select id, username, password from user where username = #{username} and password = #{password}")
+    @Select("select id, username, password, role from user where username = #{username} and password = #{password}")
     User login(User user);
 
     @Insert("insert into user(username,phone_number,password) values(#{username},#{phoneNumber},#{password})")

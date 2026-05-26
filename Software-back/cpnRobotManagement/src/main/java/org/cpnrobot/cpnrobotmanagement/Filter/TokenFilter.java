@@ -24,6 +24,14 @@ public class TokenFilter implements Filter {
 
         System.out.println("[TokenFilter] " + method + " " + requestURI);
 
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type,token");
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+
         // 只拦截 /api/ 开头的请求
         if (!requestURI.startsWith("/api/") ||
                 requestURI.startsWith("/api/healthy") ||
@@ -31,7 +39,8 @@ public class TokenFilter implements Filter {
                 requestURI.startsWith("/api/robot/video-feed/") ||
                 requestURI.startsWith("/api/robot/video-feed-low/") ||
                 requestURI.startsWith("/api/robot/camera-frame/") ||
-                requestURI.startsWith("/api/users/getId")
+                requestURI.startsWith("/api/users/getId") ||
+                requestURI.startsWith("/api/system-config/public")
         ) {
             System.out.println("[TokenFilter] 非 API 或 healthy 路径，直接放行");
             filterChain.doFilter(request, response);
