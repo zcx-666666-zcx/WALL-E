@@ -1,12 +1,15 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { GetSystemConfigApi, UpdateSystemConfigApi } from '@/api/systemConfig'
 import { saveCachedConfig } from '@/utils/systemConfig'
 
+const router = useRouter()
 const configs = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const loadError = ref('')
 
 const groupLabels = {
   network: '网络地址',
@@ -35,13 +38,16 @@ onMounted(loadConfigs)
 
 async function loadConfigs() {
   loading.value = true
+  loadError.value = ''
   try {
     const result = await GetSystemConfigApi()
     if (result?.code === 1) {
       configs.value = (result.data || []).map(normalizeConfig)
     } else {
-      ElMessage.error(result?.msg || '读取系统配置失败')
+      handleLoadError(result?.msg || '读取系统配置失败')
     }
+  } catch (error) {
+    handleLoadError(error?.response?.data?.msg || error?.message || '读取系统配置失败')
   } finally {
     loading.value = false
   }
@@ -62,9 +68,23 @@ async function saveConfigs() {
     } else {
       ElMessage.error(result?.msg || '保存失败')
     }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || error?.message || '保存失败')
   } finally {
     saving.value = false
   }
+}
+
+function handleLoadError(message) {
+  loadError.value = message
+  if (message === '无权限') {
+    localStorage.removeItem('loginUserObject')
+    localStorage.removeItem('Id')
+    ElMessage.error('管理员登录状态已失效，请重新登录')
+    router.replace('/login')
+    return
+  }
+  ElMessage.error(message)
 }
 
 function addConfig() {
@@ -134,7 +154,15 @@ function syncPublicCache(items) {
     </div>
 
     <div v-loading="loading" class="config-scroll">
-      <section v-for="group in groupedConfigs" :key="group.key" class="config-section">
+      <el-empty v-if="!loading && loadError" :description="loadError">
+        <el-button type="primary" @click="loadConfigs">重新加载</el-button>
+      </el-empty>
+
+      <el-empty v-else-if="!loading && groupedConfigs.length === 0" description="暂无系统配置">
+        <el-button type="primary" @click="addConfig">新增配置</el-button>
+      </el-empty>
+
+      <section v-for="group in groupedConfigs" v-else :key="group.key" class="config-section">
         <div class="section-head">
           <span>{{ group.label }}</span>
           <span class="section-count">{{ group.items.length }}</span>
