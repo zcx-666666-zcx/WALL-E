@@ -31,9 +31,3 @@ aliyun:
     endpoint: "https://oss-cn-beijing.aliyuncs.com"
     bucketName: "lht-java-ai-edu"
     region: "cn-beijing"
-
-zzulicloud:
-  datasource:
-    url: ${ZZULICLOUD_MYSQL_URL:jdbc:mysql://localhost:3307/zzulicloud?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
-    username: ${ZZULICLOUD_MYSQL_USERNAME:root}
-    password: ${ZZULICLOUD_MYSQL_PASSWORD:admin123}

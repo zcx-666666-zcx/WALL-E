@@ -1,7 +1,6 @@
 SET NAMES utf8mb4;
 
 CREATE DATABASE IF NOT EXISTS cpnrobot DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE IF NOT EXISTS zzulicloud DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE cpnrobot;
 
@@ -169,15 +168,3 @@ ON DUPLICATE KEY UPDATE
   config_group = VALUES(config_group),
   secret = VALUES(secret),
   remark = VALUES(remark);
-
-USE zzulicloud;
-
-CREATE TABLE IF NOT EXISTS device_message (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  msg TEXT,
-  nonce VARCHAR(64),
-  signature VARCHAR(128),
-  push_time BIGINT,
-  message_id VARCHAR(128),
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
