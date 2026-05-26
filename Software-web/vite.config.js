@@ -2,6 +2,8 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base:'./',
@@ -15,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://117.50.44.170:8080', // 后端地址
+        target: apiProxyTarget,
         changeOrigin: true, // 修改请求头中的 Origin
         // rewrite: (path) => path.replace(/^\/api/, ''), // 后端路径本身包含 /api，不需要去掉
         // 更多配置选项

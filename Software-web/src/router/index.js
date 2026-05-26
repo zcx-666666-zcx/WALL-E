@@ -16,6 +16,7 @@ import HealthyView from '@/views/healthy/healthy.vue';
 import regisView from '@/views/regis/regis.vue';
 import DriveView from '@/views/drive/drive.vue';
 import AIView from '@/views/new_agent/Agent_new.vue';
+import AdminView from '@/views/admin/admin.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,7 +40,8 @@ const router = createRouter({
         {path: 'webrtc-video', name: 'webrtc-video', component: WebrtcVideoView}, // 新增路由
         {path: 'drive', name: 'drive' ,component: DriveView},
         {path: 'healthy', name: 'healthy', component: HealthyView},
-        {path: 'new_agent', name: 'new_agent' ,component: AIView}
+        {path: 'new_agent', name: 'new_agent' ,component: AIView},
+        {path: 'admin', name: 'admin', component: AdminView}
       ]
     },
     {path: '/login', name: 'login', component: loginView},
@@ -58,6 +60,16 @@ const getToken = () => {
   }
 }
 
+const getLoginUser = () => {
+  const user = localStorage.getItem('loginUserObject')
+  if (!user) return null
+  try {
+    return JSON.parse(user)
+  } catch {
+    return null
+  }
+}
+
 router.beforeEach((to, from, next) => {
   const token = getToken()
 
@@ -69,6 +81,10 @@ router.beforeEach((to, from, next) => {
 
   // 访问受保护页面但没有 token，跳转到登录页
   if (!token) return next('/login')
+
+  if (to.path === '/admin' && getLoginUser()?.role !== 'admin') {
+    return next('/index')
+  }
 
   next()
 })

@@ -144,7 +144,7 @@
             <div class="conn-info">
               <div class="conn-row">
                 <span class="conn-label">服务器</span>
-                <span class="conn-val">http://117.50.44.170:8081</span>
+                <span class="conn-val">{{ socketServerUrl }}</span>
               </div>
               <div class="conn-row">
                 <span class="conn-label">协议</span>
@@ -181,12 +181,13 @@
 import { ref, computed } from 'vue';
 import { io } from 'socket.io-client';
 import { toast } from '../../utils/toast';
+import { getConfigValue, getSocketServerUrl } from '../../utils/systemConfig';
 
 export default {
   name: 'WebrtcVideo',
   setup() {
-    const SERVER_URL = "http://117.50.44.170:8081";
-    const LIVENESS_api= "http://117.50.44.170:6006";
+    const socketServerUrl = ref(getSocketServerUrl());
+    const livenessApiUrl = ref(getConfigValue('liveness.api-url', ''));
     let socket = null;
     let localStream = null;
     let peerConnection = null;
@@ -271,7 +272,7 @@ export default {
 
       log(`正在申请加入房间: ${roomId}`);
 
-      const socketUrl = SERVER_URL;
+      const socketUrl = socketServerUrl.value;
       log(`正在通过安全通道连接: ${socketUrl}`);
 
       // 初始化 Socket.IO
@@ -348,7 +349,6 @@ export default {
       localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
     }
 
-    const LIVENESS_API = LIVENESS_api;
     const checkingFace = ref(false);
     const countdownPhase = ref('idle');   // 'idle' | 'countdown' | 'detecting'
     const countdownNum = ref(3);
@@ -380,7 +380,12 @@ export default {
         const formData = new FormData();
         formData.append('image', blob, 'frame.jpg');
 
-        const resp = await fetch(`${LIVENESS_API}/face/liveness`, {
+        if (!livenessApiUrl.value) {
+          log('⚠ 未配置活体检测服务，已跳过检测');
+          return null;
+        }
+
+        const resp = await fetch(`${livenessApiUrl.value.replace(/\/$/, '')}/face/liveness`, {
           method: 'POST',
           body: formData,
         });
@@ -399,7 +404,7 @@ export default {
         log(`[人脸检测] 置信度: ${result.confidence}, 阈值: ${result.threshold}, 结果: ${result.is_real ? '真人' : '伪人脸'}`);
         return result.is_real;
       } catch (e) {
-        log(`⚠ 人脸检测连接失败（请确认后端已启动: python -m api.server_with_intent）: ${e.message}`);
+        log(`⚠ 人脸检测连接失败: ${e.message}`);
         return null;
       }
     }
@@ -455,7 +460,7 @@ export default {
       if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(c.candidate));
     }
 
-    return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum };
+    return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl };
   }
 };
 </script>

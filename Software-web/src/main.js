@@ -6,6 +6,7 @@ import App from './App.vue'
 
 import './assets/main.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { loadPublicConfig } from './utils/systemConfig'
 
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -16,3 +17,5 @@ app.use(router)
 app.use(ElementPlus)
 
 app.mount('#app')
+
+loadPublicConfig().catch(() => {})

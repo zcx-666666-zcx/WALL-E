@@ -6,9 +6,9 @@ spring:
     name: cpnRobotManagement
 
   datasource:
-    url: jdbc:mysql://localhost:3306/cpnrobot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-    username: root
-    password: 1887418187M
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3307/cpnrobot?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:admin123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -23,8 +23,8 @@ mybatis:
     map-underscore-to-camel-case: true
 
 onenet:
-  token: 123456789
-  aes-key: your-onenet-aes-base64-key
+  token: ${ONENET_TOKEN:123456789}
+  aes-key: ${ONENET_AES_KEY:your-onenet-aes-base64-key}
 
 aliyun:
   oss:
@@ -34,6 +34,6 @@ aliyun:
 
 zzulicloud:
   datasource:
-    url: jdbc:mysql://localhost:3306/zzulicloud?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-    username: root
-    password: 20250709
+    url: ${ZZULICLOUD_MYSQL_URL:jdbc:mysql://localhost:3307/zzulicloud?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${ZZULICLOUD_MYSQL_USERNAME:root}
+    password: ${ZZULICLOUD_MYSQL_PASSWORD:admin123}
