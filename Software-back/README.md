@@ -7,7 +7,7 @@ cd Software-back
 docker compose up -d mysql
 ```
 
-默认会创建 `cpnrobot` 和 `zzulicloud` 两个数据库，并初始化管理员账号：
+默认会创建 `cpnrobot` 数据库，并初始化管理员账号：
 
 - 账号：`admin`
 - 密码：`admin123`

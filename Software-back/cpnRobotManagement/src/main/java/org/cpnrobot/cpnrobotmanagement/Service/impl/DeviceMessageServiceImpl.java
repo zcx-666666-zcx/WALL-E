@@ -31,9 +31,5 @@ public class DeviceMessageServiceImpl implements DeviceMessageService {
         deviceMessageMapper.insert(deviceMessage);
 
         System.out.println("[OneNET][数据入库] device_message 表写入完成（insert 已执行）");
-
-        // 移除了zzulicloud数据库同步功能，只保留本地存储
     }
 }
-
-        

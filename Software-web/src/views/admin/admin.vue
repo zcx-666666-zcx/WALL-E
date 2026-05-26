@@ -182,12 +182,14 @@ function syncPublicCache(items) {
 .admin-root {
   width: 100%;
   height: 100%;
+  min-height: 0;
   padding: 20px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-family: var(--font);
 }
 
@@ -237,13 +239,14 @@ function syncPublicCache(items) {
 }
 
 .config-scroll {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding-bottom: 32px;
+  padding-right: 2px;
 }
 
 .config-section {
