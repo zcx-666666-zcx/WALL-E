@@ -3,6 +3,7 @@ import request from "../utils/request";
 
 export const LoginApi = (loginInfo)=>{return request.post('/login',loginInfo)}
 export const RegisApi = (RegisInfo)=>{return request.post('/users/register',RegisInfo)}
+export const ChangePasswordApi = (data)=>{return request.put('/users/password',data)}
 
 export const GetElementListApi = (userId)=>{return request.get(`/events/search/${userId}`)}
 export const GetContactsListApi = (userId)=>{return request.get(`/contractUser/search/${userId}`)}
@@ -22,6 +23,7 @@ export const UpdateElementApi = (data)=>{return request.put('/events/update',dat
 export const AddElementApi = (Element)=>{return request.post('/events/add',Element)}
 export const AddContractUserApi = (data)=>{return request.post('/contractUser/add',data)}
 export const AddMachineApi = (data)=>{return request.post('/contractMachine/add',data)}
+export const UpdateMachineIpApi = (data)=>{return request.put('/contractMachine/robot-ip',data)}
 
 export const getRateApi = (deviceId)=>{return request.get(`/healthy/getRate/${deviceId}`)}
 export const getHumidityApi = (deviceId)=>{return request.get(`/healthy/getHumidity/${deviceId}`)}

@@ -3,13 +3,20 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { GetSystemConfigApi, UpdateSystemConfigApi } from '@/api/systemConfig'
+import { ChangePasswordApi } from '@/api/users'
 import { saveCachedConfig } from '@/utils/systemConfig'
 
 const router = useRouter()
 const configs = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const changingPassword = ref(false)
 const loadError = ref('')
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
 const groupLabels = {
   network: '网络地址',
@@ -72,6 +79,42 @@ async function saveConfigs() {
     ElMessage.error(error?.response?.data?.msg || error?.message || '保存失败')
   } finally {
     saving.value = false
+  }
+}
+
+async function changePassword() {
+  const form = passwordForm.value
+  if (!form.oldPassword || !form.newPassword || !form.confirmPassword) {
+    ElMessage.warning('请填写完整密码信息')
+    return
+  }
+  if (form.newPassword.length < 6) {
+    ElMessage.warning('新密码至少 6 位')
+    return
+  }
+  if (form.newPassword !== form.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+  changingPassword.value = true
+  try {
+    const result = await ChangePasswordApi({
+      oldPassword: form.oldPassword,
+      newPassword: form.newPassword
+    })
+    if (result?.code === 1) {
+      passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
+      ElMessage.success('密码已修改，请使用新密码重新登录')
+      localStorage.removeItem('loginUserObject')
+      localStorage.removeItem('Id')
+      router.replace('/login')
+    } else {
+      ElMessage.error(result?.msg || '修改密码失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || error?.message || '修改密码失败')
+  } finally {
+    changingPassword.value = false
   }
 }
 
@@ -154,6 +197,36 @@ function syncPublicCache(items) {
     </div>
 
     <div v-loading="loading" class="config-scroll">
+      <section class="config-section">
+        <div class="section-head">
+          <span>管理员账号</span>
+          <span class="section-count">安全</span>
+        </div>
+        <div class="password-panel">
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            show-password
+            placeholder="当前密码"
+          />
+          <el-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            show-password
+            placeholder="新密码，至少 6 位"
+          />
+          <el-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            show-password
+            placeholder="再次输入新密码"
+          />
+          <el-button type="primary" :loading="changingPassword" @click="changePassword">
+            修改密码
+          </el-button>
+        </div>
+      </section>
+
       <el-empty v-if="!loading && loadError" :description="loadError">
         <el-button type="primary" @click="loadConfigs">重新加载</el-button>
       </el-empty>
@@ -315,6 +388,14 @@ function syncPublicCache(items) {
   flex-direction: column;
 }
 
+.password-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
+  gap: 12px;
+  padding: 16px 18px;
+  align-items: center;
+}
+
 .config-row {
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.2fr);
@@ -404,6 +485,10 @@ function syncPublicCache(items) {
   }
 
   .config-row {
+    grid-template-columns: 1fr;
+  }
+
+  .password-panel {
     grid-template-columns: 1fr;
   }
 }

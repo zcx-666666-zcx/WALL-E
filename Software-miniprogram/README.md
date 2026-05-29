@@ -154,7 +154,7 @@ flowchart LR
   end
 
   subgraph Backend["后端 API"]
-    API["fm98469zi591.vicp.fun/api"]
+    API["你的新FRP域名/api"]
   end
 
   subgraph External["外部服务"]
@@ -202,7 +202,7 @@ flowchart LR
 
 | 配置项 | 位置 | 说明 |
 |--------|------|------|
-| 后端地址 | `miniprogram/utils/request.js` → `baseURL` | 默认 `https://fm98469zi591.vicp.fun/api` |
+| 后端地址 | `miniprogram/utils/config.js` → `apiBaseUrl` | 上线后由后台系统配置下发，例如 `https://你的新FRP域名/api` |
 | 设备 ID | `miniprogram/app.ts` → `globalData.DEVICEID` | 健康数据绑定的设备标识 |
 | 静态资源 | 各页面 `image_ip` 等 | 指向同一域名的图片 CDN |
 | 信令服务 | `pages/CallChoice/CallChoice.ts` → `SERVER_URL` | WebRTC 信令 WebSocket 地址 |

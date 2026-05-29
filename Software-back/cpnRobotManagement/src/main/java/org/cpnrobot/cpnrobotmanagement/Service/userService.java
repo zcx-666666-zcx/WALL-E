@@ -10,6 +10,8 @@ public interface userService {
 
     int register(User user);
 
+    int changePassword(Integer userId, String oldPassword, String newPassword);
+
     User getId(String username);
 
     User getName(Integer id);

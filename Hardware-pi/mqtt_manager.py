@@ -12,7 +12,7 @@ from ui import update_ui
 
 logger = logging.getLogger("API_Manager")
 
-BASE_URL = getattr(project_config, "HEALTH_API_BASE_URL", "https://fm98469zi591.vicp.fun/api/healthy").rstrip("/")
+BASE_URL = getattr(project_config, "HEALTH_API_BASE_URL", "http://127.0.0.1:8088/api/healthy").rstrip("/")
 DEVICE_ID = getattr(project_config, "HEALTH_DEVICE_ID", "kCx33ym0Dt")
 API_AUTH_ENABLED = getattr(project_config, "API_AUTH_ENABLED", False)
 API_AUTH_TOKEN = os.environ.get("WALLE_API_TOKEN", getattr(project_config, "API_AUTH_TOKEN", ""))

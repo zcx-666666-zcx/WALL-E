@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { GetMachineListApi } from '@/api/users.js';
 import { AddMachineApi } from '../../api/users';
 import { DeleteMachinesApi } from '../../api/users';
+import { UpdateMachineIpApi } from '../../api/users';
 import { toast, confirm } from '../../utils/toast';
 
 let haveNot = ref(true)
@@ -10,6 +11,8 @@ let add = ref(false)
 let canadd = ref("添加")
 let userid = ref(localStorage.getItem('Id'))
 let MachinesInfo = ref({ machines: '', connectionId: '', robotIp: '', userId: userid.value })
+let editingIpId = ref(null)
+let editingIpValue = ref('')
 
 onMounted(() => { getList() })
 
@@ -34,6 +37,29 @@ const deleteMachine = async (machines) => {
     const result = await DeleteMachinesApi({ data: { machines, userId: userid.value } });
     if (result?.code === 1) toast.success("删除成功"); else toast.error("删除失败");
     getList();
+}
+
+const startEditIp = (row) => {
+    editingIpId.value = row.id
+    editingIpValue.value = row.robotIp || ''
+}
+
+const cancelEditIp = () => {
+    editingIpId.value = null
+    editingIpValue.value = ''
+}
+
+const saveRobotIp = async (row) => {
+    const nextIp = editingIpValue.value.trim()
+    if (!nextIp) { toast.warning("请输入机器人 IP 地址"); return; }
+    const result = await UpdateMachineIpApi({ id: row.id, userId: userid.value, robotIp: nextIp })
+    if (result?.code === 1) {
+        toast.success("机器人 IP 已更新")
+        cancelEditIp()
+        getList()
+    } else {
+        toast.error(result?.msg || "修改 IP 失败")
+    }
 }
 
 function addmachine() { add.value = true }
@@ -96,6 +122,19 @@ const tableData = ref([])
         <el-table-column prop="connectionId" label="设备号" align="center" min-width="240">
           <template #default="{ row }">
             <span class="device-id">{{ row.connectionId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="树莓派 IP" align="center" min-width="260">
+          <template #default="{ row }">
+            <div v-if="editingIpId === row.id" class="ip-edit">
+              <input class="ip-input" v-model="editingIpValue" placeholder="例如: 192.168.1.23"/>
+              <button class="ip-btn save" @click="saveRobotIp(row)">保存</button>
+              <button class="ip-btn cancel" @click="cancelEditIp">取消</button>
+            </div>
+            <div v-else class="ip-cell">
+              <span class="device-ip">{{ row.robotIp || '未配置' }}</span>
+              <button class="ip-btn" @click="startEditIp(row)">修改</button>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="110" align="center">
@@ -223,6 +262,37 @@ const tableData = ref([])
 }
 .device-name { font-size: 13.5px; font-weight: 600; color: #3A2010; }
 .device-id { font-size: 12.5px; color: #7A5040; font-family: monospace; letter-spacing: 0.05em; }
+.device-ip { font-size: 12.5px; color: #5F4638; font-family: monospace; }
+
+.ip-cell,
+.ip-edit {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+.ip-input {
+  width: 130px; height: 30px;
+  border: 1px solid rgba(255,160,120,0.32);
+  border-radius: 8px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #3A2010;
+  background: #FFFAF7;
+  outline: none;
+}
+
+.ip-btn {
+  height: 28px; padding: 0 10px;
+  border: 1px solid rgba(255,150,100,0.25);
+  border-radius: 8px;
+  background: #FFF5F0;
+  color: #C85A32;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ip-btn.save { background: #EAF7F1; color: #16845B; border-color: rgba(22,132,91,0.18); }
+.ip-btn.cancel { background: #F5EDE8; color: #8A5040; }
 
 /* 操作按钮 */
 .op-btn {

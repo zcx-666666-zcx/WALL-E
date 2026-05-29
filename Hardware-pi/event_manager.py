@@ -7,7 +7,7 @@ import config as project_config
 from ui import update_ui  
 from voice_player import play_cloud_voice
 
-BASE_URL = getattr(project_config, "EVENT_API_BASE_URL", "https://fm98469zi591.vicp.fun/api").rstrip("/")
+BASE_URL = getattr(project_config, "EVENT_API_BASE_URL", "http://127.0.0.1:8088/api").rstrip("/")
 USERNAME = getattr(project_config, "EVENT_USERNAME", "test")
 API_AUTH_ENABLED = getattr(project_config, "API_AUTH_ENABLED", False)
 API_AUTH_TOKEN = os.environ.get("WALLE_API_TOKEN", getattr(project_config, "API_AUTH_TOKEN", ""))
