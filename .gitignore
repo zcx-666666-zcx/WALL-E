@@ -29,3 +29,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Local runtime backups
+backups/

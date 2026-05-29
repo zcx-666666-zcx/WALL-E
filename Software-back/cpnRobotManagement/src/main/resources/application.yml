@@ -1,5 +1,6 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -31,3 +32,13 @@ aliyun:
     endpoint: "https://oss-cn-beijing.aliyuncs.com"
     bucketName: "lht-java-ai-edu"
     region: "cn-beijing"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true

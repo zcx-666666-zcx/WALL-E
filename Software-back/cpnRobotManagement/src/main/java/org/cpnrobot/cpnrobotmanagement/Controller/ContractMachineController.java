@@ -23,19 +23,28 @@ public class ContractMachineController {
 
     @PostMapping("/add")
     public Result add(@RequestBody ContractMachine contractMachine){
-    	int num = contractMachineService.add(contractMachine);
-    	if(num!=0){
-    		return Result.success();
-    	}
-    	return Result.error("添加失败");
+        int num = contractMachineService.add(contractMachine);
+        if(num!=0){
+            return Result.success();
+        }
+        return Result.error("添加失败");
     }
 
     @DeleteMapping("/delete")
     public Result delete(@RequestBody ContractMachine contractMachine){
-    	int num = contractMachineService.delete(contractMachine);
-    	if(num!=0){
-    		return Result.success();
-    	}
-    	return Result.error("删除失败");
+        int num = contractMachineService.delete(contractMachine);
+        if(num!=0){
+            return Result.success();
+        }
+        return Result.error("删除失败");
+    }
+
+    @PutMapping("/robot-ip")
+    public Result updateRobotIp(@RequestBody ContractMachine contractMachine){
+        int num = contractMachineService.updateRobotIp(contractMachine);
+        if(num!=0){
+            return Result.success();
+        }
+        return Result.error("修改 IP 失败");
     }
 }

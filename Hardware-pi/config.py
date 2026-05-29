@@ -36,7 +36,8 @@ CODEBLOCK_TURNPOWER = 0.5    # Motorpower for the turn movement
 CODEBLOCK_TURNTIME = 1.8     # the time (s) it takes to move 90° at given TURNPOWER
 
 # ================= 5. WebRTC 视频通话配置 =================
-SERVER_URL = "https://lht20060712.yicp.fun" 
+PUBLIC_SERVER_URL = os.environ.get("WALLE_PUBLIC_SERVER_URL", "http://127.0.0.1:8088").rstrip("/")
+SERVER_URL = os.environ.get("WALLE_SERVER_URL", PUBLIC_SERVER_URL)
 ROOM_ID = "0001"
 
 # ================= 6. OneNet MQTT 物联网云平台配置 =================
@@ -52,7 +53,9 @@ SEND_INTERVAL = 1        # 发送间隔 (注: 你注释写着0.1，但代码里�
 # ================= 8. 流式 TTS 音频播放配置 (GPT-SoVITS) =================
 TTS_STREAM_PORT = 6007       # 树莓派 TCP 监听端口，接收 PC 端转发的流式音频块
 # ================= 9. Socket.IO 远程遥控配置 =================
-SOCKETIO_SERVER_URL = "https://lht20060712.yicp.fun"  # Java 后端 Socket.IO（端口 8081 隧道）
+SOCKETIO_SERVER_URL = os.environ.get("WALLE_SOCKETIO_SERVER_URL", PUBLIC_SERVER_URL)  # Java 后端 Socket.IO
+EVENT_API_BASE_URL = os.environ.get("WALLE_EVENT_API_BASE_URL", f"{PUBLIC_SERVER_URL}/api")
+HEALTH_API_BASE_URL = os.environ.get("WALLE_HEALTH_API_BASE_URL", f"{PUBLIC_SERVER_URL}/api/healthy")
 
 # ================= 10. 语音流传输配置 (麦克风上传) =================
 # ⚠️ 这里必须改成你运行接收端（voice_receivetest.py）那台电脑的局域网 IP！

@@ -9,4 +9,6 @@ public interface ContractMachineService {
     int add(ContractMachine contractMachine);
 
     int delete(ContractMachine contractMachine);
+
+    int updateRobotIp(ContractMachine contractMachine);
 }

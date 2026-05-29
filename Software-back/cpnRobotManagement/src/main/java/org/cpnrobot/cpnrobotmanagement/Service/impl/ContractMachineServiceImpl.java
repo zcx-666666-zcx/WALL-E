@@ -36,4 +36,18 @@ public class ContractMachineServiceImpl implements ContractMachineService {
         }
         return 0;
     }
+
+    @Override
+    public int updateRobotIp(ContractMachine contractMachine) {
+        if (contractMachine == null || contractMachine.getId() == null || contractMachine.getUserId() == null) {
+            return 0;
+        }
+        if (contractMachine.getRobotIp() == null || contractMachine.getRobotIp().isBlank()) {
+            return 0;
+        }
+        if(contractMachineMapper.updateRobotIp(contractMachine)>0){
+            return 1;
+        }
+        return 0;
+    }
 }
