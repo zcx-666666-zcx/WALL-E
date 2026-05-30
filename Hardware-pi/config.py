@@ -44,9 +44,9 @@ ROOM_ID = "0001"
 ONENET_HOST = "mqtts.heclouds.com"
 ONENET_PORT = 1883
 PROD_ID = "kCx33ym0Dt"
-DEV_NAME = "WALEE_1"
-TOKEN = "version=2018-10-31&res=products%2FkCx33ym0Dt%2Fdevices%2FWALEE_1&et=1956499200&method=sha1&sign=7KSXNzQm%2BNfVDMCxOyQL4FrE%2FnE%3D"
-TOPIC_PUB = "$sys/kCx33ym0Dt/WALEE_1/dp/post/json"
+DEV_NAME = "WALLE_1"
+TOKEN = "version=2018-10-31&res=products%2FkCx33ym0Dt%2Fdevices%2FWALLE_1&et=1956499200&method=sha1&sign=7KSXNzQm%2BNfVDMCxOyQL4FrE%2FnE%3D"
+TOPIC_PUB = "$sys/kCx33ym0Dt/WALLE_1/dp/post/json"
 # ================= 7. UDP 外部追踪控制配置 =================
 CMD_PORT = 6002          # 专门接收外部(比如电脑AI)下发的运动指令端口
 SEND_INTERVAL = 1        # 发送间隔 (注: 你注释写着0.1，但代码里是1。如果是0.1秒请改成 0.1)
