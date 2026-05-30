@@ -1,6 +1,8 @@
 # WALL-E Windows + FRP 公网部署说明
 
-如果这份文档是准备交给 Windows 上的 Cursor 执行，请优先同时阅读 `doc/windows-cursor-deploy-handoff.md`。那份文档是按“Mac 开发、Windows 当服务器、FRP 已更换为新隧道/新域名”的交接方式整理的。
+> **标准一键部署流程**见 [windows-deploy-guide.md](./windows-deploy-guide.md)（含花生壳/ChmlFrp、注意点与 Debug）。
+
+若这份文档是准备交给 Windows 上的 Cursor 执行，请优先同时阅读 `doc/windows-cursor-deploy-handoff.md`。那份文档是按“Mac 开发、Windows 当服务器、FRP 已更换为新隧道/新域名”的交接方式整理的。
 
 适用场景：比赛项目、内部演示、预计访问人数 5 人以内。你现在这台 16G 内存、256G 硬盘的 Windows 台式机可以跑这个项目，主要风险不是性能，而是家里/实验室网络稳定性、FRP 免费隧道稳定性、电脑睡眠/断电、上行带宽。
 
