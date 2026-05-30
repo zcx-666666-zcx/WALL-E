@@ -1,0 +1,13 @@
+---
+description: Markdown 文档统一使用中文文件名
+globs: doc/**/*.md,**/*.md
+alwaysApply: true
+---
+
+# Markdown 中文命名
+
+在本项目中创建或重命名 Markdown 文档时：
+
+- 文件名必须使用**中文**（可含数字、连字符），例如 `Windows日常部署.md`、`接口文档.md`
+- 不要使用英文文件名，例如 `windows-deploy-guide.md`、`README.md`（`doc` 目录内）
+- 新建文档时只写必要内容，避免在文档内交叉引用其它 md 文件路径
