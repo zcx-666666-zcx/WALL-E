@@ -4,13 +4,14 @@ import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { getFallApi, getRateApi, getHumidityApi, getBreatheApi, getTemperatureApi, GetMachineListApi } from '../../api/users';
 import { toast } from '../../utils/toast';
 
-const deviceId = ref('kCx33ym0Dt');
+const DEFAULT_DEVICE_ID = 'WALLE_1';
+const deviceId = ref(DEFAULT_DEVICE_ID);
 let isFall = ref();
 let fall = ref("跌倒");
 let userid = ref(localStorage.getItem('Id'));
 let picture_url = ref();
 const Machines = ref([]);
-let showMachine = ref("暂无");
+let showMachine = ref("瓦力");
 
 const rateChartRef = ref(null);
 const humidityChartRef = ref(null);
@@ -44,6 +45,14 @@ const getMachinesList = async () => {
   const result = await GetMachineListApi(userId);
   if (result && result.code === 1) {
     Machines.value = result.data?.rows?.length > 0 ? result.data.rows : [];
+    const defaultMachine = Machines.value.find(m => m.connectionId === DEFAULT_DEVICE_ID);
+    if (defaultMachine) {
+      deviceId.value = defaultMachine.connectionId;
+      showMachine.value = defaultMachine.machines;
+    } else if (Machines.value.length === 0) {
+      deviceId.value = DEFAULT_DEVICE_ID;
+      showMachine.value = '瓦力';
+    }
   } else { toast.error("获取表格数据失败"); }
 };
 
@@ -209,9 +218,9 @@ const Reloading = () => {
   initRateChart(); initHumidityChart(); initBreathChart(); initTemperatureChart();
 };
 
-const changeDeviceId = (id) => {
-  deviceId.value = id;
-  showMachine.value = Machines.value.find(m => m.id === id)?.machines || '未知';
+const changeDeviceId = (machine) => {
+  deviceId.value = machine?.connectionId || DEFAULT_DEVICE_ID;
+  showMachine.value = machine?.machines || '瓦力';
   Reloading();
 };
 
@@ -330,8 +339,8 @@ const fallColor = (s) => s === '正常' ? '#4CAF50' : s === '跌倒' ? '#E53935'
             v-for="(machine, index) in Machines.slice(0, 4)"
             :key="index"
             class="device-item"
-            :class="{ active: deviceId === machine.id }"
-            @click="changeDeviceId(machine.id)"
+            :class="{ active: deviceId === machine.connectionId }"
+            @click="changeDeviceId(machine)"
           >{{ machine.machines }}</div>
         </div>
         <div class="device-info">

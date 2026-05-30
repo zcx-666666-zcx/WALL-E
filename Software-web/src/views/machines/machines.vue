@@ -13,6 +13,8 @@ let userid = ref(localStorage.getItem('Id'))
 let MachinesInfo = ref({ machines: '', connectionId: '', robotIp: '', userId: userid.value })
 let editingIpId = ref(null)
 let editingIpValue = ref('')
+const DEFAULT_DEVICE_ID = 'WALLE_1'
+const isDefaultMachine = (row) => row?.connectionId === DEFAULT_DEVICE_ID
 
 onMounted(() => { getList() })
 
@@ -32,9 +34,10 @@ const AddMachine = async () => {
     canadd.value = "添加"; getList(); close();
 }
 
-const deleteMachine = async (machines) => {
-    if (!await confirm(`确定要删除设备「${machines}」吗？`)) return;
-    const result = await DeleteMachinesApi({ data: { machines, userId: userid.value } });
+const deleteMachine = async (row) => {
+    if (isDefaultMachine(row)) { toast.warning("默认设备不能删除"); return; }
+    if (!await confirm(`确定要删除设备「${row.machines}」吗？`)) return;
+    const result = await DeleteMachinesApi({ data: { machines: row.machines, userId: userid.value } });
     if (result?.code === 1) toast.success("删除成功"); else toast.error("删除失败");
     getList();
 }
@@ -139,11 +142,11 @@ const tableData = ref([])
         </el-table-column>
         <el-table-column label="操作" width="110" align="center">
           <template #default="{ row }">
-            <button class="op-btn" @click="deleteMachine(row.machines)">
+            <button class="op-btn" :disabled="isDefaultMachine(row)" @click="deleteMachine(row)">
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                 <path d="M2 3h7M4 3V2h3v1M3 3l.5 6h4l.5-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              删除
+              {{ isDefaultMachine(row) ? '默认' : '删除' }}
             </button>
           </template>
         </el-table-column>
@@ -182,11 +185,11 @@ const tableData = ref([])
         <div class="modal-body">
           <div class="form-row">
             <label class="form-label">设备名称</label>
-            <input class="form-input" v-model="MachinesInfo.machines" placeholder="请输入设备名称"/>
+            <input class="form-input" v-model="MachinesInfo.machines" placeholder="例如：备用机器人"/>
           </div>
           <div class="form-row">
             <label class="form-label">设备号</label>
-            <input class="form-input" v-model="MachinesInfo.connectionId" placeholder="请输入设备号"/>
+            <input class="form-input" v-model="MachinesInfo.connectionId" placeholder="例如：WALLE_2"/>
           </div>
           <div class="form-row">
             <label class="form-label">机器人 IP 地址</label>

@@ -113,7 +113,7 @@
                   <rect x="1" y="3" width="11" height="8.5" rx="1.5" stroke="#C4A898" stroke-width="1.2"/>
                   <path d="M3.5 3V2.5a3 3 0 016 0V3" stroke="#C4A898" stroke-width="1.2"/>
                 </svg>
-                <input type="text" id="roomId" value="0001" class="room-input" placeholder="输入房间号" />
+                <input type="text" :value="fixedRoomId" class="room-input" readonly />
               </div>
             </div>
 
@@ -188,6 +188,7 @@ export default {
   setup() {
     const socketServerUrl = ref(getSocketServerUrl());
     const livenessApiUrl = ref(getConfigValue('liveness.api-url', ''));
+    const FIXED_ROOM_ID = '0001';
     let socket = null;
     let localStream = null;
     let peerConnection = null;
@@ -224,10 +225,8 @@ export default {
           peerConnection = null;
       }
     
-      // 3. 【最关键的一步】：通过 Socket.IO 告诉树莓派“我挂断了”
-      // 注意：这里的 room_id 要和树莓派上的 ROOM_ID (默认是 "0001") 保持一致
       socket.emit('message', {
-          room: '0001', 
+          room: FIXED_ROOM_ID,
           payload: { type: 'bye' } 
       });
 
@@ -267,7 +266,7 @@ export default {
     }
 
     function joinRoom() {
-      const roomId = '0001';
+      const roomId = FIXED_ROOM_ID;
       if (!roomId) return toast.warning("请输入房间号");
 
       log(`正在申请加入房间: ${roomId}`);
@@ -337,7 +336,7 @@ export default {
       peerConnection = new RTCPeerConnection(rtcConfig);
       peerConnection.onicecandidate = (e) => {
         if (e.candidate) {
-          socket.emit('message', { room: document.getElementById('roomId').value, payload: { type: 'candidate', candidate: e.candidate } });
+          socket.emit('message', { room: FIXED_ROOM_ID, payload: { type: 'candidate', candidate: e.candidate } });
         }
       };
       peerConnection.ontrack = (e) => {
@@ -438,7 +437,7 @@ export default {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       log('📤 发送 Offer…');
-      socket.emit('message', { room: document.getElementById('roomId').value, payload: offer });
+      socket.emit('message', { room: FIXED_ROOM_ID, payload: offer });
     }
 
     async function handleOffer(offer) {
@@ -448,7 +447,7 @@ export default {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       log("📤 发送 Answer…");
-      socket.emit('message', { room: document.getElementById('roomId').value, payload: answer });
+      socket.emit('message', { room: FIXED_ROOM_ID, payload: answer });
     }
 
     async function handleAnswer(answer) {
@@ -460,7 +459,7 @@ export default {
       if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(c.candidate));
     }
 
-    return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl };
+    return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl, fixedRoomId: FIXED_ROOM_ID };
   }
 };
 </script>
