@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import pojos.ContractMachine;
 import pojos.Result;
+import util.CurrentHolder;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/robot")
@@ -29,16 +29,23 @@ public class RobotProxyController {
     @Autowired
     private ContractMachineMapper contractMachineMapper;
 
-    private final Map<Integer, String> roomCache = new ConcurrentHashMap<>();
+    private String getRoom(ContractMachine machine) {
+        if (machine == null || machine.getConnectionId() == null || machine.getConnectionId().isEmpty()) {
+            throw new RuntimeException("机器人未找到或设备号未配置");
+        }
+        return "robot_" + machine.getConnectionId();
+    }
 
-    private String getRoom(Integer machineId) {
-        return roomCache.computeIfAbsent(machineId, id -> {
-            ContractMachine machine = contractMachineMapper.getById(id);
-            if (machine == null || machine.getMachines() == null || machine.getMachines().isEmpty()) {
-                throw new RuntimeException("机器人未找到或设备名未配置，machineId: " + id);
-            }
-            return "robot_" + machine.getMachines();
-        });
+    private ContractMachine requireOwnedMachine(Integer machineId) {
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null) {
+            throw new RuntimeException("未登录或 token 无效");
+        }
+        ContractMachine machine = contractMachineMapper.getByIdAndUserId(machineId, String.valueOf(currentUserId));
+        if (machine == null) {
+            throw new RuntimeException("设备不存在或不属于当前用户");
+        }
+        return machine;
     }
 
     @PostMapping("/motor")
@@ -48,7 +55,8 @@ public class RobotProxyController {
             double stickX = ((Number) body.get("stickX")).doubleValue();
             double stickY = ((Number) body.get("stickY")).doubleValue();
 
-            String room = getRoom(machineId);
+            ContractMachine machine = requireOwnedMachine(machineId);
+            String room = getRoom(machine);
             System.out.println("[RobotProxy] 电机指令 -> 房间: " + room + " | X=" + stickX + " Y=" + stickY);
             server.getRoomOperations(room).sendEvent("cmd_motor",
                     Map.of("stickX", String.valueOf(stickX), "stickY", String.valueOf(stickY)));
@@ -68,7 +76,8 @@ public class RobotProxyController {
             Object valObj = body.get("value");
             String value = valObj != null ? String.valueOf(valObj) : "50";
 
-            String room = getRoom(machineId);
+            ContractMachine machine = requireOwnedMachine(machineId);
+            String room = getRoom(machine);
             server.getRoomOperations(room).sendEvent("cmd_servo",
                     Map.of("servo", servo, "value", value));
 
@@ -85,7 +94,8 @@ public class RobotProxyController {
             Object clipObj = body.get("clip");
             String clip = clipObj != null ? String.valueOf(clipObj) : "0";
 
-            String room = getRoom(machineId);
+            ContractMachine machine = requireOwnedMachine(machineId);
+            String room = getRoom(machine);
             server.getRoomOperations(room).sendEvent("cmd_animate", Map.of("clip", clip));
 
             return Result.success();
@@ -102,7 +112,8 @@ public class RobotProxyController {
             Object valObj = body.get("value");
             String value = valObj != null ? String.valueOf(valObj) : "";
 
-            String room = getRoom(machineId);
+            ContractMachine machine = requireOwnedMachine(machineId);
+            String room = getRoom(machine);
             server.getRoomOperations(room).sendEvent("cmd_settings",
                     Map.of("type", type, "value", value));
 
@@ -115,6 +126,7 @@ public class RobotProxyController {
     @GetMapping("/robotIp/{machineId}")
     public Result getRobotIp(@PathVariable Integer machineId) {
         try {
+            requireOwnedMachine(machineId);
             String ip = robotProxyService.getRobotIp(machineId);
             return Result.success(ip);
         } catch (Exception e) {
