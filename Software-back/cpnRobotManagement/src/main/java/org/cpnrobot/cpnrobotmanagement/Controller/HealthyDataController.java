@@ -1,10 +1,12 @@
 package org.cpnrobot.cpnrobotmanagement.Controller;
 
+import org.cpnrobot.cpnrobotmanagement.Mapper.ContractMachineMapper;
 import org.cpnrobot.cpnrobotmanagement.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import pojos.*;
+import util.CurrentHolder;
 
 @RequestMapping("/api/healthy")
 @RestController
@@ -23,6 +25,17 @@ public class HealthyDataController {
     private SensorBreatheService sensorBreatheService;
     @Autowired
     private SensorFallService sensorFallService;
+    @Autowired
+    private ContractMachineMapper contractMachineMapper;
+
+    private Result rejectIfNotOwned(String deviceId) {
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null ||
+                contractMachineMapper.findByUserIdAndConnectionId(String.valueOf(currentUserId), deviceId) == null) {
+            return Result.error("设备不存在或不属于当前用户");
+        }
+        return null;
+    }
 
     @PostMapping("/addRate")
     public Result addRate(@RequestBody SensorRate sensorRate){
@@ -56,30 +69,50 @@ public class HealthyDataController {
 
     @GetMapping("/getRate/{deviceId}")
     public Result getRate(@PathVariable("deviceId") String deviceId){
+        Result rejected = rejectIfNotOwned(deviceId);
+        if (rejected != null) {
+            return rejected;
+        }
         ListResult<SensorRate> rateList = healthyDataService.getRate(deviceId);
         return Result.success(rateList);
     }
 
     @GetMapping("/getHumidity/{deviceId}")
     public Result getHumidity(@PathVariable("deviceId") String deviceId){
+        Result rejected = rejectIfNotOwned(deviceId);
+        if (rejected != null) {
+            return rejected;
+        }
         ListResult<SensorHumidity> humidityList = healthyDataService.getHumidity(deviceId);
         return Result.success(humidityList);
     }
 
     @GetMapping("/getBreathe/{deviceId}")
     public Result getBreathe(@PathVariable("deviceId") String deviceId){
+        Result rejected = rejectIfNotOwned(deviceId);
+        if (rejected != null) {
+            return rejected;
+        }
         ListResult<SensorBreathe> breatheList = healthyDataService.getBreathe(deviceId);
         return Result.success(breatheList);
     }
 
     @GetMapping("/getTemperature/{deviceId}")
     public Result getTemperature(@PathVariable("deviceId") String deviceId){
+        Result rejected = rejectIfNotOwned(deviceId);
+        if (rejected != null) {
+            return rejected;
+        }
         ListResult<SensorTemperature> temperatureList = healthyDataService.getTemperature(deviceId);
         return Result.success(temperatureList);
     }
 
     @GetMapping("/getFall/{deviceId}")
     public Result getFall(@PathVariable("deviceId")String deviceId){
+        Result rejected = rejectIfNotOwned(deviceId);
+        if (rejected != null) {
+            return rejected;
+        }
         SensorFall sensorFall = healthyDataService.getFall(deviceId);
         return Result.success(sensorFall);
     }
