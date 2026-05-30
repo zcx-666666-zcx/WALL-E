@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pojos.ContractMachine;
 import pojos.ListResult;
 import pojos.Result;
+import util.CurrentHolder;
 
 @RestController
 @RequestMapping("/api/contractMachine")
@@ -17,13 +18,21 @@ public class ContractMachineController {
 
     @GetMapping("/search/{userId}")
     public Result search(@PathVariable String userId){
-        ListResult<ContractMachine> listResult = contractMachineService.search(userId);
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null) {
+            return Result.error("未登录或 token 无效");
+        }
+        ListResult<ContractMachine> listResult = contractMachineService.searchForCurrentUser(currentUserId);
         return Result.success(listResult);
     }
 
     @PostMapping("/add")
     public Result add(@RequestBody ContractMachine contractMachine){
-        int num = contractMachineService.add(contractMachine);
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null) {
+            return Result.error("未登录或 token 无效");
+        }
+        int num = contractMachineService.addForCurrentUser(contractMachine, currentUserId);
         if(num!=0){
             return Result.success();
         }
@@ -32,7 +41,11 @@ public class ContractMachineController {
 
     @DeleteMapping("/delete")
     public Result delete(@RequestBody ContractMachine contractMachine){
-        int num = contractMachineService.delete(contractMachine);
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null) {
+            return Result.error("未登录或 token 无效");
+        }
+        int num = contractMachineService.deleteForCurrentUser(contractMachine, currentUserId);
         if(num!=0){
             return Result.success();
         }
@@ -41,7 +54,11 @@ public class ContractMachineController {
 
     @PutMapping("/robot-ip")
     public Result updateRobotIp(@RequestBody ContractMachine contractMachine){
-        int num = contractMachineService.updateRobotIp(contractMachine);
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        if (currentUserId == null) {
+            return Result.error("未登录或 token 无效");
+        }
+        int num = contractMachineService.updateRobotIpForCurrentUser(contractMachine, currentUserId);
         if(num!=0){
             return Result.success();
         }
