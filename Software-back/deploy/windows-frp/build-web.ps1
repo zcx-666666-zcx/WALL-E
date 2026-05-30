@@ -1,5 +1,5 @@
 param(
-  [string]$ProjectRoot = "D:\WALL-E"
+  [string]$ProjectRoot = "D:\Projects\WALL-E"
 )
 
 $ErrorActionPreference = "Stop"

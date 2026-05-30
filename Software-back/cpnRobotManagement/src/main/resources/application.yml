@@ -7,7 +7,7 @@ spring:
     name: cpnRobotManagement
 
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3307/cpnrobot?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/cpnrobot?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:admin123}
     driver-class-name: com.mysql.cj.jdbc.Driver

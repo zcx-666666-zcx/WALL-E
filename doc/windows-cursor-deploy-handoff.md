@@ -22,7 +22,7 @@
   -> https://你的新FRP域名
   -> FRP 隧道
   -> Windows 127.0.0.1:8088 Nginx
-  -> Vue 静态文件 D:\WALL-E\Software-web\dist
+  -> Vue 静态文件 D:\Projects\WALL-E\Software-web\dist
   -> Spring Boot API 127.0.0.1:8080
   -> Socket.IO 127.0.0.1:8081
   -> Docker MySQL 127.0.0.1:3307
@@ -54,7 +54,7 @@ docker --version
 推荐把项目放到：
 
 ```powershell
-D:\WALL-E
+D:\Projects\WALL-E
 ```
 
 如果 Windows 上还没有代码：
@@ -62,7 +62,7 @@ D:\WALL-E
 ```powershell
 cd D:\
 git clone git@github.com:zcx-666666-zcx/WALL-E.git WALL-E
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 git checkout codex/admin-config-cleanup
 git pull
 ```
@@ -70,7 +70,7 @@ git pull
 如果已经有代码：
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 git fetch origin
 git checkout codex/admin-config-cleanup
 git pull
@@ -79,7 +79,7 @@ git pull
 ## 启动数据库
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\start-mysql.ps1
 ```
 
@@ -94,14 +94,14 @@ docker ps
 ## 构建 Web
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\build-web.ps1
 ```
 
 构建产物会生成在：
 
 ```text
-D:\WALL-E\Software-web\dist
+D:\Projects\WALL-E\Software-web\dist
 ```
 
 ## 启动后端
@@ -109,7 +109,7 @@ D:\WALL-E\Software-web\dist
 打开一个新的 PowerShell 窗口，运行：
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\start-backend.ps1
 ```
 
@@ -128,20 +128,20 @@ Invoke-WebRequest http://127.0.0.1:8080/actuator/health -UseBasicParsing
 Nginx 配置文件在项目里：
 
 ```text
-D:\WALL-E\Software-back\deploy\windows-frp\nginx-wall-e.conf
+D:\Projects\WALL-E\Software-back\deploy\windows-frp\nginx-wall-e.conf
 ```
 
 确认文件里的路径符合 Windows 实际目录：
 
 ```nginx
 listen 127.0.0.1:8088;
-root D:/WALL-E/Software-web/dist;
+root D:/Projects/WALL-E/Software-web/dist;
 ```
 
 把这个 server 配置 include 到 Nginx，或者复制到 Nginx 的配置目录。然后运行：
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\restart-nginx.ps1 -NginxRoot "D:\nginx"
 ```
 
@@ -170,7 +170,7 @@ SSL：优先开启 HTTPS
 公网检查：
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\health-check.ps1 -PublicUrl "https://你的新FRP域名"
 ```
 
@@ -254,20 +254,20 @@ SOCKETIO_SERVER_URL = "https://你的新FRP域名"
 演示前、换机器前、改数据库前都先备份：
 
 ```powershell
-cd D:\WALL-E
+cd D:\Projects\WALL-E
 .\Software-back\deploy\windows-frp\backup-mysql.ps1
 ```
 
 备份文件在：
 
 ```text
-D:\WALL-E\backups\mysql
+D:\Projects\WALL-E\backups\mysql
 ```
 
 恢复：
 
 ```powershell
-.\Software-back\deploy\windows-frp\restore-mysql.ps1 -SqlFile "D:\WALL-E\backups\mysql\你的备份文件.sql"
+.\Software-back\deploy\windows-frp\restore-mysql.ps1 -SqlFile "D:\Projects\WALL-E\backups\mysql\你的备份文件.sql"
 ```
 
 ## 常见错误
