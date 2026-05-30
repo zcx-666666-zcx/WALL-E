@@ -32,17 +32,23 @@ public class TokenFilter implements Filter {
             return;
         }
 
+        boolean publicHealthyIngest =
+                requestURI.equals("/api/healthy/addRate") ||
+                requestURI.equals("/api/healthy/addHumidity") ||
+                requestURI.equals("/api/healthy/addBreathe") ||
+                requestURI.equals("/api/healthy/addTemperature") ||
+                requestURI.equals("/api/healthy/addFall");
+
         // 只拦截 /api/ 开头的请求
         if (!requestURI.startsWith("/api/") ||
-                requestURI.startsWith("/api/healthy") ||
-                requestURI.startsWith("/api/events/search") ||
+                publicHealthyIngest ||
                 requestURI.startsWith("/api/robot/video-feed/") ||
                 requestURI.startsWith("/api/robot/video-feed-low/") ||
                 requestURI.startsWith("/api/robot/camera-frame/") ||
                 requestURI.startsWith("/api/users/getId") ||
                 requestURI.startsWith("/api/system-config/public")
         ) {
-            System.out.println("[TokenFilter] 非 API 或 healthy 路径，直接放行");
+            System.out.println("[TokenFilter] 公开路径，直接放行");
             filterChain.doFilter(request, response);
             return;
         }
