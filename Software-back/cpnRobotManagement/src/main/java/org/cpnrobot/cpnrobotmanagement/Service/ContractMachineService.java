@@ -11,4 +11,12 @@ public interface ContractMachineService {
     int delete(ContractMachine contractMachine);
 
     int updateRobotIp(ContractMachine contractMachine);
+
+    ListResult<ContractMachine> searchForCurrentUser(Integer currentUserId);
+
+    int addForCurrentUser(ContractMachine contractMachine, Integer currentUserId);
+
+    int deleteForCurrentUser(ContractMachine contractMachine, Integer currentUserId);
+
+    int updateRobotIpForCurrentUser(ContractMachine contractMachine, Integer currentUserId);
 }
