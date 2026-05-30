@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pojos.Event;
 import pojos.ListResult;
 import pojos.Result;
+import util.CurrentHolder;
 
 @RequestMapping("/api/events")
 @RestController
@@ -17,8 +18,13 @@ public class EventController {
     @Autowired
     private EventService eventservice;
 
+    private String currentUserId() {
+        return String.valueOf(CurrentHolder.getCurrentId());
+    }
+
     @PostMapping("/add")
     public Result addEvent(@RequestBody Event event){
+        event.setUserId(currentUserId());
         int num = eventservice.addEvent(event);
         if(num!=0){
             return Result.success();
@@ -28,12 +34,13 @@ public class EventController {
 
     @GetMapping("/search/{userId}")
     public Result searchEvent(@PathVariable("userId") String userId){
-        ListResult<Event> listResult = eventservice.searchEvent(userId);
+        ListResult<Event> listResult = eventservice.searchEvent(currentUserId());
         return Result.success(listResult);
     }
 
     @DeleteMapping("/delete")
     public Result deleteEvent(@RequestBody Event event){
+        event.setUserId(currentUserId());
     	int num = eventservice.deleteEvent(event);
     	if(num!=0){
     		return Result.success();
@@ -44,6 +51,7 @@ public class EventController {
 
     @PostMapping("/searchOne")
     public Result searchOne(@RequestBody Event event){
+        event.setUserId(currentUserId());
         Event e = eventservice.searchOne(event);
         if(e!=null){
             return Result.success(e);
@@ -53,6 +61,7 @@ public class EventController {
 
     @PutMapping("/update")
     public Result updateEvent(@RequestBody Event event){
+        event.setUserId(currentUserId());
     	int num = eventservice.updateEvent(event);
     	if(num!=0){
     		return Result.success();
