@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pojos.ContractUser;
 import pojos.ListResult;
 import pojos.Result;
+import util.CurrentHolder;
 
 import java.util.List;
 
@@ -21,12 +22,15 @@ public class ContractUserController {
 
     @GetMapping("/search/{userId}")
     public Result search(@PathVariable("userId") String userId){
-        ListResult<ContractUser> listResult = contractUserService.search(userId);
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        ListResult<ContractUser> listResult = contractUserService.search(String.valueOf(currentUserId));
         return Result.success(listResult);
     }
 
     @PostMapping("/add")
     public Result add(@RequestBody ContractUser contractUser){
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        contractUser.setUserId(currentUserId);
         int num = contractUserService.add(contractUser);
         if(num!=0){
             return Result.success();
@@ -36,6 +40,8 @@ public class ContractUserController {
 
     @DeleteMapping("/delete")
     public Result delete(@RequestBody ContractUser contractUser){
+        Integer currentUserId = CurrentHolder.getCurrentId();
+        contractUser.setUserId(currentUserId);
     	int num = contractUserService.delete(contractUser);
     	if(num!=0){
     		return Result.success();
