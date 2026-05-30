@@ -10,6 +10,7 @@ import java.util.List;
 public interface HealthyDataMapper {
 
     @Select("SELECT * FROM sensor_fall " +
+            "WHERE device_id = #{deviceId} " +
             "ORDER BY created_at DESC " +
             "LIMIT 1")
     SensorFall getFall(String deviceId);
