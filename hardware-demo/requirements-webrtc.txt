@@ -1,0 +1,4 @@
+-r requirements.txt
+aiortc>=1.8,<2
+av>=12,<15
+numpy>=1.26,<3
