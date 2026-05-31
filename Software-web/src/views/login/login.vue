@@ -14,7 +14,8 @@ let focusUser = ref(false);
 let focusPwd = ref(false);
 
 const GoToPage = (loginUser) => {
-    router.push({ path: '/index', query: { username: loginUser.username } });
+    const targetPath = loginUser.role === 'admin' ? '/admin' : '/index';
+    router.replace({ path: targetPath, query: { username: loginUser.username } });
 }
 const GoToRegis = () => { router.push({ path: '/regis' }) }
 
@@ -23,17 +24,24 @@ const login = async () => {
     if (!username.value || !password.value) { ElMessage.warning("请输入用户名和密码"); return; }
     loading.value = true;
     log.value = "登录中…";
-    const loginInfo = { username: username.value, password: password.value };
-    const result = await LoginApi(loginInfo);
-    if (result.code) {
-        log.value = "✓ 成功";
-        localStorage.setItem('loginUserObject', JSON.stringify(result.data));
-        localStorage.setItem('Id', result.data.id);
-        setTimeout(() => GoToPage(result.data), 500);
-    } else {
-        ElMessage.error(result.msg);
-        log.value = "登 录";
+    try {
+        const loginInfo = { username: username.value, password: password.value };
+        const result = await LoginApi(loginInfo);
+        if (result.code) {
+            log.value = "✓ 成功";
+            localStorage.setItem('loginUserObject', JSON.stringify(result.data));
+            localStorage.setItem('Id', result.data.id);
+            setTimeout(() => GoToPage(result.data), 500);
+        } else {
+            ElMessage.error(result.msg || '登录失败');
+        }
+    } catch (error) {
+        ElMessage.error(error?.response?.data?.msg || error?.message || '登录失败');
+    } finally {
         loading.value = false;
+        if (log.value !== "✓ 成功") {
+            log.value = "登 录";
+        }
     }
 }
 

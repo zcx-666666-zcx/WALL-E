@@ -27,26 +27,33 @@ const regis = async () => {
     }
     loading.value = true;
     log.value = "注册中…";
-    const RegisInfo = { username: username.value, phoneNumber: phoneNumber.value, password: password.value };
-    const result = await RegisApi(RegisInfo);
-    if (result.code) {
-        log.value = "✓ 成功";
+    try {
+        const RegisInfo = { username: username.value, phoneNumber: phoneNumber.value, password: password.value };
+        const result = await RegisApi(RegisInfo);
+        if (result.code) {
+            log.value = "✓ 成功";
 
-        try {
-            const aiBase = getConfigValue('ai.agent-api-url', '')
-            if (aiBase) await fetch(`${aiBase.replace(/\/$/, '')}/user/init_wali?user_id=${username.value}`, {
-                method: 'POST'
-            })
-        } catch (e) {
-            console.warn('瓦利初始化失败', e)
+            try {
+                const aiBase = getConfigValue('ai.agent-api-url', '')
+                if (aiBase) await fetch(`${aiBase.replace(/\/$/, '')}/user/init_wali?user_id=${username.value}`, {
+                    method: 'POST'
+                })
+            } catch (e) {
+                console.warn('瓦利初始化失败', e)
+            }
+
+            ElMessage.success("注册成功，即将跳转登录");
+            setTimeout(() => GoToLogin(), 1000);
+        } else {
+            ElMessage.error(result.msg || '注册失败');
         }
-
-        ElMessage.success("注册成功，即将跳转登录");
-        setTimeout(() => GoToLogin(), 1000);
-    } else {
-        ElMessage.error(result.msg);
-        log.value = "注 册";
+    } catch (error) {
+        ElMessage.error(error?.response?.data?.msg || error?.message || '注册失败');
+    } finally {
         loading.value = false;
+        if (log.value !== "✓ 成功") {
+            log.value = "注 册";
+        }
     }
 }
 

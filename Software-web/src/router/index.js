@@ -72,17 +72,18 @@ const getLoginUser = () => {
 
 router.beforeEach((to, from, next) => {
   const token = getToken()
+  const loginUser = getLoginUser()
 
   if (to.path === '/login' || to.path === '/regis') {
     // 已登录用户访问登录页，直接跳到首页
-    if (token) return next('/index')
+    if (token) return next(loginUser?.role === 'admin' ? '/admin' : '/index')
     return next()
   }
 
   // 访问受保护页面但没有 token，跳转到登录页
   if (!token) return next('/login')
 
-  if (to.path === '/admin' && getLoginUser()?.role !== 'admin') {
+  if (to.path === '/admin' && loginUser?.role !== 'admin') {
     return next('/index')
   }
 

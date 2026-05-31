@@ -17,6 +17,10 @@ public class LoginController {
 
     @PostMapping()
     public Result login(@RequestBody User user){
+        if (user == null || user.getUsername() == null || user.getUsername().isBlank()
+                || user.getPassword() == null || user.getPassword().isBlank()) {
+            return Result.error("请输入用户名和密码");
+        }
         LoginInfo l = userservice.login(user);
         if(l!= null){
             return Result.success(l);

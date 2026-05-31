@@ -24,7 +24,8 @@ public class userServiceImpl implements userService {
 
     @Override
     public LoginInfo login(User user) {
-        if (user == null || user.getUsername() == null || user.getPassword() == null) {
+        if (user == null || user.getUsername() == null || user.getUsername().isBlank()
+                || user.getPassword() == null || user.getPassword().isBlank()) {
             return null;
         }
         User u = usermapper.findByUsername(user.getUsername());
@@ -40,12 +41,13 @@ public class userServiceImpl implements userService {
         claims.put("name",u.getUsername());
         claims.put("role", role);
         String token = JwtUtils.createJwt(claims);
-        return new LoginInfo(u.getId(),u.getUsername(),null,token,role);
+        return new LoginInfo(u.getId(),u.getUsername(),token,role);
     }
 
     @Override
     public int register(User user) {
-        if (user == null || user.getUsername() == null || user.getPassword() == null) {
+        if (user == null || user.getUsername() == null || user.getUsername().isBlank()
+                || user.getPassword() == null || user.getPassword().isBlank()) {
             return 0;
         }
         User u = usermapper.register_check(user);
@@ -57,7 +59,7 @@ public class userServiceImpl implements userService {
             }
             return 0;
         }
-        return 0;
+        return 2;
     }
 
     @Override

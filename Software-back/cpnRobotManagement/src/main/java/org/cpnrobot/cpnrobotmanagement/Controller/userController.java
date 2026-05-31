@@ -20,10 +20,13 @@ public class userController {
     @PostMapping("/register")
     public Result register(@RequestBody User user){
         int num = userservice.register(user);
-        if(num!=0){
+        if(num==1){
             return Result.success();
         }
-        return Result.error("注册失败");
+        if (num == 2) {
+            return Result.error("用户名已存在");
+        }
+        return Result.error("请输入完整注册信息");
     }
 
     @PutMapping("/password")
@@ -38,7 +41,6 @@ public class userController {
 
     @GetMapping("/getId/{username}")
     public Result getId(@PathVariable String username){
-        System.out.println(username);
         User user = userservice.getId(username);
         return Result.success(user);
     }
