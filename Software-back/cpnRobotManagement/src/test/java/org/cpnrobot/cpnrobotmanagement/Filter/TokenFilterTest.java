@@ -38,4 +38,17 @@ class TokenFilterTest {
         assertThat(chainCalled).isTrue();
         assertThat(response.getStatus()).isEqualTo(200);
     }
+
+    @Test
+    void registerDoesNotRequireToken() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/users/register");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (servletRequest, servletResponse) -> chainCalled.set(true);
+
+        tokenFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalled).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
+    }
 }
