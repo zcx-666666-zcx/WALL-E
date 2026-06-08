@@ -109,7 +109,7 @@
 
 ### 6. 制造可行性与品质控制
 
-- 三维建模软件和源文件说明：源文件位于 `/Users/zhangchenxi/Desktop/西门子规划/可编辑瓦力`，包含 `.SLDASM/.SLDPRT/.STEP/.3mf`。
+- 三维建模软件和源文件说明：源文件已入库到 `doc/三维建模资料/source/可编辑瓦力`，包含 `.SLDASM/.SLDPRT/.STEP/.3mf`，全量清单见 `doc/三维建模资料/FILELIST.md`。
 - 机械装配流程。
 - 电气装配流程。
 - BOM 与成本。
