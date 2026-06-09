@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { GetSystemConfigApi, UpdateSystemConfigApi } from '@/api/systemConfig'
 import { ChangePasswordApi } from '@/api/users'
 import { saveCachedConfig } from '@/utils/systemConfig'
+import { clearAuthSession, logoutLocally } from '@/utils/authSession'
 
 const router = useRouter()
 const configs = ref([])
@@ -105,8 +106,7 @@ async function changePassword() {
     if (result?.code === 1) {
       passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
       ElMessage.success('密码已修改，请使用新密码重新登录')
-      localStorage.removeItem('loginUserObject')
-      localStorage.removeItem('Id')
+      logoutLocally()
       router.replace('/login')
     } else {
       ElMessage.error(result?.msg || '修改密码失败')
@@ -121,8 +121,7 @@ async function changePassword() {
 function handleLoadError(message) {
   loadError.value = message
   if (message === '无权限') {
-    localStorage.removeItem('loginUserObject')
-    localStorage.removeItem('Id')
+      clearAuthSession()
     ElMessage.error('管理员登录状态已失效，请重新登录')
     router.replace('/login')
     return

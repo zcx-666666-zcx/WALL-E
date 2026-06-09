@@ -210,7 +210,14 @@ const handleKeydown = (e) => { if (e.key === 'Enter') login(); }
 /* 背景图 */
 .bg-image {
   position: absolute; inset: 0;
-  background: url("/images/index_picture2.png") center / cover no-repeat;
+  background-image: url("/images/index_picture2.png");
+  background-image: image-set(
+    url("/images/index_picture2.webp") type("image/webp"),
+    url("/images/index_picture2.png") type("image/png")
+  );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   transform: scale(1.05);
   filter: brightness(0.75) saturate(0.9);
 }

@@ -2,6 +2,7 @@
   import { ref, onMounted, onUnmounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { GetIdApi, GetMachineListApi } from '../../api/users';
+  import { logoutLocally } from '../../utils/authSession';
 
   const route = useRoute();
   const router = useRouter();
@@ -82,6 +83,7 @@
       '/drive': '远程遥控',
       '/connections': '更多连接',
       '/set': '设置',
+      '/robot-showcase': '机器人展示',
       '/info': '说明',
       '/admin': '系统配置',
     };
@@ -121,9 +123,8 @@
   };
 
   const logout = () => {
-    localStorage.removeItem('loginUserObject')
-    localStorage.removeItem('Id')
-    router.push('/login')
+    logoutLocally()
+    router.replace('/login')
   }
 
   const menuItems = [
@@ -141,6 +142,7 @@
     { path: '/drive', icon: 'Switch', label: '远程遥控' },
     { path: '/healthy', icon: 'CirclePlusFilled', label: '健康监测' },
     { type: 'label', label: '系统' },
+    { path: '/robot-showcase', icon: 'Cpu', label: '机器人展示' },
     { path: '/connections', icon: 'Link', label: '更多连接' },
     { path: '/set', icon: 'Setting', label: '设置' },
     { path: '/admin', icon: 'Tools', label: '系统配置', adminOnly: true },
@@ -542,7 +544,15 @@
 .main {
   flex: 1; background: transparent;
   padding: 20px 24px; box-sizing: border-box;
-  overflow: hidden; position: relative; z-index: 1;
+  overflow: auto; position: relative; z-index: 1;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+.main :deep(> *) {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ═══════════ 报警弹窗 ═══════════ */
@@ -598,6 +608,10 @@
   .head { padding: 0 12px 0 56px; }
   .head-title { font-size: 14px; }
   .head-clock, .head-notify { display: none; }
-  .main { padding: 12px; }
+  .main { padding: 12px; overflow-x: hidden; }
+}
+
+@media (min-width: 1440px) {
+  .main { padding: 24px 32px; }
 }
 </style>

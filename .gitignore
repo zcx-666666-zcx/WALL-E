@@ -32,3 +32,8 @@ __pycache__/
 
 # Local runtime backups
 backups/
+logs/
+Software-web/public/models/robot-full.obj
+Software-web/public/models/robot.glb
+Software-web/public/models/robot.draco.glb
+Software-web/scripts/__pycache__/

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast, confirm } from '../../utils/toast'
 import { DeleteAccountApi } from '../../api/users'
+import { logoutLocally } from '../../utils/authSession'
 
 const router = useRouter()
 
@@ -16,6 +17,10 @@ const voiceType = ref('温馨女声')
 function clearCache() { toast.success('缓存已清除') }
 function feedback() { toast.info('反馈功能即将上线～') }
 function about() { toast.success('智能陪伴机器人 v1.0') }
+function logout() {
+  logoutLocally()
+  router.replace('/login')
+}
 
 async function deleteAccount() {
   const ok = await confirm('注销后，您的账号、事件提醒、紧急联系人数据将全部被删除，且无法恢复。确定要继续吗？', '注销账号', {
@@ -147,7 +152,7 @@ async function deleteAccount() {
 
       <div class="setting-card">
         <div class="card-title">账号管理</div>
-        <div class="item clickable logout-item" @click="$router.push('/login')">
+        <div class="item clickable logout-item" @click="logout">
           <div>
             <label class="logout-label">退出登录</label>
             <div class="tip">退出当前账号，返回登录页</div>

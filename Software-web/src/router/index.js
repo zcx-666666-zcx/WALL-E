@@ -41,6 +41,7 @@ const router = createRouter({
         {path: 'drive', name: 'drive' ,component: DriveView},
         {path: 'healthy', name: 'healthy', component: HealthyView},
         {path: 'new_agent', name: 'new_agent' ,component: AIView},
+        {path: 'robot-showcase', name: 'robot-showcase', component: () => import('@/views/robot_showcase/robot_showcase.vue')},
         {path: 'admin', name: 'admin', component: AdminView}
       ]
     },

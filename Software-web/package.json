@@ -13,11 +13,13 @@
     "echarts": "^6.0.0",
     "element-plus": "^2.4.4",
     "socket.io-client": "^4.8.3",
+    "three": "^0.184.0",
     "vue": "^3.2.38",
     "vue-router": "^4.1.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
+    "gltf-pipeline": "^4.3.1",
     "vite": "^3.0.9"
   }
 }

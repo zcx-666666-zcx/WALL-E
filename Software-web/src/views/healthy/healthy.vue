@@ -3,6 +3,7 @@ import * as echarts from 'echarts';
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { getFallApi, getRateApi, getHumidityApi, getBreatheApi, getTemperatureApi, GetMachineListApi } from '../../api/users';
 import { toast } from '../../utils/toast';
+import { isAuthSilentError } from '../../utils/authSession';
 
 const DEFAULT_DEVICE_ID = 'WALLE_1';
 const deviceId = ref(DEFAULT_DEVICE_ID);
@@ -39,6 +40,12 @@ let temperatureData = ref([]);
 
 let timers = { rate: null, humidity: null, breath: null, temperature: null, fetchData: null };
 let resizeHandlers = { rate: null, humidity: null, breath: null, temperature: null };
+let active = true;
+
+const logDataError = (message, error) => {
+  if (isAuthSilentError(error) || error?.response?.status === 401) return;
+  console.error(message, error);
+};
 
 const getMachinesList = async () => {
   const userId = userid.value;
@@ -74,7 +81,7 @@ const fetchRateData = async () => {
     const res = await getRateApi(deviceId.value);
     rateData.value = formatApiData(res, 'rate');
     if (rateData.value.length > 0) rate.value = rateData.value[rateData.value.length - 1][1];
-  } catch (error) { console.error('获取心率数据失败:', error); }
+  } catch (error) { logDataError('获取心率数据失败:', error); }
 };
 
 const fetchHumidityData = async () => {
@@ -82,7 +89,7 @@ const fetchHumidityData = async () => {
     const res = await getHumidityApi(deviceId.value);
     humidityData.value = formatApiData(res, 'humidity');
     if (humidityData.value.length > 0) humidity.value = humidityData.value[humidityData.value.length - 1][1];
-  } catch (error) { console.error('获取湿度数据失败:', error); }
+  } catch (error) { logDataError('获取湿度数据失败:', error); }
 };
 
 const fetchBreathData = async () => {
@@ -90,7 +97,7 @@ const fetchBreathData = async () => {
     const res = await getBreatheApi(deviceId.value);
     breathData.value = formatApiData(res, 'breathe');
     if (breathData.value.length > 0) breath.value = breathData.value[breathData.value.length - 1][1];
-  } catch (error) { console.error('获取呼吸数据失败:', error); }
+  } catch (error) { logDataError('获取呼吸数据失败:', error); }
 };
 
 const fetchTemperatureData = async () => {
@@ -98,7 +105,7 @@ const fetchTemperatureData = async () => {
     const res = await getTemperatureApi(deviceId.value);
     temperatureData.value = formatApiData(res, 'temperature');
     if (temperatureData.value.length > 0) temperature.value = temperatureData.value[temperatureData.value.length - 1][1];
-  } catch (error) { console.error('获取体温数据失败:', error); }
+  } catch (error) { logDataError('获取体温数据失败:', error); }
 };
 
 const getFall = async () => {
@@ -108,10 +115,11 @@ const getFall = async () => {
       isFall.value = res.data.fall;
       fall.value = isFall.value === false ? '正常' : isFall.value === true ? '跌倒' : '未识别到目标';
     }
-  } catch (error) { console.error('获取姿态失败:', error); }
+  } catch (error) { logDataError('获取姿态失败:', error); }
 };
 
 const fetchAllData = async () => {
+  if (!active) return;
   await Promise.all([fetchRateData(), fetchHumidityData(), fetchBreathData(), fetchTemperatureData(), getFall()]);
 };
 
@@ -232,6 +240,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  active = false;
   Object.values(timers).forEach(timer => timer && clearInterval(timer));
   Object.entries(resizeHandlers).forEach(([key, handler]) => { if (handler) window.removeEventListener('resize', handler); });
   [rateChart, humidityChart, breathChart, temperatureChart].forEach(chart => { if (chart) { chart.dispose(); chart = null; } });
