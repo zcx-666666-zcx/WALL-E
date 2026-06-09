@@ -26,6 +26,8 @@ let model;
 let frameId;
 let resizeObserver;
 let disposed = false;
+let defaultCameraPosition = null;
+let defaultControlsTarget = null;
 
 const modelUrl = `${import.meta.env.BASE_URL}models/robot-draco.glb?v=draco-placement-fix-1`;
 const modelCacheKey = 'robot-draco.glb:v1:step-assembly-placement-fix';
@@ -97,6 +99,8 @@ const fitModel = (object) => {
   modelStats.value.size = `${size.x.toFixed(1)} x ${size.y.toFixed(1)} x ${size.z.toFixed(1)} mm`;
   camera.position.set(fittedSize.x * 1.05, fittedSize.y * 0.78, fittedSize.z * 1.28);
   camera.lookAt(fittedCenter);
+  defaultCameraPosition = camera.position.clone();
+  defaultControlsTarget = fittedCenter.clone();
 };
 
 const countModel = (object) => {
@@ -203,8 +207,10 @@ const toggleWireframe = () => {
 
 const resetView = () => {
   if (!controls || !camera) return;
-  camera.position.set(3.6, 2.4, 4.2);
-  controls.target.set(0, 0, 0);
+  if (defaultCameraPosition && defaultControlsTarget) {
+    camera.position.copy(defaultCameraPosition);
+    controls.target.copy(defaultControlsTarget);
+  }
   controls.update();
 };
 
