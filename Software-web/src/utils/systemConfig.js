@@ -1,8 +1,9 @@
 import axios from 'axios'
 
 const STORAGE_KEY = 'walleSystemConfig'
+const ENV_API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').trim()
 
-export const DEFAULT_PUBLIC_CONFIG = {
+const BASE_PUBLIC_CONFIG = {
   apiBaseUrl: '/api',
   webBaseUrl: '',
   staticBaseUrl: '',
@@ -14,20 +15,31 @@ export const DEFAULT_PUBLIC_CONFIG = {
   publicConfig: {}
 }
 
+function mergeConfig(config) {
+  return { ...BASE_PUBLIC_CONFIG, ...(config || {}) }
+}
+
+function applyEnvOverrides(config) {
+  if (!ENV_API_BASE_URL) return config
+  return { ...config, apiBaseUrl: ENV_API_BASE_URL }
+}
+
+export const DEFAULT_PUBLIC_CONFIG = applyEnvOverrides(mergeConfig())
+
 export function getCachedConfig() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...DEFAULT_PUBLIC_CONFIG, ...JSON.parse(raw) }
+    if (raw) return applyEnvOverrides(mergeConfig(JSON.parse(raw)))
   } catch {
     localStorage.removeItem(STORAGE_KEY)
   }
-  return { ...DEFAULT_PUBLIC_CONFIG }
+  return applyEnvOverrides(mergeConfig())
 }
 
 export function saveCachedConfig(config) {
-  const merged = { ...DEFAULT_PUBLIC_CONFIG, ...(config || {}) }
+  const merged = mergeConfig(config)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
-  return merged
+  return applyEnvOverrides(merged)
 }
 
 export function getApiBaseUrl() {

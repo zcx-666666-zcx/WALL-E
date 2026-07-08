@@ -17,6 +17,7 @@ import regisView from '@/views/regis/regis.vue';
 import DriveView from '@/views/drive/drive.vue';
 import AIView from '@/views/new_agent/Agent_new.vue';
 import AdminView from '@/views/admin/admin.vue';
+import VoiceView from '@/views/voice/voice.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,7 @@ const router = createRouter({
         {path: 'video', name: 'video', redirect: '/webrtc-video'}, // 重定向到新视频通话页面
         {path: 'webrtc-video', name: 'webrtc-video', component: WebrtcVideoView}, // 新增路由
         {path: 'drive', name: 'drive' ,component: DriveView},
+        {path: 'voice', name: 'voice' ,component: VoiceView},
         {path: 'healthy', name: 'healthy', component: HealthyView},
         {path: 'new_agent', name: 'new_agent' ,component: AIView},
         {path: 'robot-showcase', name: 'robot-showcase', component: () => import('@/views/robot_showcase/robot_showcase.vue')},

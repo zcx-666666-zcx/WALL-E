@@ -217,6 +217,7 @@ export default {
     
       if (localStream) {
           localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
       }
     
       // 2. 关闭网页端的 WebRTC 连接
@@ -234,7 +235,6 @@ export default {
         socket.disconnect();
         socket = null;
       }
-      // 4. 恢复占位符
       setPlaceholder('localPlaceholder', false);
       setPlaceholder('remotePlaceholder', false);
 
@@ -265,9 +265,69 @@ export default {
       if (el) el.style.display = hide ? 'none' : 'flex';
     }
 
-    function joinRoom() {
+    function mediaErrorMessage(error) {
+      const name = error?.name || '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        return '摄像头/麦克风权限被拒绝。请在浏览器地址栏左侧点击锁图标，允许访问后刷新页面重试。';
+      }
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        return '未检测到可用的摄像头或麦克风，请检查设备连接。';
+      }
+      if (name === 'NotReadableError' || name === 'TrackStartError') {
+        return '摄像头或麦克风正被其他程序占用，请关闭后重试。';
+      }
+      if (name === 'SecurityError' || name === 'NotSupportedError') {
+        return '当前页面不是安全环境。请使用 https 或本机 http://127.0.0.1:8088 打开后再试。';
+      }
+      return error?.message || '无法打开摄像头和麦克风';
+    }
+
+    async function ensureLocalCamera() {
+      if (localStream?.getTracks().some(track => track.readyState === 'live')) {
+        return true;
+      }
+
+      if (!window.isSecureContext) {
+        const msg = '摄像头和麦克风只能在 HTTPS 或 localhost 下使用。公网请改用 https 域名，或先用本机 http://127.0.0.1:8088 测试。';
+        log(`❌ ${msg}`);
+        toast.error(msg);
+        return false;
+      }
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        const msg = '当前浏览器不支持摄像头访问，请使用 Chrome 或 Edge 最新版。';
+        log(`❌ ${msg}`);
+        toast.error(msg);
+        return false;
+      }
+
+      try {
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+        }
+
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+        setPlaceholder('localPlaceholder', true);
+        log('📷 摄像头和麦克风已开启');
+        return true;
+      } catch (e) {
+        const msg = mediaErrorMessage(e);
+        log(`❌ 无法打开摄像头: ${msg}`);
+        toast.warning(msg);
+        setPlaceholder('localPlaceholder', false);
+        return false;
+      }
+    }
+
+    async function joinRoom() {
       const roomId = FIXED_ROOM_ID;
       if (!roomId) return toast.warning("请输入房间号");
+
+      // 必须在用户点击时立即申请权限，不能放到 socket 异步回调里
+      const cameraReady = await ensureLocalCamera();
+      if (!cameraReady) return;
 
       log(`正在申请加入房间: ${roomId}`);
 
@@ -302,7 +362,6 @@ export default {
         log(`✅ 已成功加入房间: ${data.room}`);
         connState.value = 'joined';
         isJoined.value = true;
-        startLocalCamera();
       });
 
       // 信令处理
@@ -318,19 +377,10 @@ export default {
       });
     }
 
-    async function startLocalCamera() {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = localStream;
-        setPlaceholder('localPlaceholder', true);
-        log("📷 摄像头已开启");
-      } catch (e) {
-        log("❌ 无法打开摄像头: " + e.message);
-        toast.warning("请允许浏览器访问摄像头和麦克风！");
-      }
-    }
-
     function createPeerConnection() {
+      if (!localStream) {
+        throw new Error('本地媒体流未就绪');
+      }
       connState.value = 'calling';
       log("🔗 正在创建 PeerConnection…");
       peerConnection = new RTCPeerConnection(rtcConfig);
@@ -409,6 +459,9 @@ export default {
     }
 
     async function startCall() {
+      const cameraReady = await ensureLocalCamera();
+      if (!cameraReady) return;
+
       // ── 倒计时 3 → 2 → 1 ──────────────────
       countdownPhase.value = 'countdown';
       for (let i = 3; i >= 1; i--) {

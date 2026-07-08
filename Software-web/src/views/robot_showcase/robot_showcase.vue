@@ -284,10 +284,6 @@ onUnmounted(() => {
           <strong>{{ modelStats.vertices.toLocaleString() }}</strong>
         </div>
       </div>
-      <div class="panel-section">
-        <p class="panel-label">原始尺寸</p>
-        <strong>{{ modelStats.size || '读取中' }}</strong>
-      </div>
     </aside>
   </div>
 </template>

@@ -77,6 +77,8 @@ def on_cmd_settings(data):
         _play_audio(value)
     elif stype == "tts":
         _play_tts(value)
+    elif stype == "tts_clone":
+        _play_tts_clone(value, data)
     elif stype == "restart":
         import os
         logger.warning("收到重启指令，3 秒后重启...")
@@ -113,6 +115,15 @@ def _play_tts(text):
         logger.info(f"TTS 朗读: {text}")
     except Exception as e:
         logger.error(f"TTS 朗读失败: {e}")
+
+
+def _play_tts_clone(text, data=None):
+    """
+    Main cloned-voice audio is streamed from the desktop service to tts_stream_player.py.
+    This Socket.IO path is a compatibility fallback when direct TCP streaming is unavailable.
+    """
+    logger.info(f"tts_clone fallback to normal TTS, profile={str((data or {}).get('profileId', ''))}")
+    _play_tts(text)
 
 
 def run_socketio():

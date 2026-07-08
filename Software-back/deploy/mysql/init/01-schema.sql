@@ -144,6 +144,23 @@ CREATE TABLE IF NOT EXISTS system_config (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS voice_profile (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  name VARCHAR(128) NOT NULL,
+  engine VARCHAR(32) NOT NULL DEFAULT 'zero_shot',
+  status VARCHAR(32) NOT NULL DEFAULT 'uploaded',
+  reference_audio_path VARCHAR(1024) NOT NULL,
+  reference_text TEXT,
+  model_path VARCHAR(1024),
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  last_error TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_voice_profile_user (user_id),
+  INDEX idx_voice_profile_default (user_id, is_default)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO user(username, phone_number, password, role)
 VALUES ('admin', '', 'admin123', 'admin')
 ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role);
@@ -155,6 +172,9 @@ INSERT INTO system_config(config_key, config_value, label, config_group, secret,
 ('robot.default-ip', '127.0.0.1', '机器人默认 IP', 'robot', false, '新增机器人时的默认 IP，可按设备单独覆盖'),
 ('robot.http-port', '5000', '机器人 HTTP 端口', 'robot', false, '树莓派 Web 控制服务端口'),
 ('socket.server-url', 'http://localhost:8081', 'Socket 服务地址', 'robot', false, '机器人遥控和视频信令地址'),
+('robot.tts-stream-port', '6007', 'TTS 流式播放端口', 'robot', false, '树莓派 tts_stream_player.py 监听端口'),
+('voice.service-url', 'http://127.0.0.1:7862', '本地音色服务地址', 'voice', false, '台式机本地 Python voice-service 地址'),
+('voice.storage-root', 'D:/WALL-E/data', '音色文件存储根目录', 'voice', false, '音频样本、训练输出和合成缓存默认放到 D 盘'),
 ('ai.agent-api-url', '', 'AI Agent 服务地址', 'third_party', false, '瓦利人设和对话服务地址，例如 http://localhost:6006'),
 ('liveness.api-url', '', '活体检测服务地址', 'third_party', false, '视频通话前的人脸活体检测服务地址'),
 ('coze.api-url', 'https://api.coze.cn', 'Coze API 地址', 'third_party', false, 'AI 对话/工作流 API 根地址'),

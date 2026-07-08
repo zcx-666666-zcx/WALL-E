@@ -33,6 +33,11 @@ __pycache__/
 # Local runtime backups
 backups/
 logs/
+.m2/
+.tools/
+/models/
+/data/
+voice-service/.venv/
 Software-web/public/models/robot-full.obj
 Software-web/public/models/robot.glb
 Software-web/public/models/robot.draco.glb

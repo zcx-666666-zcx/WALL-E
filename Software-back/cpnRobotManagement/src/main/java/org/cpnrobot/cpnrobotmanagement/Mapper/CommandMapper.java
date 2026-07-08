@@ -9,6 +9,21 @@ import java.util.List;
 @Mapper
 public interface CommandMapper {
 
-    @Select("select * from command where machines = #{machines} and user_id = #{userId} order by time desc")
+    @Select("""
+            select id,
+                   device_id as deviceId,
+                   type,
+                   machines,
+                   user_id as userId,
+                   timestamp,
+                   message_id as messageId,
+                   time,
+                   created_at as createdAt,
+                   type as commandName,
+                   '已执行' as commandCode
+            from command
+            where machines = #{machines} and user_id = #{userId}
+            order by time desc
+            """)
     List<Command> search(Command command);
 }

@@ -14,7 +14,12 @@ public class Command {
     private Long id;           // 主键ID
     private String deviceId;   // 设备ID
     private String type;       // 命令类型"go","back","left"...
+    private String machines;
+    private String userId;
     private Long timestamp;    // 数据时间戳
     private String messageId;  // OneNET消息ID
+    private String commandName;
+    private String commandCode;
+    private LocalDateTime time;
     private LocalDateTime createdAt;
 }
