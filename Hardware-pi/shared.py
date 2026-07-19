@@ -10,6 +10,8 @@ class RobotState:
         self.vision_enabled = False
         # [新增] 专门用于控制视觉追踪下发的开关
         self.is_tracking = False  
+        # 语音聊天默认关闭，由网页设置通过 Socket.IO 显式开启。
+        self.ai_chat_enabled = Event()
         
         self.mode = "PATROL" 
         self.ai_camera_released = Event()
