@@ -2,7 +2,7 @@ import requests
 import os
 import time
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 import config as project_config
 from ui import update_ui  
 from voice_player import play_cloud_voice
@@ -34,9 +34,37 @@ def _load_json_response(res, context):
         print(f">>> [EventManager] {context} failed: response is not JSON: {preview}")
         return None
 
+
+def _event_is_due(event, now):
+    """Return whether an event is due at ``now`` (including a one-minute poll window)."""
+    event_date = event.get("eventDate")
+    event_time = event.get("eventTime")
+    if not event_date or not event_time:
+        return False
+
+    try:
+        scheduled = datetime.strptime(
+            f"{event_date} {str(event_time)[:8]}",
+            "%Y-%m-%d %H:%M:%S",
+        )
+        repeat_days = int(event.get("repeatDays", 11))
+    except (TypeError, ValueError):
+        return False
+
+    elapsed_days = (now.date() - scheduled.date()).days
+    if repeat_days == 11:
+        occurrence = scheduled if elapsed_days == 0 else None
+    elif repeat_days > 0 and elapsed_days >= 0 and elapsed_days % repeat_days == 0:
+        occurrence = scheduled + timedelta(days=elapsed_days)
+    else:
+        occurrence = None
+
+    return occurrence is not None and occurrence <= now <= occurrence + timedelta(minutes=1)
+
 class EventManager:
     def __init__(self):
         self.events = []
+        self._reminded_occurrences = set()
 
     def fetch_events(self):
         try:
@@ -54,36 +82,33 @@ class EventManager:
 
     def check_reminders(self):
         now = datetime.now()
-        current_time_str = now.strftime("%H:%M") 
 
         for event in self.events:
-            event_time_str = event.get('eventTime')[:5] 
-            
-            if current_time_str == event_time_str:
+            if _event_is_due(event, now):
                 try:
-                    event_date_str = event.get('eventDate')
-                    repeat_days = event.get('repeatDays', 1)
                     desc = event.get('description', '您有一个新的提醒')
 
-                    start_date = datetime.strptime(event_date_str, "%Y-%m-%d").date()
-                    today_date = now.date()
-                    delta_days = (today_date - start_date).days
+                    occurrence = (
+                        event.get("id") or event.get("eventName"),
+                        now.date().isoformat(),
+                    )
+                    if occurrence in self._reminded_occurrences:
+                        continue
+                    self._reminded_occurrences.add(occurrence)
 
-                    if delta_days >= 0 and delta_days % repeat_days == 0:
-                        print(f">>> [事件中心] 🚀 触发提醒时间到了: {event['eventName']} - {desc}")
-                        
-                        update_ui(status=f"⏰ 正在提醒: {event['eventName']}", reminder_text=desc)
-                        
-                        def voice_and_reset():
-                            print(">>> [事件中心] 📢 正在连读三遍高音质语音...")
-                            for i in range(3):
-                                play_cloud_voice(desc)
-                                time.sleep(1.0)
-                            
-                            time.sleep(5)
-                            update_ui(face="happy", status="系统运行中", reset_view=True)
-                                
-                        threading.Thread(target=voice_and_reset, daemon=True).start()
+                    print(f">>> [事件中心] 🚀 触发提醒时间到了: {event['eventName']} - {desc}")
+                    update_ui(status=f"⏰ 正在提醒: {event['eventName']}", reminder_text=desc)
+
+                    def voice_and_reset():
+                        print(">>> [事件中心] 📢 正在连读三遍语音...")
+                        for _ in range(3):
+                            play_cloud_voice(desc)
+                            time.sleep(1.0)
+
+                        time.sleep(5)
+                        update_ui(face="happy", status="系统运行中", reset_view=True)
+
+                    threading.Thread(target=voice_and_reset, daemon=True).start()
 
                 except Exception as e:
                     print(f">>> [事件中心] 🔴 触发时解析出错: {e}")

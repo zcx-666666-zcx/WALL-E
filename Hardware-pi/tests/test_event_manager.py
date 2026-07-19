@@ -3,6 +3,7 @@ import pathlib
 import sys
 import types
 import unittest
+from datetime import datetime
 from unittest.mock import Mock
 
 
@@ -48,12 +49,13 @@ class EventManagerDeviceSyncTest(unittest.TestCase):
     def test_events_are_loaded_by_device_id(self):
         module = load_event_manager()
         response = Mock(status_code=200)
-        response.json.return_value = {"code": 1, "data": {"rows": []}}
+        response.json.return_value = {"code": 1, "data": {"rows": [{"id": 7}]}}
         module.requests.get = Mock(return_value=response)
         manager = module.EventManager()
 
         manager.fetch_events()
 
+        self.assertEqual(manager.events, [{"id": 7}])
         module.requests.get.assert_called_once_with(
             "http://server.example/api/device/events/WALLE_1",
             headers={
@@ -61,6 +63,30 @@ class EventManagerDeviceSyncTest(unittest.TestCase):
             },
             timeout=5,
         )
+
+
+class EventManagerScheduleTest(unittest.TestCase):
+    def test_non_repeating_event_is_not_due_on_a_later_date(self):
+        module = load_event_manager()
+        event = {
+            "eventDate": "2026-07-20",
+            "eventTime": "04:20:00",
+            "repeatDays": 11,
+        }
+
+        self.assertTrue(module._event_is_due(event, datetime(2026, 7, 20, 4, 20, 30)))
+        self.assertFalse(module._event_is_due(event, datetime(2026, 7, 21, 4, 20, 30)))
+
+    def test_repeating_event_allows_polling_delay_within_one_minute(self):
+        module = load_event_manager()
+        event = {
+            "eventDate": "2026-07-20",
+            "eventTime": "04:20:00",
+            "repeatDays": 2,
+        }
+
+        self.assertTrue(module._event_is_due(event, datetime(2026, 7, 22, 4, 20, 45)))
+        self.assertFalse(module._event_is_due(event, datetime(2026, 7, 21, 4, 20, 45)))
 
 
 if __name__ == "__main__":
