@@ -33,6 +33,13 @@ aliyun:
     bucketName: "lht-java-ai-edu"
     region: "cn-beijing"
 
+walle:
+  device-api-token: ${WALLE_DEVICE_API_TOKEN:}
+  device-api-user: ${WALLE_DEVICE_API_USER:test}
+  device-api-id: ${WALLE_DEVICE_API_ID:WALLE_1}
+  camera-frame-max-age-ms: ${WALLE_CAMERA_FRAME_MAX_AGE_MS:3000}
+  camera-frame-max-base64-bytes: ${WALLE_CAMERA_FRAME_MAX_BASE64_BYTES:524288}
+
 management:
   endpoints:
     web:

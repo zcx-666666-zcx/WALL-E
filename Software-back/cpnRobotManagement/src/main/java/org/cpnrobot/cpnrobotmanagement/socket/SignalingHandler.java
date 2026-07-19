@@ -14,6 +14,8 @@ import jakarta.annotation.PreDestroy;
 import java.util.Map;
 import java.util.Set;
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -29,6 +31,15 @@ public class SignalingHandler {
     // 摄像头帧缓存：deviceName -> { jpegBytes, timestamp }
     public static final Map<String, byte[]> CAMERA_FRAMES = new ConcurrentHashMap<>();
     public static final Map<String, Long> CAMERA_FRAME_TIMES = new ConcurrentHashMap<>();
+
+    @org.springframework.beans.factory.annotation.Value("${walle.device-api-token:}")
+    private String deviceApiToken = "";
+
+    @org.springframework.beans.factory.annotation.Value("${walle.device-api-id:WALLE_1}")
+    private String cameraDeviceId = DeviceIdentity.STANDARD_DEVICE_ID;
+
+    @org.springframework.beans.factory.annotation.Value("${walle.camera-frame-max-base64-bytes:524288}")
+    private int cameraFrameMaxBase64Bytes = 524288;
 
     @PostConstruct
     public void start() {
@@ -70,7 +81,7 @@ public class SignalingHandler {
             return;
         }
 
-        String room = String.valueOf(data.get("room"));
+        String room = DeviceIdentity.canonicalizeRoom(String.valueOf(data.get("room")));
 
         // 1. 加入 netty-socketio 内部房间（供 server.getRoomOperations() 使用）
         client.joinRoom(room);
@@ -93,7 +104,7 @@ public class SignalingHandler {
 
     @OnEvent("message")
     public void onMessage(SocketIOClient client, Map<String, Object> data) {
-        String room = String.valueOf(data.get("room"));
+        String room = DeviceIdentity.canonicalizeRoom(String.valueOf(data.get("room")));
         Object payload = data.get("payload");
 
         if (MY_ROOMS.containsKey(room)) {
@@ -108,17 +119,33 @@ public class SignalingHandler {
 
     @OnEvent("camera_frame")
     public void onCameraFrame(SocketIOClient client, Map<String, Object> data) {
-        if (data == null || !data.containsKey("deviceName") || !data.containsKey("image")) {
+        if (data == null || !data.containsKey("deviceName") || !data.containsKey("image")
+                || !tokensMatch(deviceApiToken, String.valueOf(data.get("deviceToken")))) {
             return;
         }
         try {
-            String deviceName = String.valueOf(data.get("deviceName"));
+            String deviceName = DeviceIdentity.canonicalize(String.valueOf(data.get("deviceName")));
+            if (!deviceName.equals(DeviceIdentity.canonicalize(cameraDeviceId))) {
+                return;
+            }
             String imageBase64 = String.valueOf(data.get("image"));
+            if (imageBase64.length() > cameraFrameMaxBase64Bytes) {
+                return;
+            }
             byte[] jpeg = Base64.getDecoder().decode(imageBase64);
             CAMERA_FRAMES.put(deviceName, jpeg);
             CAMERA_FRAME_TIMES.put(deviceName, System.currentTimeMillis());
         } catch (Exception ignored) {
             // base64 解码失败，丢弃这一帧
         }
+    }
+
+    private boolean tokensMatch(String expected, String provided) {
+        if (expected == null || expected.isBlank() || provided == null || provided.isBlank()) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                provided.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -7,7 +7,7 @@
     <div v-else-if="loading" class="placeholder">正在连接摄像头...</div>
     <div v-else-if="error" class="placeholder err">{{ error }}</div>
     <img
-      v-show="streamUrl && !error"
+      v-show="streamUrl && !loading && !error"
       :src="streamUrl"
       class="video-stream"
       @load="onLoad"
@@ -17,8 +17,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import { getApiBaseUrl } from '@/utils/systemConfig'
+import { fetchCameraFrame } from '../cameraFrame.mjs'
 
 const props = defineProps({
   machine: { type: Object, default: null }
@@ -27,19 +28,59 @@ const props = defineProps({
 const streamUrl = ref('')
 const loading = ref(false)
 const error = ref('')
+let refreshTimer = null
+let refreshing = false
+
+function stopRefreshing() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+}
+
+function refreshFrame(id) {
+  const base = getApiBaseUrl().replace(/\/$/, '')
+  if (refreshing) return
+  refreshing = true
+  fetchCameraFrame({ baseUrl: base, machineId: id })
+    .then(blob => {
+      if (!blob) {
+        loading.value = false
+        error.value = '等待机器人摄像头推流...'
+        return
+      }
+      const nextUrl = URL.createObjectURL(blob)
+      const previousUrl = streamUrl.value
+      streamUrl.value = nextUrl
+      if (previousUrl) URL.revokeObjectURL(previousUrl)
+      loading.value = false
+      error.value = ''
+    })
+    .catch(() => {
+      loading.value = false
+      error.value = '摄像头请求失败，请重新登录后重试'
+    })
+    .finally(() => { refreshing = false })
+}
 
 watch(() => props.machine?.id, (id) => {
+  stopRefreshing()
   error.value = ''
   if (!id) { streamUrl.value = ''; return }
   loading.value = true
-  // 通过 Java 后端代理，浏览器不需要和机器人在同一局域网
-  streamUrl.value = `${getApiBaseUrl().replace(/\/$/, '')}/robot/video-feed/${id}`
+  refreshFrame(id)
+  refreshTimer = setInterval(() => refreshFrame(id), 500)
 }, { immediate: true })
+
+onBeforeUnmount(() => {
+  stopRefreshing()
+  if (streamUrl.value) URL.revokeObjectURL(streamUrl.value)
+})
 
 function onLoad() { loading.value = false; error.value = '' }
 function onError() {
   loading.value = false
-  error.value = '视频流连接失败，请确认机器人已开机且后端可达'
+  error.value = '等待机器人摄像头推流...'
 }
 </script>
 

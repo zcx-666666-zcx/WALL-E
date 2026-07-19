@@ -8,21 +8,18 @@ from ui import update_ui
 from voice_player import play_cloud_voice
 
 BASE_URL = getattr(project_config, "EVENT_API_BASE_URL", "http://127.0.0.1:8088/api").rstrip("/")
-USERNAME = getattr(project_config, "EVENT_USERNAME", "test")
-API_AUTH_ENABLED = getattr(project_config, "API_AUTH_ENABLED", False)
-API_AUTH_TOKEN = os.environ.get("WALLE_API_TOKEN", getattr(project_config, "API_AUTH_TOKEN", ""))
-API_AUTH_HEADER = getattr(project_config, "API_AUTH_HEADER", "Authorization")
-API_AUTH_PREFIX = getattr(project_config, "API_AUTH_PREFIX", "Bearer")
+DEVICE_ID = getattr(project_config, "DEV_NAME", "WALLE_1")
+DEVICE_API_TOKEN = os.environ.get(
+    "WALLE_DEVICE_API_TOKEN",
+    getattr(project_config, "WALLE_DEVICE_API_TOKEN", ""),
+)
 
 
 
 def _headers():
-    if not API_AUTH_ENABLED or not API_AUTH_TOKEN:
-        return {}
-    value = API_AUTH_TOKEN.strip()
-    if API_AUTH_PREFIX and not value.lower().startswith(API_AUTH_PREFIX.lower() + " "):
-        value = f"{API_AUTH_PREFIX} {value}"
-    return {API_AUTH_HEADER: value}
+    return {
+        "X-Walle-Device-Token": DEVICE_API_TOKEN,
+    }
 
 
 def _load_json_response(res, context):
@@ -39,27 +36,11 @@ def _load_json_response(res, context):
 
 class EventManager:
     def __init__(self):
-        self.user_id = None
         self.events = []
-        self.last_sync_date = None
-
-    def get_user_id(self):
-        try:
-            res = requests.get(f"{BASE_URL}/users/getId/{USERNAME}", headers=_headers(), timeout=5)
-            data = _load_json_response(res, "get user id")
-            if data is None:
-                return
-            if data.get('code') == 1:
-                self.user_id = data['data']['id']
-                print(f">>> [事件中心] 🟢 成功获取用户ID: {self.user_id}")
-        except Exception as e:
-            print(f">>> [事件中心] 🔴 获取用户ID失败: {e}")
 
     def fetch_events(self):
-        if not self.user_id:
-            return
         try:
-            res = requests.get(f"{BASE_URL}/events/search/{self.user_id}", headers=_headers(), timeout=5)
+            res = requests.get(f"{BASE_URL}/device/events/{DEVICE_ID}", headers=_headers(), timeout=5)
             data = _load_json_response(res, "fetch events")
             if data is None:
                 return
@@ -113,8 +94,6 @@ class EventManager:
         print("====================================")
         
         while True:
-            if self.user_id is None:
-                self.get_user_id()
             self.fetch_events() 
             self.check_reminders()
             
@@ -122,6 +101,6 @@ class EventManager:
             time.sleep(sleep_time)
 
 def start_event_manager():
-    print(f">>> [事件中心] API: {BASE_URL} auth={API_AUTH_ENABLED}")
+    print(f">>> [事件中心] API: {BASE_URL} device={DEVICE_ID}")
     manager = EventManager()
     threading.Thread(target=manager.run, daemon=True).start()

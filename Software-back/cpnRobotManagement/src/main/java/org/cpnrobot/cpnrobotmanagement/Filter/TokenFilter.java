@@ -10,13 +10,21 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import util.CurrentHolder;
 import util.JwtUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @WebFilter(urlPatterns = "/*", dispatcherTypes = {DispatcherType.REQUEST}, asyncSupported = true)
 public class TokenFilter implements Filter {
+
+    private static final String DEVICE_TOKEN_HEADER = "X-Walle-Device-Token";
+
+    @Value("${walle.device-api-token:}")
+    private String deviceApiToken;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -37,6 +45,16 @@ public class TokenFilter implements Filter {
             return;
         }
 
+        if (requestURI.startsWith("/api/device/events/")) {
+            String providedToken = request.getHeader(DEVICE_TOKEN_HEADER);
+            if (tokensMatch(deviceApiToken, providedToken)) {
+                filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            return;
+        }
+
         boolean publicHealthyIngest =
                 requestURI.equals("/api/healthy/addRate") ||
                 requestURI.equals("/api/healthy/addHumidity") ||
@@ -52,7 +70,6 @@ public class TokenFilter implements Filter {
                 publicUserAuth ||
                 requestURI.startsWith("/api/robot/video-feed/") ||
                 requestURI.startsWith("/api/robot/video-feed-low/") ||
-                requestURI.startsWith("/api/robot/camera-frame/") ||
                 requestURI.startsWith("/api/system-config/public")) {
             System.out.println("[TokenFilter] public route, bypass auth");
             filterChain.doFilter(request, response);
@@ -94,5 +111,14 @@ public class TokenFilter implements Filter {
 
         filterChain.doFilter(request, response);
         CurrentHolder.remove();
+    }
+
+    private boolean tokensMatch(String expected, String provided) {
+        if (expected == null || expected.isBlank() || provided == null || provided.isBlank()) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                provided.getBytes(StandardCharsets.UTF_8));
     }
 }

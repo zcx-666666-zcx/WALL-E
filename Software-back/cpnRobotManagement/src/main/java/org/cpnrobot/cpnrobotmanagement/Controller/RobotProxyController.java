@@ -4,7 +4,9 @@ import com.corundumstudio.socketio.SocketIOServer;
 import org.cpnrobot.cpnrobotmanagement.Mapper.ContractMachineMapper;
 import org.cpnrobot.cpnrobotmanagement.Service.RobotProxyService;
 import org.cpnrobot.cpnrobotmanagement.socket.SignalingHandler;
+import org.cpnrobot.cpnrobotmanagement.socket.DeviceIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +31,14 @@ public class RobotProxyController {
     @Autowired
     private ContractMachineMapper contractMachineMapper;
 
+    @Value("${walle.camera-frame-max-age-ms:3000}")
+    private long cameraFrameMaxAgeMs = 3000L;
+
     private String getRoom(ContractMachine machine) {
         if (machine == null || machine.getConnectionId() == null || machine.getConnectionId().isEmpty()) {
             throw new RuntimeException("机器人未找到或设备号未配置");
         }
-        return "robot_" + machine.getConnectionId();
+        return DeviceIdentity.canonicalizeRoom("robot_" + machine.getConnectionId());
     }
 
     private ContractMachine requireOwnedMachine(Integer machineId) {
@@ -169,13 +174,15 @@ public class RobotProxyController {
     @GetMapping("/camera-frame/{machineId}")
     public ResponseEntity<byte[]> cameraFrame(@PathVariable Integer machineId) {
         try {
-            ContractMachine machine = contractMachineMapper.getById(machineId);
-            if (machine == null || machine.getMachines() == null) {
+            ContractMachine machine = requireOwnedMachine(machineId);
+            if (machine == null || machine.getConnectionId() == null) {
                 return ResponseEntity.notFound().build();
             }
-            String deviceName = machine.getMachines();
+            String deviceName = DeviceIdentity.canonicalize(machine.getConnectionId());
             byte[] jpeg = SignalingHandler.CAMERA_FRAMES.get(deviceName);
-            if (jpeg == null) {
+            Long frameTime = SignalingHandler.CAMERA_FRAME_TIMES.get(deviceName);
+            if (jpeg == null || frameTime == null
+                    || System.currentTimeMillis() - frameTime > cameraFrameMaxAgeMs) {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok()

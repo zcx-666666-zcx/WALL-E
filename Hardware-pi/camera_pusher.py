@@ -29,6 +29,17 @@ def _encode_frame(frame):
     return base64.b64encode(encoded).decode("ascii")
 
 
+def _build_payload(image, timestamp):
+    return {
+        "deviceName": DEV_NAME,
+        "deviceToken": getattr(project_config, "WALLE_DEVICE_API_TOKEN", ""),
+        "timestamp": timestamp,
+        "format": "jpg",
+        "encoding": "base64",
+        "image": image,
+    }
+
+
 def _camera_push_loop(sio):
     event_name = getattr(project_config, "CAMERA_PUSH_EVENT", "camera_frame")
     fps = max(float(getattr(project_config, "CAMERA_PUSH_FPS", 2)), 0.2)
@@ -54,13 +65,7 @@ def _camera_push_loop(sio):
             time.sleep(interval)
             continue
 
-        payload = {
-            "deviceName": DEV_NAME,
-            "timestamp": int(time.time() * 1000),
-            "format": "jpg",
-            "encoding": "base64",
-            "image": jpg_base64,
-        }
+        payload = _build_payload(jpg_base64, int(time.time() * 1000))
 
         try:
             sio.emit(event_name, payload)

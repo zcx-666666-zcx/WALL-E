@@ -8,6 +8,7 @@ import AnimationPanel from './components/AnimationPanel.vue'
 import AudioPanel from './components/AudioPanel.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import { getRobotHttpPort } from '@/utils/systemConfig'
+import { selectPreferredMachine } from './machineSelection.mjs'
 
 const tabs = ['遥控','舵机','动画','音效','设置']
 const currentTab = ref('遥控')
@@ -25,7 +26,7 @@ onMounted(async () => {
     const res = await GetMachineListApi(userId)
     if (res?.code === 1 && res.data?.rows?.length > 0) {
       machines.value = res.data.rows
-      selectedMachine.value = machines.value[0]
+      selectedMachine.value = selectPreferredMachine(machines.value)
     }
   } catch (e) {
     // silently fail

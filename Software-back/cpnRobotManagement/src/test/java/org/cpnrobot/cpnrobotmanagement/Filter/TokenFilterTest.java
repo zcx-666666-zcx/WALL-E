@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -50,5 +51,34 @@ class TokenFilterTest {
 
         assertThat(chainCalled).isTrue();
         assertThat(response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void deviceEventSyncUsesDeviceAuthenticationInsteadOfUserJwt() throws Exception {
+        ReflectionTestUtils.setField(tokenFilter, "deviceApiToken", "device-secret");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/device/events/WALLE_1");
+        request.addHeader("X-Walle-Device-Token", "device-secret");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (servletRequest, servletResponse) -> chainCalled.set(true);
+
+        tokenFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalled).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void deviceEventSyncRejectsMissingDeviceToken() throws Exception {
+        ReflectionTestUtils.setField(tokenFilter, "deviceApiToken", "device-secret");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/device/events/WALLE_1");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (servletRequest, servletResponse) -> chainCalled.set(true);
+
+        tokenFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalled).isFalse();
+        assertThat(response.getStatus()).isEqualTo(401);
     }
 }
