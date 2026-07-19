@@ -33,6 +33,25 @@ class RobotState:
             "human": 0
         }
 
+    def set_camera_frame(self, frame):
+        """Keep compatibility with the legacy camera pusher on deployed Pis."""
+        try:
+            import camera_manager
+        except ImportError:
+            with self.flask_lock:
+                self.flask_frame = frame
+            return
+        camera_manager.set_latest_frame(frame)
+        self.flask_frame = camera_manager.get_latest_frame()
+
+    def get_camera_frame(self):
+        try:
+            import camera_manager
+        except ImportError:
+            with self.flask_lock:
+                return self.flask_frame
+        return camera_manager.get_latest_frame()
+
     def update_environment(self, temperature, humidity, updated_at):
         with self.health_lock:
             self.temperature = temperature
