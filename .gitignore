@@ -45,3 +45,10 @@ Software-web/scripts/__pycache__/
 
 # Local Codex rules, conversation logs, and project secrets
 doc/WALL·E-Codex/
+
+# Local competition assets and working notes; keep out of the GitHub repository.
+doc/4组27号参赛资料/
+doc/西门子官方参赛要求/
+doc/西门子杯模拟答辩题库.html
+doc/西门子杯答辩题库-assets/
+doc/会话记录/
