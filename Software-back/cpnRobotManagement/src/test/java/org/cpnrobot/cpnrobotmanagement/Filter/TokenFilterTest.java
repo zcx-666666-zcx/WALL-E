@@ -81,4 +81,20 @@ class TokenFilterTest {
         assertThat(chainCalled).isFalse();
         assertThat(response.getStatus()).isEqualTo(401);
     }
+
+    @Test
+    void deviceNetworkHeartbeatUsesDeviceAuthentication() throws Exception {
+        ReflectionTestUtils.setField(tokenFilter, "deviceApiToken", "device-secret");
+        MockHttpServletRequest request = new MockHttpServletRequest(
+                "POST", "/api/device/network/heartbeat/WALLE_1");
+        request.addHeader("X-Walle-Device-Token", "device-secret");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (servletRequest, servletResponse) -> chainCalled.set(true);
+
+        tokenFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalled).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
+    }
 }

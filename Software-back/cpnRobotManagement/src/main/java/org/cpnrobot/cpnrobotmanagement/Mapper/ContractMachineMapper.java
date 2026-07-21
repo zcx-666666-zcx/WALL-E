@@ -33,4 +33,10 @@ public interface ContractMachineMapper {
 
     @Select("select * from contract_machine where id = #{id} and user_id = #{userId}")
     ContractMachine getByIdAndUserId(@Param("id") Integer id, @Param("userId") String userId);
+
+    @Update("update contract_machine set robot_ip = #{robotIp} where user_id = #{userId} and connectionId = #{connectionId}")
+    int updateRobotIpByUserAndConnectionId(
+            @Param("userId") String userId,
+            @Param("connectionId") String connectionId,
+            @Param("robotIp") String robotIp);
 }

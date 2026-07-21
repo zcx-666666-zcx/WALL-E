@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { GetMachineListApi } from '@/api/users'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { GetMachineListApi, GetDeviceNetworkStatusApi } from '@/api/users'
 import CameraPanel from './components/CameraPanel.vue'
 import ControlPanel from './components/ControlPanel.vue'
 import ServoPanel from './components/ServoPanel.vue'
@@ -9,6 +9,7 @@ import AudioPanel from './components/AudioPanel.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import { getRobotHttpPort } from '@/utils/systemConfig'
 import { selectPreferredMachine } from './machineSelection.mjs'
+import { refreshDeviceNetworkStatuses } from '@/utils/deviceNetworkStatus.mjs'
 
 const tabs = ['遥控','舵机','动画','音效','设置']
 const currentTab = ref('遥控')
@@ -17,6 +18,18 @@ const machines = ref([])
 const selectedMachine = ref(null)
 const loadingMachines = ref(false)
 const robotHttpPort = getRobotHttpPort()
+const NETWORK_REFRESH_MS = 10000
+let networkRefreshTimer = null
+
+async function refreshNetworkStatuses() {
+  const selectedId = selectedMachine.value?.id
+  machines.value = await refreshDeviceNetworkStatuses(
+    machines.value,
+    GetDeviceNetworkStatusApi
+  )
+  selectedMachine.value = machines.value.find(machine => machine.id === selectedId)
+    || selectPreferredMachine(machines.value)
+}
 
 onMounted(async () => {
   const userId = localStorage.getItem('Id')
@@ -27,13 +40,16 @@ onMounted(async () => {
     if (res?.code === 1 && res.data?.rows?.length > 0) {
       machines.value = res.data.rows
       selectedMachine.value = selectPreferredMachine(machines.value)
+      await refreshNetworkStatuses()
     }
   } catch (e) {
     // silently fail
   } finally {
     loadingMachines.value = false
   }
+  networkRefreshTimer = window.setInterval(refreshNetworkStatuses, NETWORK_REFRESH_MS)
 })
+onBeforeUnmount(() => window.clearInterval(networkRefreshTimer))
 </script>
 
 <template>
@@ -71,7 +87,10 @@ onMounted(async () => {
             :value="m"
           />
         </el-select>
-        <span v-if="selectedMachine?.robotIp" class="device-ip">{{ selectedMachine.robotIp }}:{{ robotHttpPort }}</span>
+        <span v-if="selectedMachine?.robotIp" class="device-ip" :class="{ offline: !selectedMachine.networkStatus?.online }">
+          <span class="status-dot" :class="{ online: selectedMachine.networkStatus?.online }"></span>
+          {{ selectedMachine.robotIp }}:{{ robotHttpPort }}
+        </span>
         <span v-else-if="selectedMachine" class="device-ip no-ip">未配置 IP</span>
       </div>
     </div>
@@ -130,6 +149,12 @@ onMounted(async () => {
 .device-ip.no-ip {
   color: #EF6C00; background: #FFF3E0; border-color: #FFCC80;
 }
+.device-ip.offline { color: #8A6F62; background: #F6F2F0; border-color: #DDD2CC; }
+.status-dot {
+  display: inline-block; width: 7px; height: 7px; margin-right: 5px;
+  border-radius: 50%; background: #B8AAA2;
+}
+.status-dot.online { background: #2FA66A; }
 
 /* Tabs */
 .tabs-bar {

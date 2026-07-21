@@ -1,0 +1,16 @@
+[Unit]
+Description=WALL-E device network heartbeat
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/walle/fanchao
+EnvironmentFile=/etc/walle/device-heartbeat.env
+ExecStart=/usr/bin/python3 /home/pi/walle/fanchao/network_heartbeat.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
