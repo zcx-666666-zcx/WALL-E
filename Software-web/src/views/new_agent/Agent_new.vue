@@ -1,11 +1,10 @@
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { GetNameApi, GetMachineListApi, RobotSettingsApi } from '../../api/users';
+import { GetNameApi } from '../../api/users';
 import { toast, confirm as toastConfirm } from '../../utils/toast';
 import { getConfigValue } from '../../utils/systemConfig';
-import { selectPreferredMachine } from '../drive/machineSelection.mjs';
-import { buildAiChatSetting, readStoredUsername, runStartupTasks } from './aiChatControl.mjs';
+import { readStoredUsername, runStartupTasks } from './agentStartup.mjs';
 
 // ── 后端地址（本地 FastAPI）──────────────────
 const getAgentApiBase = () => getConfigValue('ai.agent-api-url', '').replace(/\/$/, '');
@@ -20,10 +19,6 @@ const SUBMIT      = ref('提交人设');
 const chatMessages= ref([]);
 const chatContainer = ref(null);
 let userId = ref(localStorage.getItem('Id'));
-const machines = ref([]);
-const selectedMachine = ref(null);
-const aiChatEnabled = ref(false);
-const aiChatSaving = ref(false);
 
 // 每个用户只有自己的瓦利，persona_id = wali_{username}
 const currentPersonaId = ref('');
@@ -33,50 +28,9 @@ const backendStatus = ref('检测中…');
 
 // ── 初始化 ──────────────────────────────────
 onMounted(async () => {
-  await runStartupTasks([getname, checkBackend, loadMachines]);
+  await runStartupTasks([getname, checkBackend]);
   currentPersonaId.value = userName.value ? `wali_${userName.value}` : '';
 });
-
-const loadMachines = async () => {
-  if (!userId.value) return;
-  try {
-    const result = await GetMachineListApi(userId.value);
-    const rows = result?.code === 1 ? (result.data?.rows || []) : [];
-    machines.value = rows;
-    selectedMachine.value = selectPreferredMachine(rows);
-  } catch {
-    machines.value = [];
-    selectedMachine.value = null;
-  }
-};
-
-watch(() => selectedMachine.value?.id, () => {
-  aiChatEnabled.value = false;
-});
-
-const toggleAiChat = async () => {
-  if (!selectedMachine.value?.id) {
-    toast.warning('请先绑定并选择机器人设备');
-    return;
-  }
-
-  const nextEnabled = !aiChatEnabled.value;
-  aiChatSaving.value = true;
-  try {
-    const result = await RobotSettingsApi(
-      buildAiChatSetting(selectedMachine.value.id, nextEnabled)
-    );
-    if (result?.code !== 1) {
-      throw new Error(result?.msg || '机器人未收到设置');
-    }
-    aiChatEnabled.value = nextEnabled;
-    toast.success(nextEnabled ? '语音聊天已开启' : '语音聊天已关闭');
-  } catch (error) {
-    toast.error(error?.message || '语音聊天设置失败');
-  } finally {
-    aiChatSaving.value = false;
-  }
-};
 
 // ── 获取用户名 ───────────────────────────────
 const getname = async () => {
@@ -404,28 +358,6 @@ const deleteData = async () => {
       </div>
 
       <div class="control-body">
-        <div class="ai-chat-control">
-          <div class="ai-chat-title">硬件语音聊天</div>
-          <select v-model="selectedMachine" class="ai-chat-select" :disabled="aiChatSaving">
-            <option :value="null" disabled>选择机器人</option>
-            <option v-for="machine in machines" :key="machine.id" :value="machine">
-              {{ machine.machines || machine.connectionId || `设备 ${machine.id}` }}
-            </option>
-          </select>
-          <button
-            class="ai-chat-switch"
-            :class="{ on: aiChatEnabled }"
-            :disabled="aiChatSaving || !selectedMachine"
-            @click="toggleAiChat"
-          >
-            <span class="ai-chat-switch-dot"></span>
-            <span>{{ aiChatSaving ? '发送中…' : (aiChatEnabled ? '已开启' : '已关闭') }}</span>
-          </button>
-          <p class="ai-chat-hint">需先在 Windows 电脑运行 zuixin.py</p>
-        </div>
-
-        <div class="control-divider"></div>
-
         <div class="control-item">
           <button class="ctrl-btn ctrl-orange" @click="clearChat">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
@@ -788,68 +720,6 @@ const deleteData = async () => {
   padding: 16px;
   display: flex; flex-direction: column; gap: 0;
   overflow-y: auto;
-}
-
-.ai-chat-control {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 4px 0 12px;
-}
-.ai-chat-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #5A3020;
-}
-.ai-chat-select {
-  width: 100%;
-  height: 32px;
-  border: 1px solid rgba(255,160,120,0.3);
-  border-radius: 8px;
-  padding: 0 8px;
-  background: #FFFAF7;
-  color: #6A4030;
-  font: inherit;
-  font-size: 11px;
-  outline: none;
-}
-.ai-chat-switch {
-  width: 100%;
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px solid rgba(255,160,120,0.28);
-  border-radius: 9px;
-  background: #FFF5F0;
-  color: #C06040;
-  font: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.ai-chat-switch.on {
-  border-color: #63B879;
-  background: #F0FFF2;
-  color: #378A4A;
-}
-.ai-chat-switch:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.ai-chat-switch-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #D0A090;
-}
-.ai-chat-switch.on .ai-chat-switch-dot { background: #48A85C; }
-.ai-chat-hint {
-  margin: 0;
-  color: #A09088;
-  font-size: 10px;
-  line-height: 1.5;
 }
 
 .control-item {

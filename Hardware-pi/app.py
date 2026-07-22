@@ -92,8 +92,8 @@ if __name__ == "__main__":
     print("[系统] 正在启动 OneNet 云平台服务...")
     start_mqtt()
 
-    # 5. 语音采集默认等待网页开关；开启后由 PC 端 zuixin.py 接收并处理。
-    start_daemon("[系统] 启动语音采集服务（等待 AI 聊天开关）...", audio_client_thread)
+    # 5. 启动语音采集；PC 端 zuixin.py 可用后会自动建立连接。
+    start_daemon("[系统] 启动语音采集服务...", audio_client_thread)
 
     # 6. 启动摄像头采集线程
     start_daemon("[系统] 正在启动摄像头...", camera_thread)

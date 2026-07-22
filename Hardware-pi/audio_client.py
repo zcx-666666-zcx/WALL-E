@@ -160,7 +160,6 @@ def run_raw_stream(
     stream: sd.InputStream,
     capture_sr: float,
     wire_sr: int,
-    enabled_event: threading.Event | None = None,
 ) -> None:
     total_bytes = 0
     t0 = time.monotonic()
@@ -172,8 +171,6 @@ def run_raw_stream(
     else:
         print("[信息] 连续流模式（无 VAD），开始发送…")
     while True:
-        if enabled_event is not None and not enabled_event.is_set():
-            return
         data, overflowed = stream.read(CHUNK_SAMPLES)
         if overflowed:
             print("[警告] 输入缓冲区溢出，可能丢帧。")
@@ -197,11 +194,7 @@ def run_vad_stream(
     vad: webrtcvad.Vad,
     silence_ms: int,
     min_speech_ms: int,
-    enabled_event: threading.Event | None = None,
 ) -> None:
-    if enabled_event is not None and not enabled_event.is_set():
-        return
-
     frame_ms = VAD_FRAME_MS
     frame_samples = frame_samples_at_rate(wire_sr)
     silence_frames = max(1, int(silence_ms / frame_ms))
@@ -224,10 +217,6 @@ def run_vad_stream(
     print(f"[信息] VAD 模式启动。强制截断时间: {MAX_RECORD_SECONDS} 秒")
 
     while True:
-        if enabled_event is not None and not enabled_event.is_set():
-            if speech_active:
-                send_utterance_end(sock)
-            return
         try:
             data, overflowed = stream.read(CHUNK_SAMPLES)
         except Exception as e:
@@ -389,10 +378,8 @@ def audio_client_thread() -> None:
         return
 
     # 增加一个重试循环，防止电脑还没启动服务时树莓派线程直接崩溃退出
-    from shared import shutdown_event, state
+    from shared import shutdown_event
     while not shutdown_event.is_set():
-        if not state.ai_chat_enabled.wait(timeout=0.5):
-            continue
         sock: socket.socket | None = None
         stream: sd.InputStream | None = None
         try:
@@ -412,13 +399,7 @@ def audio_client_thread() -> None:
                 )
 
             if args.no_vad:
-                run_raw_stream(
-                    sock,
-                    stream,
-                    float(capture_sr),
-                    wire_sr,
-                    enabled_event=state.ai_chat_enabled,
-                )
+                run_raw_stream(sock, stream, float(capture_sr), wire_sr)
             else:
                 vad = webrtcvad.Vad(args.vad_aggressiveness)
                 run_vad_stream(
@@ -429,7 +410,6 @@ def audio_client_thread() -> None:
                     vad,
                     silence_ms=args.silence_ms,
                     min_speech_ms=args.min_speech_ms,
-                    enabled_event=state.ai_chat_enabled,
                 )
 
         except KeyboardInterrupt:

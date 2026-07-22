@@ -1,30 +1,22 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 
-let buildAiChatSetting
 let readStoredUsername
 let runStartupTasks
 try {
-  ({ buildAiChatSetting, readStoredUsername, runStartupTasks } = await import('../src/views/new_agent/aiChatControl.mjs'))
+  ({ readStoredUsername, runStartupTasks } = await import('../src/views/new_agent/agentStartup.mjs'))
 } catch {
-  buildAiChatSetting = undefined
+  readStoredUsername = undefined
 }
 
-test('builds an enable command for the selected robot', () => {
-  assert.equal(typeof buildAiChatSetting, 'function')
-  assert.deepEqual(buildAiChatSetting(42, true), {
-    machineId: 42,
-    type: 'aiChat',
-    value: 'Active'
-  })
-})
+test('AI settings page has no hardware chat switch', async () => {
+  const source = await readFile(
+    new URL('../src/views/new_agent/Agent_new.vue', import.meta.url),
+    'utf8'
+  )
 
-test('builds a disable command for the selected robot', () => {
-  assert.deepEqual(buildAiChatSetting(42, false), {
-    machineId: 42,
-    type: 'aiChat',
-    value: 'Offline'
-  })
+  assert.doesNotMatch(source, /aiChat|硬件语音聊天/)
 })
 
 test('uses the logged-in username while the user API is unavailable', () => {

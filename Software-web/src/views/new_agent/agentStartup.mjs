@@ -1,15 +1,3 @@
-export function buildAiChatSetting(machineId, enabled) {
-  if (machineId === null || machineId === undefined || machineId === '') {
-    throw new Error('machineId is required')
-  }
-
-  return {
-    machineId: Number(machineId),
-    type: 'aiChat',
-    value: enabled ? 'Active' : 'Offline'
-  }
-}
-
 export function readStoredUsername(storage = globalThis.localStorage) {
   try {
     const raw = storage?.getItem('loginUserObject')
