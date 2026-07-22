@@ -40,6 +40,7 @@ const router = createRouter({
         {path: 'video', name: 'video', redirect: '/webrtc-video'}, // 重定向到新视频通话页面
         {path: 'webrtc-video', name: 'webrtc-video', component: WebrtcVideoView}, // 新增路由
         {path: 'drive', name: 'drive' ,component: DriveView},
+        {path: 'drive-cloud', name: 'drive-cloud', component: DriveView},
         {path: 'voice', name: 'voice' ,component: VoiceView},
         {path: 'healthy', name: 'healthy', component: HealthyView},
         {path: 'new_agent', name: 'new_agent' ,component: AIView},

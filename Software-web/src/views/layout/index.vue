@@ -1,8 +1,12 @@
 <script setup>
   import { ref, onMounted, onUnmounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { GetIdApi, GetMachineListApi } from '../../api/users';
+  import { ElMessage } from 'element-plus';
+  import { GetIdApi, GetMachineListApi, GetDeviceNetworkStatusApi } from '../../api/users';
   import { logoutLocally } from '../../utils/authSession';
+  import { getRobotHttpPort } from '../../utils/systemConfig';
+  import { selectPreferredMachine } from '../drive/machineSelection.mjs';
+  import { buildDirectRobotControlUrl } from '../drive/directRobotControl.mjs';
 
   const route = useRoute();
   const router = useRouter();
@@ -81,6 +85,7 @@
       '/webrtc-video': '远程监护',
       '/healthy': '健康监测',
       '/drive': '远程遥控',
+      '/drive-cloud': '远程遥控（云端备份）',
       '/voice': '音色克隆',
       '/connections': '更多连接',
       '/set': '设置',
@@ -123,6 +128,35 @@
     closeSidebar();
   };
 
+  const openDirectRobotControl = async () => {
+    const machine = selectPreferredMachine(Machines.value);
+    if (!machine) {
+      ElMessage.warning('未找到机器人设备，已打开云端备用遥控页');
+      navTo('/drive-cloud');
+      return;
+    }
+
+    let networkStatus = null;
+    if (machine.connectionId) {
+      try {
+        const result = await GetDeviceNetworkStatusApi(machine.connectionId);
+        if (result?.code === 1) networkStatus = result.data;
+      } catch {
+        networkStatus = null;
+      }
+    }
+
+    const url = buildDirectRobotControlUrl(machine, networkStatus, getRobotHttpPort());
+    if (!url) {
+      ElMessage.warning('未获取到机器人 IP，已打开云端备用遥控页');
+      navTo('/drive-cloud');
+      return;
+    }
+
+    closeSidebar();
+    window.location.assign(url);
+  };
+
   const logout = () => {
     logoutLocally()
     router.replace('/login')
@@ -140,7 +174,7 @@
     { path: '/command', icon: 'List', label: '命令查询' },
     { type: 'label', label: '监护功能' },
     { path: '/video', icon: 'VideoCamera', label: '远程监护' },
-    { path: '/drive', icon: 'Switch', label: '远程遥控' },
+    { path: '/drive', icon: 'Switch', label: '远程遥控', action: openDirectRobotControl },
     { path: '/voice', icon: 'Microphone', label: '音色克隆' },
     { path: '/healthy', icon: 'CirclePlusFilled', label: '健康监测' },
     { type: 'label', label: '系统' },
