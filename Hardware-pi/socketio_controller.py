@@ -79,13 +79,6 @@ def on_cmd_settings(data):
         _play_tts(value)
     elif stype == "tts_clone":
         _play_tts_clone(value, data)
-    elif stype == "aiChat":
-        enabled = str(value).strip().lower() in {"active", "on", "1", "true"}
-        if enabled:
-            state.ai_chat_enabled.set()
-        else:
-            state.ai_chat_enabled.clear()
-        logger.info(f"语音聊天已{'开启' if enabled else '关闭'}")
     elif stype == "restart":
         import os
         logger.warning("收到重启指令，3 秒后重启...")

@@ -24,6 +24,7 @@ export const AddElementApi = (Element)=>{return request.post('/events/add',Eleme
 export const AddContractUserApi = (data)=>{return request.post('/contractUser/add',data)}
 export const AddMachineApi = (data)=>{return request.post('/contractMachine/add',data)}
 export const UpdateMachineIpApi = (data)=>{return request.put('/contractMachine/robot-ip',data)}
+export const GetDeviceNetworkStatusApi = (deviceId)=>{return request.get(`/device/network/status/${deviceId}`)}
 
 export const getRateApi = (deviceId)=>{return request.get(`/healthy/getRate/${deviceId}`)}
 export const getHumidityApi = (deviceId)=>{return request.get(`/healthy/getHumidity/${deviceId}`)}

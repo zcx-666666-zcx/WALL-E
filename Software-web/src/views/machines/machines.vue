@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { GetMachineListApi } from '@/api/users.js';
 import { AddMachineApi } from '../../api/users';
 import { DeleteMachinesApi } from '../../api/users';
 import { UpdateMachineIpApi } from '../../api/users';
+import { GetDeviceNetworkStatusApi } from '../../api/users';
+import { refreshDeviceNetworkStatuses } from '../../utils/deviceNetworkStatus.mjs';
 import { toast, confirm } from '../../utils/toast';
 
 let haveNot = ref(true)
@@ -14,16 +16,38 @@ let MachinesInfo = ref({ machines: '', connectionId: '', robotIp: '', userId: us
 let editingIpId = ref(null)
 let editingIpValue = ref('')
 const DEFAULT_DEVICE_ID = 'WALLE_1'
+const NETWORK_REFRESH_MS = 10000
 const isDefaultMachine = (row) => row?.connectionId === DEFAULT_DEVICE_ID
+let networkRefreshTimer = null
 
-onMounted(() => { getList() })
+onMounted(async () => {
+    await getList()
+    networkRefreshTimer = window.setInterval(refreshNetworkStatuses, NETWORK_REFRESH_MS)
+})
+onBeforeUnmount(() => window.clearInterval(networkRefreshTimer))
 
 const getList = async () => {
     const result = await GetMachineListApi(userid.value);
     if (result && result.code === 1) {
-        if (result.data?.rows?.length > 0) { tableData.value = result.data.rows; haveNot.value = false; }
+        if (result.data?.rows?.length > 0) {
+            tableData.value = result.data.rows
+            haveNot.value = false
+            await refreshNetworkStatuses()
+        }
         else { tableData.value = []; haveNot.value = true; }
     } else { toast.error("获取表格数据失败"); }
+}
+
+const refreshNetworkStatuses = async () => {
+    tableData.value = await refreshDeviceNetworkStatuses(
+        tableData.value,
+        GetDeviceNetworkStatusApi
+    )
+}
+
+const formatLastSeen = (value) => {
+    if (!value) return '暂无心跳'
+    return new Date(value).toLocaleString('zh-CN', { hour12: false })
 }
 
 const AddMachine = async () => {
@@ -125,6 +149,16 @@ const tableData = ref([])
         <el-table-column prop="connectionId" label="设备号" align="center" min-width="240">
           <template #default="{ row }">
             <span class="device-id">{{ row.connectionId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="网络状态" align="center" min-width="190">
+          <template #default="{ row }">
+            <div class="network-state">
+              <span class="status-dot" :class="{ online: row.networkStatus?.online }"></span>
+              <span>{{ row.networkStatus?.unavailable ? '未知' : (row.networkStatus?.online ? '在线' : '离线') }}</span>
+              <span class="network-meta">{{ row.networkStatus?.networkName || '未知网络' }}</span>
+              <span class="last-seen">{{ formatLastSeen(row.networkStatus?.lastSeenAt) }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="树莓派 IP" align="center" min-width="260">
@@ -266,6 +300,20 @@ const tableData = ref([])
 .device-name { font-size: 13.5px; font-weight: 600; color: #3A2010; }
 .device-id { font-size: 12.5px; color: #7A5040; font-family: monospace; letter-spacing: 0.05em; }
 .device-ip { font-size: 12.5px; color: #5F4638; font-family: monospace; }
+
+.network-state {
+  display: grid;
+  grid-template-columns: 8px auto;
+  align-items: center;
+  justify-content: center;
+  gap: 2px 7px;
+  color: #8A5040;
+  font-size: 12px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #B8AAA2; }
+.status-dot.online { background: #2FA66A; box-shadow: 0 0 0 3px rgba(47,166,106,0.12); }
+.network-meta,
+.last-seen { grid-column: 2; color: #9A7C6D; font-size: 11px; text-align: left; }
 
 .ip-cell,
 .ip-edit {

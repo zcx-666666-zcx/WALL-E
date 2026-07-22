@@ -45,7 +45,8 @@ public class TokenFilter implements Filter {
             return;
         }
 
-        if (requestURI.startsWith("/api/device/events/")) {
+        if (requestURI.startsWith("/api/device/events/")
+                || requestURI.startsWith("/api/device/network/heartbeat/")) {
             String providedToken = request.getHeader(DEVICE_TOKEN_HEADER);
             if (tokensMatch(deviceApiToken, providedToken)) {
                 filterChain.doFilter(request, response);
