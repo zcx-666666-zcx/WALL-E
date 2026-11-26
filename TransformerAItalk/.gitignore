@@ -1,0 +1,12 @@
+# TTS pretrained models (huge, downloaded separately)
+TTS/pretrained_models/
+TTS/GPT_SoVITS/pretrained_models/
+
+# Generated audio files
+data/tts_output/*.wav
+data/memory/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,35 @@
+# ============================================================
+# Elder AI (TransformerAItalk) Python 依赖
+# ============================================================
+# 安装：
+#   pip install -r requirements.txt
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# ============================================================
+
+# ── LLM 推理 ──────────────────────────────────
+torch>=2.1.0
+transformers>=4.45.0
+peft>=0.13.0
+accelerate>=0.34.0
+bitsandbytes>=0.43.0
+sentencepiece>=0.2.0
+tokenizers>=0.20.0
+numpy>=1.26.0
+
+# ── API 服务 ─────────────────────────────────
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+
+# ── STT 语音识别 ────────────────────────────
+funasr>=1.0.0
+
+# ── 活体检测 ─────────────────────────────────
+opencv-python
+torchvision
+
+# ── 联网搜索（可选）─────────────────────────
+tavily-python
+
+# ── 训练（仅开发机需要，部署可跳过）─────────
+# datasets>=2.20.0
