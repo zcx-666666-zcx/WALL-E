@@ -4,6 +4,7 @@ import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { getFallApi, getRateApi, getHumidityApi, getBreatheApi, getTemperatureApi, GetMachineListApi } from '../../api/users';
 import { toast } from '../../utils/toast';
 import { isAuthSilentError } from '../../utils/authSession';
+import { healthRowsOrDemo, demoFall } from './demoHealth.mjs';
 
 const DEFAULT_DEVICE_ID = 'WALLE_1';
 const deviceId = ref(DEFAULT_DEVICE_ID);
@@ -71,9 +72,7 @@ const calculateMinMax = (dataRef, maxRef, minRef) => {
 };
 
 const formatApiData = (apiData, fieldName) => {
-  if (!apiData || !apiData.data || !apiData.data.rows) return [];
-  const sortedRows = [...apiData.data.rows].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-  return sortedRows.map(row => [new Date(row.createdAt).toLocaleTimeString(), row[fieldName]]);
+  return healthRowsOrDemo(apiData, fieldName);
 };
 
 const fetchRateData = async () => {
@@ -112,7 +111,7 @@ const getFall = async () => {
   try { if (!deviceId.value) return;
     const res = await getFallApi(deviceId.value);
     if (res) {
-      isFall.value = res.data.fall;
+      isFall.value = demoFall(res);
       fall.value = isFall.value === false ? '正常' : isFall.value === true ? '跌倒' : '未识别到目标';
     }
   } catch (error) { logDataError('获取姿态失败:', error); }

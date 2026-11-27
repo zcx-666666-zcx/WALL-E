@@ -5,6 +5,7 @@ import time
 
 import cv2
 
+import camera_manager
 import config as project_config
 from config import DEV_NAME
 from shared import shutdown_event, state
@@ -13,6 +14,12 @@ logger = logging.getLogger("CameraPusher")
 
 _thread = None
 _thread_lock = threading.Lock()
+
+
+def current_frame():
+    if not camera_manager.is_camera_ready():
+        return None
+    return state.get_camera_frame()
 
 
 def _encode_frame(frame):
@@ -42,7 +49,7 @@ def _camera_push_loop(sio):
             time.sleep(project_config.CAMERA_PUSH_DISCONNECTED_SLEEP)
             continue
 
-        frame = state.get_camera_frame()
+        frame = current_frame()
 
         if frame is None:
             time.sleep(project_config.CAMERA_PUSH_NO_FRAME_SLEEP)

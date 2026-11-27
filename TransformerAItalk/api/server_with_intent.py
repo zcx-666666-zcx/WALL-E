@@ -276,15 +276,11 @@ def face_health():
 
 @app.post("/face/liveness")
 async def face_liveness(image: UploadFile = File(...)):
-    from face_validation import extract_single_face
     image_bytes = await image.read(8 * 1024 * 1024 + 1)
     if not image_bytes or len(image_bytes) > 8 * 1024 * 1024:
         raise HTTPException(400, "invalid image")
-    face = await run_in_threadpool(extract_single_face, image_bytes)
-    if face is None:
-        raise HTTPException(400, "one clear frontal face is required")
     detector = get_liveness()
-    result = await run_in_threadpool(detector.predict, face)
+    result = await run_in_threadpool(detector.predict, image_bytes)
     return result.to_dict()
 
 

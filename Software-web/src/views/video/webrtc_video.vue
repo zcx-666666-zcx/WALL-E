@@ -481,7 +481,6 @@ export default {
         if (!resp.ok) {
           const err = await resp.json();
           log(`⚠ 人脸检测服务异常: ${err.detail || err.error || resp.status}`);
-          if (resp.status === 400) return false;
           return null;  // null = service unavailable, allow to proceed
         }
 

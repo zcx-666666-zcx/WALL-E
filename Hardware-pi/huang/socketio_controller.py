@@ -39,7 +39,7 @@ def on_connect():
     room = f"robot_{DEV_NAME}"
     sio.emit("join", {"room": room, "deviceToken": WALLE_DEVICE_API_TOKEN})
     start_camera_pusher(sio)
-    logger.info(f"已连接 Java 后端，加入房间: {room}")
+    logger.info(f"已连接 Java 后端，正在请求加入房间: {room}")
 
 
 @sio.on("disconnect")
@@ -55,6 +55,11 @@ def on_disconnect():
 @sio.on("joined")
 def on_joined(data):
     logger.info(f"成功加入房间: {data.get('room')}")
+
+
+@sio.on("join_error")
+def on_join_error(data):
+    logger.error("加入遥控房间失败: %s；请检查 WALLE_DEVICE_API_TOKEN", (data or {}).get("message", "unknown"))
 
 
 @sio.on("cmd_motor")

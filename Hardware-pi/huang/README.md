@@ -33,6 +33,11 @@ deployment administrator; do not commit credentials to Git.
 
 The backend device ID defaults to `WALLE_1`, while the existing OneNET device
 name remains `WALEE_1`. The signaling server defaults to `https://zhanhui.cloud`.
+After updating, restart the existing robot service with its configured
+environment. Its logs should show a successful `robot_WALLE_1`/`robot_WALEE_1`
+room join and periodic camera-frame sends. A `join_error` or `unauthorized`
+message indicates that the backend device token or service environment needs
+checking. A missing or stale camera frame will not be pushed.
 Optional `WALLE_RTC_AUDIO_INPUT` and `WALLE_RTC_AUDIO_OUTPUT` select ALSA devices
 (default: `default`); an empty value disables the corresponding direction.
 Test camera, microphone, speaker, and motor behavior on the actual device.

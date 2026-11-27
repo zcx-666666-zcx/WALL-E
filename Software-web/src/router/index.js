@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { routerBase } from './routerBase.mjs';
 
 import loginView from '@/views/login/login.vue';
 import ElementlistView from '@/views/elementlist/elementlist.vue';
@@ -20,7 +21,7 @@ import AdminView from '@/views/admin/admin.vue';
 import VoiceView from '@/views/voice/voice.vue';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(routerBase(import.meta.env.BASE_URL, document.baseURI)),
   routes: [
     {
       path: '/',

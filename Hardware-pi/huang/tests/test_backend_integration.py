@@ -115,6 +115,34 @@ class BackendIntegrationTest(unittest.TestCase):
                     self.assertIn('hello; echo unsafe', args[0])
                     self.assertFalse(kwargs.get('shell', False))
 
+    def test_remote_join_rejection_is_visible_in_logs(self):
+        config, _, _, modules = dependencies()
+        class DummySocket:
+            def on(self, event): return lambda fn: fn
+        socketio = types.ModuleType('socketio')
+        socketio.Client = lambda **kwargs: DummySocket()
+        camera = types.ModuleType('camera_pusher')
+        camera.start_camera_pusher = Mock()
+        modules.update({'socketio': socketio, 'camera_pusher': camera})
+        with patch.dict(sys.modules, modules):
+            controller = load('huang_socket_auth_test', 'socketio_controller.py')
+            with self.assertLogs('SocketIO', level='ERROR') as logs:
+                controller.on_join_error({'message': 'unauthorized'})
+            self.assertIn('unauthorized', logs.output[0])
+
+    def test_camera_push_rejects_stale_shared_frames(self):
+        config, _, shared, modules = dependencies()
+        camera_manager = types.ModuleType('camera_manager')
+        camera_manager.is_camera_ready = Mock(return_value=False)
+        cv2 = types.ModuleType('cv2')
+        modules.update({'cv2': cv2, 'camera_manager': camera_manager})
+        with patch.dict(sys.modules, modules):
+            pusher = load('huang_camera_push_test', 'camera_pusher.py')
+            self.assertIsNone(pusher.current_frame())
+            shared.state.get_camera_frame.assert_not_called()
+            camera_manager.is_camera_ready.return_value = True
+            self.assertIs(pusher.current_frame(), shared.state.get_camera_frame.return_value)
+
 
 if __name__ == '__main__':
     unittest.main()

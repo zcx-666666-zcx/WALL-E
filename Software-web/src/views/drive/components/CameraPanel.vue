@@ -46,7 +46,7 @@ function refreshFrame(id) {
     .then(blob => {
       if (!blob) {
         loading.value = false
-        error.value = '等待机器人摄像头推流...'
+        error.value = '机器人离线或未上传摄像头画面'
         return
       }
       const nextUrl = URL.createObjectURL(blob)
@@ -80,7 +80,7 @@ onBeforeUnmount(() => {
 function onLoad() { loading.value = false; error.value = '' }
 function onError() {
   loading.value = false
-  error.value = '等待机器人摄像头推流...'
+  error.value = '机器人离线或未上传摄像头画面'
 }
 </script>
 
