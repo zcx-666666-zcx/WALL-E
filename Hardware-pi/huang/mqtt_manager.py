@@ -33,6 +33,9 @@ _auth_blocked_until = 0.0
 
 
 def _headers():
+    device_token = getattr(project_config, "WALLE_DEVICE_API_TOKEN", "")
+    if device_token:
+        return {"X-Walle-Device-Token": device_token}
     if not API_AUTH_ENABLED or not API_AUTH_TOKEN:
         return {}
     value = API_AUTH_TOKEN.strip()
@@ -57,7 +60,7 @@ def post_health_data(endpoint, data_key, data_value):
     payload = {
         "deviceId": DEVICE_ID,
         data_key: data_value,
-        "timestamp": TIMESTAMP,
+        "timestamp": int(time.time() * 1000),
         "messageId": MESSAGE_ID,
     }
 
@@ -211,34 +214,13 @@ def _resolve_user_id():
 
 def _fetch_pending_events():
     """使用设备令牌从云服务器获取待提醒事件。"""
-    # url = f"{EVENT_API_BASE_URL}/device/events/{EVENT_DEVICE_ID}"
-    url = f"{EVENT_API_BASE_URL}/events/search/3"
-
-    # 后端 TokenFilter 只认请求头 "token"（HS256 JWT），密钥与后端 JwtUtils 一致。
-    # 设备端每次请求现场自签 token（30 分钟有效），保证长轮询永不过期。
-    import base64 as _b64
-    import hmac as _hmac
-    import hashlib as _hl
-    import json as _json
-
-    _secret = _b64.b64decode(os.environ.get("WALLE_EVENT_JWT_SECRET_BASE64", ""))
-    if not _secret:
-        logger.warning("WALLE_EVENT_JWT_SECRET_BASE64 is not configured")
+    if not EVENT_DEVICE_API_TOKEN:
+        logger.warning("WALLE_DEVICE_API_TOKEN is not configured")
         return []
-
-    def _b64url(b):
-        return _b64.urlsafe_b64encode(b).rstrip(b"=").decode()
-    _h = _b64url(_json.dumps({"alg": "HS256"}).encode())
-    _p = _b64url(_json.dumps({"id": 3, "exp": int(time.time()) + 1800}).encode())
-    _m = f"{_h}.{_p}".encode()
-    _s = _b64url(_hmac.new(_secret, _m, _hl.sha256).digest())
-    _token = f"{_h}.{_p}.{_s}"
-
-    headers = dict(_event_headers())
-    headers["token"] = _token
+    url = f"{EVENT_API_BASE_URL}/device/events/{EVENT_DEVICE_ID}"
 
     try:
-        resp = requests.get(url, headers=headers, timeout=project_config.HEALTH_API_TIMEOUT)
+        resp = requests.get(url, headers=_event_headers(), timeout=project_config.HEALTH_API_TIMEOUT)
         if resp.status_code != 200:
             print(f"[EventManager] Event fetch failed: status={resp.status_code}")
             logger.error("Event fetch failed: status=%s", resp.status_code)

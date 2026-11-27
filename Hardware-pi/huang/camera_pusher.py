@@ -55,6 +55,7 @@ def _camera_push_loop(sio):
 
         payload = {
             "deviceName": DEV_NAME,
+            "deviceToken": project_config.WALLE_DEVICE_API_TOKEN,
             "timestamp": int(time.time() * 1000),
             "format": "jpg",
             "encoding": "base64",

@@ -4,17 +4,23 @@ import socketio
 import logging
 import threading
 import time
+import requests
 from fractions import Fraction
-from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
+from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack, RTCConfiguration, RTCIceServer
 from aiortc.sdp import candidate_from_sdp
+from aiortc.contrib.media import MediaPlayer, MediaRecorder
 from av import VideoFrame
 
 from config import (
     CAMERA_FPS,
     CAMERA_HEIGHT,
     CAMERA_WIDTH,
+    AI_API_URL,
+    RTC_AUDIO_INPUT,
+    RTC_AUDIO_OUTPUT,
     ROOM_ID,
     SERVER_URL,
+    WALLE_DEVICE_API_TOKEN,
     WEBRTC_CALL_MODE,
     WEBRTC_IDLE_MODE,
     WEBRTC_OFFER_DELAY,
@@ -22,6 +28,8 @@ from config import (
 )
 from shared import state
 from hardware import arduino
+from rtc_config import fetch_ice_servers
+from rtc_audio import RtcAudio
 
 logger = logging.getLogger("WebRTC_Client")
 
@@ -58,6 +66,7 @@ class LocalPreviewTrack(VideoStreamTrack):
 async def network_main():
     sio = socketio.AsyncClient()
     pc_container = {"pc": None}
+    audio_container = {"audio": None}
     pending_candidates = []
 
     def parse_remote_candidate(candidate_data):
@@ -83,7 +92,15 @@ async def network_main():
     async def cleanup_pc():
         pc = pc_container.get("pc")
         pc_container["pc"] = None
+        audio = audio_container.get("audio")
+        audio_container["audio"] = None
         pending_candidates.clear()
+
+        if audio:
+            try:
+                await audio.close()
+            except Exception as e:
+                logger.warning(f">>> [WebRTC] 音频释放失败: {e}")
 
         if pc:
             try:
@@ -130,8 +147,18 @@ async def network_main():
                 logger.warning(f">>> [WebRTC] 添加缓存ICE候选失败: {e}")
 
     async def create_pc():
-        pc = RTCPeerConnection()
+        server_data = await asyncio.to_thread(fetch_ice_servers, AI_API_URL, WALLE_DEVICE_API_TOKEN, requests.get)
+        ice_servers = [RTCIceServer(**server) for server in server_data]
+        pc = RTCPeerConnection(RTCConfiguration(iceServers=ice_servers))
         pc_container["pc"] = pc
+        audio = RtcAudio(MediaPlayer, MediaRecorder)
+        audio_container["audio"] = audio
+        if RTC_AUDIO_INPUT:
+            try:
+                audio.add_microphone(pc, RTC_AUDIO_INPUT)
+                logger.info(">>> [WebRTC] 麦克风已挂载")
+            except Exception as e:
+                logger.warning(f">>> [WebRTC] 麦克风不可用，将仅传输视频: {e}")
 
         try:
             pc.addTrack(LocalPreviewTrack())
@@ -148,6 +175,13 @@ async def network_main():
             
         @pc.on("track")
         def on_track(track):
+            if track.kind == "audio" and RTC_AUDIO_OUTPUT:
+                async def play_audio():
+                    try:
+                        await audio.play_incoming(track, RTC_AUDIO_OUTPUT)
+                    except Exception as e:
+                        logger.warning(f">>> [WebRTC] 扬声器不可用: {e}")
+                asyncio.create_task(play_audio())
             if track.kind == "video":
                 logger.info(">>> [WebRTC] 接收到远端子女视频流，正在推送到屏幕...")
                 
@@ -180,7 +214,7 @@ async def network_main():
     @sio.event
     async def connect():
         logger.info(f">>> [Network] SocketIO 已连接服务器，加入房间 {ROOM_ID}...")
-        await sio.emit('join', {'room': ROOM_ID})
+        await sio.emit('join', {'room': ROOM_ID, 'deviceToken': WALLE_DEVICE_API_TOKEN})
 
     @sio.event
     async def message(data):
@@ -223,8 +257,11 @@ async def network_main():
         if cmd == 'motor':
             x, y = data.get('x', 0), data.get('y', 0)
             if arduino.is_connected():
-                arduino.send(f"X{int(float(x)*100)}")
-                arduino.send(f"Y{int(float(y)*100)}")
+                from socketio_controller import motor_controller
+                try:
+                    motor_controller().move(x, y)
+                except (ValueError, TypeError):
+                    logger.warning("Rejected invalid motor coordinates")
 
     while True:
         try:

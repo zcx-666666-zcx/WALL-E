@@ -4,25 +4,51 @@ Socket.IO 客户端 — 主动连接 Java 后端，接收远程遥控指令。
 """
 import time
 import logging
+import threading
 import socketio
 from camera_pusher import start_camera_pusher
-from config import DEV_NAME, SOCKETIO_SERVER_URL
+from config import DEV_NAME, SOCKETIO_SERVER_URL, WALLE_DEVICE_API_TOKEN
 
 logger = logging.getLogger("SocketIO")
 
 sio = socketio.Client(logger=True, engineio_logger=False)
+_motor_controller = None
+_motor_lock = threading.Lock()
+
+
+def motor_controller():
+    global _motor_controller
+    with _motor_lock:
+        if _motor_controller is None:
+            from hardware import arduino
+            from motor_watchdog import MotorWatchdog
+            _motor_controller = MotorWatchdog(arduino.send)
+            def check_loop():
+                while True:
+                    time.sleep(0.1)
+                    try:
+                        _motor_controller.check()
+                    except Exception:
+                        logger.exception("Motor watchdog failed to send stop")
+            threading.Thread(target=check_loop, name="motor-watchdog", daemon=True).start()
+        return _motor_controller
 
 
 @sio.on("connect")
 def on_connect():
     room = f"robot_{DEV_NAME}"
-    sio.emit("join", {"room": room})
+    sio.emit("join", {"room": room, "deviceToken": WALLE_DEVICE_API_TOKEN})
     start_camera_pusher(sio)
     logger.info(f"已连接 Java 后端，加入房间: {room}")
 
 
 @sio.on("disconnect")
 def on_disconnect():
+    if _motor_controller is not None:
+        try:
+            _motor_controller.stop()
+        except Exception:
+            logger.exception("Failed to stop motors after disconnect")
     logger.warning("与 Java 后端断开连接，将自动重连...")
 
 
@@ -33,11 +59,13 @@ def on_joined(data):
 
 @sio.on("cmd_motor")
 def on_cmd_motor(data):
-    from hardware import arduino
     sx = data.get("stickX", "0")
     sy = data.get("stickY", "0")
-    arduino.send(f"X{int(float(sx) * 100)}")
-    arduino.send(f"Y{int(float(sy) * 100)}")
+    try:
+        motor_controller().move(sx, sy)
+    except (ValueError, TypeError):
+        logger.warning("Rejected invalid motor coordinates")
+        return
     logger.debug(f"电机指令: X={sx}, Y={sy}")
 
 
@@ -114,8 +142,9 @@ def _play_tts(text):
     import subprocess
     import os as _os
     try:
-        cmd = f'edge-tts --voice zh-CN-YunxiaNeural --text "{text}" --volume="+50%" --write-media /tmp/tts_remote.mp3'
-        subprocess.run(cmd, shell=True, check=True,
+        cmd = ['edge-tts', '--voice', 'zh-CN-YunxiaNeural', '--text', text,
+               '--volume=+50%', '--write-media', '/tmp/tts_remote.mp3']
+        subprocess.run(cmd, check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(['/usr/bin/mpg123', '-q', '/tmp/tts_remote.mp3'],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

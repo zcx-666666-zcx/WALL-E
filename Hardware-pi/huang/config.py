@@ -61,7 +61,10 @@ CODEBLOCK_TURNTIME = 1.8
 # ================= 5. WebRTC / 信令配置 =================
 # SERVER_URL = "https://lht20060712.yicp.fun"
 # SERVER_URL = "wss://lht20060712.yicp.fun"
-SERVER_URL = "https://zhanhui.cloud/walle"
+SERVER_URL = os.environ.get("WALLE_SERVER_URL", "https://zhanhui.cloud")
+AI_API_URL = os.environ.get("WALLE_AI_API_URL", "https://zhanhui.cloud/walle/ai")
+RTC_AUDIO_INPUT = os.environ.get("WALLE_RTC_AUDIO_INPUT", "default")
+RTC_AUDIO_OUTPUT = os.environ.get("WALLE_RTC_AUDIO_OUTPUT", "default")
 ROOM_ID = "0001"
 
 # ================= 6. OneNet MQTT 配置 =================
@@ -69,7 +72,7 @@ ONENET_HOST = "mqtts.heclouds.com"
 ONENET_PORT = 1883
 PROD_ID = "kCx33ym0Dt"
 DEV_NAME = "WALEE_1"
-TOKEN = os.environ.get("WALLE_DEVICE_API_TOKEN", "")
+TOKEN = os.environ.get("WALLE_ONENET_TOKEN", "")
 TOPIC_PUB = "$sys/kCx33ym0Dt/WALEE_1/dp/post/json"
 WALLE_DEVICE_API_TOKEN = os.environ.get("WALLE_DEVICE_API_TOKEN", "")
 
@@ -94,7 +97,7 @@ TTS_STREAM_ERROR_SLEEP = 1
 # ================= 9. Socket.IO 远程控制配置 =================
 # SOCKETIO_SERVER_URL = "https://lht20060712.yicp.fun"
 # SOCKETIO_SERVER_URL = "wss://lht20060712.yicp.fun"
-SOCKETIO_SERVER_URL = "https://zhanhui.cloud/walle"
+SOCKETIO_SERVER_URL = os.environ.get("WALLE_SOCKETIO_SERVER_URL", "https://zhanhui.cloud")
 SOCKETIO_PATH = "/socket.io"
 SOCKETIO_TRANSPORTS = ["websocket", "polling"]
 SOCKETIO_WAIT_TIMEOUT = 10
@@ -145,7 +148,7 @@ HEALTH_API_TIMEOUT = 3
 HEALTH_API_UPLOAD_WORKERS = 5
 HEALTH_API_TIMESTAMP = 1000
 HEALTH_API_MESSAGE_ID = "1"
-HEALTH_DEVICE_ID = PROD_ID
+HEALTH_DEVICE_ID = os.environ.get("WALLE_HEALTH_DEVICE_ID", "WALLE_1")
 API_AUTH_ENABLED = False
 API_AUTH_TOKEN = os.environ.get("WALLE_API_TOKEN", "")
 API_AUTH_HEADER = "Authorization"
