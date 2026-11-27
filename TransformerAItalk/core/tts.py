@@ -131,7 +131,7 @@ class GTSTTSEngine:
         persona_id: Optional[str] = None,
         ref_audio_path: Optional[str] = None,
         ref_text: Optional[str] = None,
-        text_lang: str = "zh",
+        text_lang: str = "all_zh",
         speed: float = 1.0,
     ) -> tuple[int, np.ndarray]:
         """
@@ -187,7 +187,7 @@ class GTSTTSEngine:
         persona_id: Optional[str] = None,
         ref_audio_path: Optional[str] = None,
         ref_text: Optional[str] = None,
-        text_lang: str = "zh",
+        text_lang: str = "all_zh",
         speed: float = 1.0,
     ) -> str:
         """

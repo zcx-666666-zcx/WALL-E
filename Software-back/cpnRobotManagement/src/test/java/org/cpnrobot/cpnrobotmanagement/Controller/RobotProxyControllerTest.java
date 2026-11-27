@@ -55,6 +55,24 @@ class RobotProxyControllerTest {
     }
 
     @Test
+    void videoProxyRejectsMachineNotOwnedByCurrentUser() {
+        CurrentHolder.setCurrentId(7);
+        when(contractMachineMapper.getByIdAndUserId(99, "7")).thenReturn(null);
+        assertThat(controller.videoFeed(99).getStatusCode().value()).isEqualTo(404);
+    }
+
+    @Test
+    void motorRejectsCommandsWhenRobotIsOffline() {
+        CurrentHolder.setCurrentId(7);
+        ContractMachine machine = new ContractMachine();
+        machine.setConnectionId("WALLE_1");
+        when(contractMachineMapper.getByIdAndUserId(2, "7")).thenReturn(machine);
+        Result result = controller.motor(Map.of("machineId", 2, "stickX", 0.1, "stickY", 0.2));
+        assertThat(result.getCode()).isEqualTo(0);
+        assertThat(result.getMsg()).contains("离线");
+    }
+
+    @Test
     void cameraFrameUsesCanonicalConnectionIdInsteadOfDisplayName() {
         CurrentHolder.setCurrentId(7);
         ContractMachine machine = new ContractMachine();

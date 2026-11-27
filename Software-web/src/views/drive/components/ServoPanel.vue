@@ -3,8 +3,6 @@
     <h3>舵机控制</h3>
 
     <div v-if="!machine" class="no-device">请先在顶部选择一个机器人设备</div>
-    <div v-else-if="!machine.robotIp" class="no-device warn">当前设备未配置 IP 地址</div>
-
     <template v-else>
       <div class="mode-row">
         <label><input type="radio" value="manual" v-model="mode" @change="setMode"> 手动</label>

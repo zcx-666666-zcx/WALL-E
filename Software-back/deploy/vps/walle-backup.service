@@ -1,0 +1,10 @@
+[Unit]
+Description=WALL-E MySQL backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/walle-server
+ExecStart=/bin/sh /opt/walle-server/backup-db.sh
+UMask=0077

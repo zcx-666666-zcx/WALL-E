@@ -15,6 +15,7 @@
 """
 
 from __future__ import annotations
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -145,7 +146,7 @@ class EmotionDetector:
         try:
             # 尝试使用 transformers BertTokenizer（更精准）
             from transformers import BertTokenizerFast
-            self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-chinese")
+            self.tokenizer = BertTokenizerFast.from_pretrained(os.environ.get("WALLE_EMOTION_TOKENIZER", "bert-base-chinese"))
 
             self.model = EmotionTransformer().to(self.device)
             state = torch.load(self.CKPT_PATH, map_location=self.device)

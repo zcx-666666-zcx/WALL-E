@@ -1,13 +1,12 @@
 <template>
   <div class="control-panel">
     <div v-if="!machine" class="no-device">请选择设备</div>
-    <div v-else-if="!machine.robotIp" class="no-device warn">未配置 IP</div>
-
     <template v-else>
       <div class="coords">
         <span class="coord-x">X: {{ stickX.toFixed(2) }}</span>
         <span class="coord-y">Y: {{ stickY.toFixed(2) }}</span>
       </div>
+      <div v-if="controlError" class="control-error" role="alert">{{ controlError }}</div>
 
       <div class="joystick-container">
         <div
@@ -19,6 +18,7 @@
           @touchstart.prevent="startTouch"
           @touchmove.prevent="onTouch"
           @touchend.prevent="stopDrag"
+          @touchcancel.prevent="stopDrag"
         >
           <div class="joystick-stick" :style="stickStyle"></div>
         </div>
@@ -28,14 +28,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { RobotMotorApi } from '@/api/users'
+import { createMotorSender } from '../motorSender.mjs'
 
 const props = defineProps({
   machine: { type: Object, default: null }
 })
 
-let lastSend = 0
+const controlError = ref('')
+const motorSender = createMotorSender(RobotMotorApi, globalThis, error => {
+  controlError.value = error?.message || '遥控指令发送失败，请检查网络'
+})
 const dragging = ref(false)
 const x = ref(0)
 const y = ref(0)
@@ -48,17 +52,11 @@ const stickStyle = computed(() => ({
 
 function sendMotor(sx, sy) {
   if (!props.machine?.id) return
-  const now = Date.now()
-  if (now - lastSend < 50) return
-  lastSend = now
-  RobotMotorApi({
-    machineId: props.machine.id,
-    stickX: +sx.toFixed(2),
-    stickY: +sy.toFixed(2)
-  }).catch(() => {})
+  motorSender.move(props.machine.id, sx, sy)
 }
 
 function beginDrag() {
+  controlError.value = ''
   dragging.value = true
 }
 
@@ -121,8 +119,12 @@ function stopDrag() {
   y.value = 0
   stickX.value = 0
   stickY.value = 0
-  sendMotor(0, 0)
+  motorSender.stop()
 }
+
+onMounted(() => window.addEventListener('blur', stopDrag))
+onBeforeUnmount(() => { window.removeEventListener('blur', stopDrag); motorSender.stop() })
+watch(() => props.machine?.id, () => stopDrag())
 </script>
 
 <style scoped>
@@ -130,6 +132,7 @@ function stopDrag() {
 
 .no-device { padding: 20px 10px; color: #B09080; font-size: 13px; }
 .no-device.warn { color: #EF6C00; }
+.control-error { color: #b42318; font-size: 13px; margin-bottom: 12px; }
 
 .coords {
   font-family: monospace; font-size: 12px; color: #7A5040;

@@ -1,0 +1,19 @@
+[Unit]
+Description=WALL-E private voice bridge
+Requires=docker.service walle-gpu-tunnel.service
+After=docker.service walle-gpu-tunnel.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/walle-server
+EnvironmentFile=/opt/walle-server/.env
+Environment=WALLE_VOICE_VOLUME=/var/lib/docker/volumes/walle-server_voice_data/_data
+Environment=WALLE_VOICE_BIND=172.19.0.1
+ExecStart=/usr/bin/python3 /opt/walle-server/voice_bridge.py
+Restart=always
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -21,9 +21,10 @@ for d in [MEMORY_DIR, PERSONA_DIR, CHECKPOINT_DIR, TRAIN_DIR]:
 #   "Qwen/Qwen2.5-1.5B-Instruct"   → 4-bit GPU，4GB VRAM，推荐调试
 #   "Qwen/Qwen2.5-7B-Instruct"     → 4-bit GPU，8GB VRAM，产品质量
 #   "Qwen/Qwen2.5-14B-Instruct"     → 4-bit GPU，14GB VRAM，高级推理
-BASE_MODEL = "Qwen/Qwen2.5-14B-Instruct"
+BASE_MODEL = os.environ.get("WALLE_BASE_MODEL", "Qwen/Qwen2.5-14B-Instruct")
+STT_MODEL = os.environ.get("WALLE_STT_MODEL", "iic/SenseVoiceSmall")
 
-USE_4BIT_QUANT  = True    # 4-bit 量化（降低显存，建议开启）
+USE_4BIT_QUANT  = os.environ.get("WALLE_USE_4BIT", "1") == "1"
 USE_FLASH_ATTN  = False   # Flash Attention 2（需要 A100/H100）
 MAX_NEW_TOKENS  = 250     # 每次回复最大 token 数
 TEMPERATURE     = 0.82    # 温度（越高越随机，老人陪伴建议 0.8-0.9）
@@ -34,7 +35,7 @@ REPETITION_PENALTY = 1.12
 # 联网API
 # ────────────────────────────────────────────
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
-SEARCH_ENABLED = True          # 总开关
+SEARCH_ENABLED = bool(TAVILY_API_KEY)
 SEARCH_TRIGGER_KEYWORDS = [    # 触发联网的关键词
     "新闻", "动态", "简报", "头条", "发生", "进展", "比赛结果", 
     "股价", "汇率", "天气", "气温", "预报", "油价", "金价", "报道",

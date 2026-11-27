@@ -35,13 +35,18 @@ import json
 import asyncio
 from typing import Optional, AsyncGenerator
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, Form
+from starlette.concurrency import run_in_threadpool
+import uuid
+import requests
 import shutil, time, os, re
+from threading import Lock
+from readiness import real_model_ready
 
 _stt_model = None
 _engine = None
@@ -49,13 +54,22 @@ _pm = None
 _emotion_detector = None
 _liveness_detector = None
 _tts_engine = None
+_engine_lock = Lock()
+
+def tts_auth_headers():
+    return {"X-Walle-Device-Token": os.environ.get("WALLE_DEVICE_API_TOKEN", "")}
 
 def get_engine():
     global _engine
     if _engine is None:
-        from core.engine import DialogueEngine
-        _engine = DialogueEngine()
-        _engine.load()
+        with _engine_lock:
+            if _engine is None:
+                from core.engine import DialogueEngine
+                engine = DialogueEngine()
+                engine.load()
+                if not real_model_ready(engine):
+                    raise HTTPException(status_code=503, detail="Dialogue model is not ready")
+                _engine = engine
     return _engine
 
 def get_pm():
@@ -96,6 +110,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+if os.environ.get("WALLE_AI_AUTH_REQUIRED") == "1":
+    from security import AuthMiddleware
+    app.add_middleware(AuthMiddleware,
+                       jwt_secret=os.environ.get("WALLE_JWT_SECRET", ""),
+                       device_secret=os.environ.get("WALLE_DEVICE_API_TOKEN", ""),
+                       allow_users=True)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -129,9 +150,10 @@ def get_stt_model():
     global _stt_model
     if _stt_model is None:
         from funasr import AutoModel
+        from config.settings import STT_MODEL
         print(">>> 正在加载 SenseVoice 模型...")
         _stt_model = AutoModel(
-            model="iic/SenseVoiceSmall",
+            model=STT_MODEL,
             device="cuda",
             disable_update=True
         )
@@ -207,12 +229,34 @@ class MemoryUpdateRequest(BaseModel):
 # 健康检查
 # ════════════════════════════════════════════
 
+def tts_ready():
+    try:
+        response = requests.get("http://127.0.0.1:6007/health", timeout=2)
+        return response.ok and response.json().get("ready") is True
+    except (requests.RequestException, ValueError):
+        return False
+
+
+@app.get("/rtc/ice")
+def rtc_ice(response: Response):
+    from turn_credentials import issue_ice_servers
+    try:
+        servers = issue_ice_servers(os.environ.get("WALLE_TURN_SECRET", ""),
+                                    os.environ.get("WALLE_TURN_HOST", ""))
+        response.headers["Cache-Control"] = "no-store"
+        return {"iceServers": servers}
+    except ValueError as exc:
+        raise HTTPException(503, "video relay is not configured") from exc
+
+
 @app.get("/health")
 def health():
     detector = get_liveness()
     return {
         "status": "ok",
         "service": "Elder AI",
+        "dialogue_ready": real_model_ready(_engine),
+        "tts_ready": tts_ready(),
         "liveness": "ready" if detector._ready else f"no_model: {detector._error[:80]}",
     }
 
@@ -232,9 +276,15 @@ def face_health():
 
 @app.post("/face/liveness")
 async def face_liveness(image: UploadFile = File(...)):
-    image_bytes = await image.read()
+    from face_validation import extract_single_face
+    image_bytes = await image.read(8 * 1024 * 1024 + 1)
+    if not image_bytes or len(image_bytes) > 8 * 1024 * 1024:
+        raise HTTPException(400, "invalid image")
+    face = await run_in_threadpool(extract_single_face, image_bytes)
+    if face is None:
+        raise HTTPException(400, "one clear frontal face is required")
     detector = get_liveness()
-    result = detector.predict(image_bytes)
+    result = await run_in_threadpool(detector.predict, face)
     return result.to_dict()
 
 
@@ -243,8 +293,12 @@ async def face_liveness(image: UploadFile = File(...)):
 # ════════════════════════════════════════════
 
 @app.get("/personas")
-def list_personas():
-    return {"personas": get_pm().list_all()}
+def list_personas(request: Request):
+    personas = get_pm().list_all()
+    username = getattr(request.state, "walle_user", None)
+    if username is not None:
+        personas = [persona for persona in personas if persona["id"] == "wali_" + username]
+    return {"personas": personas}
 
 @app.get("/personas/{persona_id}")
 def get_persona(persona_id: str):
@@ -527,7 +581,7 @@ class InputRequest(BaseModel):
     text: str                        # 语音转文字后的文本
 
 @app.post("/input")
-async def unified_input(req: InputRequest):
+async def unified_input(req: InputRequest, request: Request):
     """
     统一输入入口（硬件端调这一个接口即可）
 
@@ -580,12 +634,19 @@ async def unified_input(req: InputRequest):
     # ── TTS 语音合成 ───────────────────────
     audio_url = ""
     try:
-        wav_path = get_tts().synthesize_to_file(
-            text=reply,
-            persona_id=persona_id,
-        )
-        if wav_path:
-            audio_url = f"/audio/{os.path.basename(wav_path)}"
+        from config.settings import DEFAULT_REF_AUDIO, DEFAULT_REF_TEXT
+        with DEFAULT_REF_AUDIO.open("rb") as reference:
+            tts_response = requests.post("http://127.0.0.1:6007/synthesize", headers=tts_auth_headers(),
+                data={"text": reply, "reference_text": DEFAULT_REF_TEXT},
+                files={"audio": ("reference.wav", reference, "audio/wav")}, timeout=(5, 600))
+        tts_response.raise_for_status()
+        filename = f"{uuid.uuid4().hex}.wav"
+        owner = getattr(request.state, "walle_user", None)
+        output_dir = TTS_OUTPUT_DIR / owner if owner else TTS_OUTPUT_DIR
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / filename).write_bytes(tts_response.content)
+        audio_path = f"{owner}/{filename}" if owner else filename
+        audio_url = f"{os.environ.get('WALLE_AI_PUBLIC_PREFIX', '')}/audio/{audio_path}"
     except Exception as e:
         print(f"[TTS] 合成失败，降级为纯文本：{e}")
 
@@ -597,6 +658,32 @@ async def unified_input(req: InputRequest):
         "emotion":  emotion.emotion,
         "audio_url": audio_url,
     }
+
+
+@app.post("/voice/synthesize")
+async def synthesize_reference_voice(
+    audio: UploadFile = File(...), text: str = Form(...), reference_text: str = Form(...)
+):
+    if not text.strip() or len(text) > 1000 or not reference_text.strip():
+        raise HTTPException(400, "text and reference text are required")
+    content = await audio.read(20 * 1024 * 1024 + 1)
+    if not content or len(content) > 20 * 1024 * 1024:
+        raise HTTPException(400, "reference audio is empty or too large")
+
+    def generate():
+        result = requests.post("http://127.0.0.1:6007/synthesize", headers=tts_auth_headers(),
+                               data={"text": text, "reference_text": reference_text},
+                               files={"audio": ("reference", content, "application/octet-stream")},
+                               timeout=(5, 600))
+        result.raise_for_status()
+        return result.content
+
+    try:
+        wav = await run_in_threadpool(generate)
+    except Exception as exc:
+        print(f"[TTS] reference synthesis failed: {exc}")
+        raise HTTPException(503, "voice synthesis unavailable") from exc
+    return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
 
 
 # ════════════════════════════════════════════

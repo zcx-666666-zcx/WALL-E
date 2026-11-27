@@ -266,7 +266,7 @@ const fallColor = (s) => s === '正常' ? '#4CAF50' : s === '跌倒' ? '#E53935'
         </div>
         <div>
           <div class="page-title">健康监测</div>
-          <div class="page-sub">实时体征数据 · 每2秒刷新</div>
+          <div class="page-sub">演示数据 · 不用于健康判断</div>
         </div>
       </div>
       <button class="btn-reload" @click="Reloading">刷新全部</button>

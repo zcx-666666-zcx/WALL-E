@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.4@sha256:8c233bad33d520a7aae1c1e619c3a9775f4a1ba2d463d692fada04ec7f40be00
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+      MYSQL_DATABASE: cpnrobot
+      MYSQL_USER: walle
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?required}
+      TZ: Asia/Shanghai
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--innodb-buffer-pool-size=128M", "--max-connections=50"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 -u root --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  backend:
+    image: eclipse-temurin:21-jre@sha256:d77e090ae1f6970c047b443c6f0a6c1358b0426d44432bb5a7753408cd43de0d
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_URL: jdbc:mysql://mysql:3306/cpnrobot?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      MYSQL_USERNAME: walle
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?required}
+      WALLE_JWT_SECRET: ${WALLE_JWT_SECRET:?required}
+      WALLE_DEVICE_API_TOKEN: ${WALLE_DEVICE_API_TOKEN:?required}
+      WALLE_DEVICE_API_USER: test
+      WALLE_DEVICE_API_ID: WALLE_1
+      ONENET_TOKEN: ${ONENET_TOKEN:?required}
+      MYBATIS_CONFIGURATION_LOG_IMPL: org.apache.ibatis.logging.nologging.NoLoggingImpl
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx384m -XX:MaxMetaspaceSize=192m
+      WALLE_REQUIRE_DEVICE_AUTH: 'true'
+      WALLE_REQUIRE_SIGNALING_AUTH: 'true'
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:18081:8081"
+    volumes:
+      - ./app.jar:/app/app.jar:ro
+      - voice_data:/data/voice
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+volumes:
+  mysql_data:
+  voice_data:

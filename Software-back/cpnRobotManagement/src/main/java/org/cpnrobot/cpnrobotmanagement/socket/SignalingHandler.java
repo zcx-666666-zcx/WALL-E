@@ -8,6 +8,8 @@ import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.cpnrobot.cpnrobotmanagement.Mapper.ContractMachineMapper;
+import util.JwtUtils;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -22,11 +24,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 public class SignalingHandler {
 
+    public static boolean isRobotOnline(String room) {
+        Set<SocketIOClient> clients = ROBOT_CLIENTS.get(DeviceIdentity.canonicalizeRoom(room));
+        return clients != null && !clients.isEmpty();
+    }
+
     @Autowired
     private SocketIOServer server;
 
     // 账本：RoomID -> Set of SessionIDs (等同于 Python 的 MY_ROOMS)
     private static final Map<String, Set<SocketIOClient>> MY_ROOMS = new ConcurrentHashMap<>();
+    private static final Map<String, Set<SocketIOClient>> ROBOT_CLIENTS = new ConcurrentHashMap<>();
 
     // 摄像头帧缓存：deviceName -> { jpegBytes, timestamp }
     public static final Map<String, byte[]> CAMERA_FRAMES = new ConcurrentHashMap<>();
@@ -40,6 +48,12 @@ public class SignalingHandler {
 
     @org.springframework.beans.factory.annotation.Value("${walle.camera-frame-max-base64-bytes:524288}")
     private int cameraFrameMaxBase64Bytes = 524288;
+
+    @org.springframework.beans.factory.annotation.Value("${WALLE_REQUIRE_SIGNALING_AUTH:${walle.require-signaling-auth:false}}")
+    private boolean requireSignalingAuth;
+
+    @Autowired
+    private ContractMachineMapper contractMachineMapper;
 
     @PostConstruct
     public void start() {
@@ -70,12 +84,14 @@ public class SignalingHandler {
                 }
             }
         });
+        ROBOT_CLIENTS.forEach((room, clients) -> {
+            clients.remove(client);
+            if (clients.isEmpty()) ROBOT_CLIENTS.remove(room, clients);
+        });
     }
 
     @OnEvent("join")
     public void onJoin(SocketIOClient client, Map<String, Object> data ){
-        System.out.println("DEBUG: 收到 join 事件了！数据内容: " + data);
-
         if (data == null || data.get("room") == null) {
             System.out.println("⚠️ 收到 join 事件，但房间号是空的");
             return;
@@ -83,11 +99,21 @@ public class SignalingHandler {
 
         String room = DeviceIdentity.canonicalizeRoom(String.valueOf(data.get("room")));
 
+        if (requireSignalingAuth && !authorizedForRoom(room, data)) {
+            client.sendEvent("join_error", Map.of("message", "unauthorized"));
+            return;
+        }
+
         // 1. 加入 netty-socketio 内部房间（供 server.getRoomOperations() 使用）
         client.joinRoom(room);
 
         // 2. 手动记账
         MY_ROOMS.computeIfAbsent(room, k -> new CopyOnWriteArraySet<>()).add(client);
+        if (room.equals("robot_" + DeviceIdentity.canonicalize(cameraDeviceId))
+                && data.get("deviceToken") != null
+                && tokensMatch(deviceApiToken, String.valueOf(data.get("deviceToken")))) {
+            ROBOT_CLIENTS.computeIfAbsent(room, k -> new CopyOnWriteArraySet<>()).add(client);
+        }
 
         System.out.println("📥 [加入] 用户 " + client.getSessionId() + " -> 房间 " + room);
 
@@ -104,16 +130,35 @@ public class SignalingHandler {
 
     @OnEvent("message")
     public void onMessage(SocketIOClient client, Map<String, Object> data) {
+        if (data == null || data.get("room") == null) return;
         String room = DeviceIdentity.canonicalizeRoom(String.valueOf(data.get("room")));
         Object payload = data.get("payload");
 
-        if (MY_ROOMS.containsKey(room)) {
-            for (SocketIOClient member : MY_ROOMS.get(room)) {
+        Set<SocketIOClient> members = MY_ROOMS.get(room);
+        if (members != null && (!requireSignalingAuth || members.contains(client))) {
+            for (SocketIOClient member : members) {
                 // 转发消息给除自己以外的人
                 if (!member.getSessionId().equals(client.getSessionId())) {
                     member.sendEvent("message", payload);
                 }
             }
+        }
+    }
+
+    private boolean authorizedForRoom(String room, Map<String, Object> data) {
+        String configuredDevice = DeviceIdentity.canonicalize(cameraDeviceId);
+        String deviceRoom = "robot_" + configuredDevice;
+        if (!room.equals(deviceRoom) && !room.equals("0001")) return false;
+        Object deviceToken = data.get("deviceToken");
+        if (deviceToken != null && tokensMatch(deviceApiToken, String.valueOf(deviceToken))) return true;
+        Object token = data.get("token");
+        if (token == null || contractMachineMapper == null) return false;
+        try {
+            Object id = JwtUtils.parseJwt(String.valueOf(token)).get("id");
+            if (id == null) return false;
+            return contractMachineMapper.findByUserIdAndConnectionId(String.valueOf(id), configuredDevice) != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 

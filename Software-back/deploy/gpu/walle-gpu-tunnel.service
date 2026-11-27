@@ -1,0 +1,13 @@
+[Unit]
+Description=WALL-E GPU private service tunnel
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/ssh -N -T -i /opt/walle-server/gpu_tunnel_ed25519 -p 23 -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/opt/walle-server/gpu_known_hosts -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -L 127.0.0.1:16006:127.0.0.1:6006 -L 127.0.0.1:17862:127.0.0.1:7862 root@117.50.34.143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

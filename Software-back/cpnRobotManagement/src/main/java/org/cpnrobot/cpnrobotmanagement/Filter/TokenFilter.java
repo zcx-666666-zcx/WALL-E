@@ -26,6 +26,9 @@ public class TokenFilter implements Filter {
     @Value("${walle.device-api-token:}")
     private String deviceApiToken;
 
+    @Value("${WALLE_REQUIRE_DEVICE_AUTH:${walle.require-device-auth:false}}")
+    private boolean requireDeviceAuth;
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws ServletException, IOException {
@@ -63,13 +66,20 @@ public class TokenFilter implements Filter {
                 requestURI.equals("/api/healthy/addFall");
         boolean publicUserAuth =
                 requestURI.equals("/api/users/register") ||
-                requestURI.startsWith("/api/users/getId");
+                (!requireDeviceAuth && requestURI.startsWith("/api/users/getId"));
 
-        if (!requestURI.startsWith("/api/") ||
+        if (requireDeviceAuth && (publicHealthyIngest || requestURI.equals("/api/users/register"))) {
+            if (tokensMatch(deviceApiToken, request.getHeader(DEVICE_TOKEN_HEADER))) {
+                filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            return;
+        }
+
+        if ((!requestURI.startsWith("/api/") && !requestURI.startsWith("/sensor/")) ||
                 publicHealthyIngest ||
                 publicUserAuth ||
-                requestURI.startsWith("/api/robot/video-feed/") ||
-                requestURI.startsWith("/api/robot/video-feed-low/") ||
                 requestURI.startsWith("/api/system-config/public")) {
             System.out.println("[TokenFilter] public route, bypass auth");
             filterChain.doFilter(request, response);
@@ -83,9 +93,6 @@ public class TokenFilter implements Filter {
         }
 
         String token = request.getHeader("token");
-        System.out.println("[TokenFilter] token = " +
-                (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
-
         if (token == null || token.isEmpty()) {
             System.out.println("[TokenFilter] missing token, returning 401");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -109,8 +116,11 @@ public class TokenFilter implements Filter {
             return;
         }
 
-        filterChain.doFilter(request, response);
-        CurrentHolder.remove();
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            CurrentHolder.remove();
+        }
     }
 
     private boolean tokensMatch(String expected, String provided) {

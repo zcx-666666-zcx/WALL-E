@@ -3,11 +3,16 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080'
+let resolvedBase = '/'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base:'./',
-  plugins: [vue()],
+  plugins: [vue(), {
+    name: 'html-base-path',
+    configResolved(config) { resolvedBase = config.base },
+    transformIndexHtml(html) { return html.replace('%BASE_URL%', resolvedBase) }
+  }],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

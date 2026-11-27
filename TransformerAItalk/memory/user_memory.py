@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 import json
+import copy
+import re
 from datetime import datetime
 from pathlib import Path
 from config.settings import MEMORY_DIR
@@ -21,7 +23,7 @@ class UserMemory:
 
     DEFAULT = {
         "user_id": "",
-        "persona_id": "瓦利",  # 该用户绑定的专属人设
+        "persona_id": "wali_test",
         "name": "",
         "age": None,
         "location": "",
@@ -38,6 +40,8 @@ class UserMemory:
     }
 
     def __init__(self, user_id: str):
+        if not isinstance(user_id, str) or not re.fullmatch(r"[\w-]{1,64}", user_id):
+            raise ValueError("invalid user id")
         self.user_id = user_id
         self._path = MEMORY_DIR / f"{user_id}.json"
         self.data: dict = self._load()
@@ -49,7 +53,7 @@ class UserMemory:
                 return json.loads(self._path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        d = dict(self.DEFAULT)
+        d = copy.deepcopy(self.DEFAULT)
         d["user_id"] = self.user_id
         d["created_at"] = datetime.now().isoformat()
         return d
@@ -65,7 +69,7 @@ class UserMemory:
     # ── 人设绑定 ─────────────────────────────
     def get_persona_id(self) -> str:
         """获取该用户绑定的人设 ID"""
-        return self.data.get("persona_id", "瓦利")
+        return self.data.get("persona_id", "wali_test")
 
     def set_persona_id(self, persona_id: str):
         """绑定专属人设，持久化保存"""

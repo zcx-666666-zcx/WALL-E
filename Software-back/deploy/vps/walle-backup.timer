@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily WALL-E database backup
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 Asia/Shanghai
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

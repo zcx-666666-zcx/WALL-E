@@ -62,6 +62,11 @@ public class RobotProxyController {
 
             ContractMachine machine = requireOwnedMachine(machineId);
             String room = getRoom(machine);
+            if (!Double.isFinite(stickX) || !Double.isFinite(stickY)
+                    || Math.abs(stickX) > 1 || Math.abs(stickY) > 1) {
+                return Result.error("遥控参数超出范围");
+            }
+            if (!SignalingHandler.isRobotOnline(room)) return Result.error("机器人离线，无法接收指令");
             System.out.println("[RobotProxy] 电机指令 -> 房间: " + room + " | X=" + stickX + " Y=" + stickY);
             server.getRoomOperations(room).sendEvent("cmd_motor",
                     Map.of("stickX", String.valueOf(stickX), "stickY", String.valueOf(stickY)));
@@ -69,6 +74,15 @@ public class RobotProxyController {
             return Result.success();
         } catch (Exception e) {
             System.err.println("[RobotProxy] 电机指令失败: " + e.getMessage());
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/status/{machineId}")
+    public Result status(@PathVariable Integer machineId) {
+        try {
+            return Result.success(Map.of("online", SignalingHandler.isRobotOnline(getRoom(requireOwnedMachine(machineId)))));
+        } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
     }
@@ -141,6 +155,11 @@ public class RobotProxyController {
 
     @GetMapping("/video-feed/{machineId}")
     public ResponseEntity<StreamingResponseBody> videoFeed(@PathVariable Integer machineId) {
+        try {
+            requireOwnedMachine(machineId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
         StreamingResponseBody stream = outputStream -> {
             try {
                 robotProxyService.streamVideo(machineId, outputStream);
@@ -157,6 +176,11 @@ public class RobotProxyController {
 
     @GetMapping("/video-feed-low/{machineId}")
     public ResponseEntity<StreamingResponseBody> videoFeedLow(@PathVariable Integer machineId) {
+        try {
+            requireOwnedMachine(machineId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
         StreamingResponseBody stream = outputStream -> {
             try {
                 robotProxyService.streamVideoLow(machineId, outputStream);

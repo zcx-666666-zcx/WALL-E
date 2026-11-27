@@ -2,9 +2,12 @@ import axios from 'axios'
 
 const STORAGE_KEY = 'walleSystemConfig'
 const ENV_API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').trim()
+const HOSTED_API_BASE_URL = typeof window !== 'undefined' && window.location.pathname.startsWith('/walle/')
+  ? '/walle/api'
+  : '/api'
 
 const BASE_PUBLIC_CONFIG = {
-  apiBaseUrl: '/api',
+  apiBaseUrl: HOSTED_API_BASE_URL,
   webBaseUrl: '',
   staticBaseUrl: '',
   robotDefaultIp: '127.0.0.1',

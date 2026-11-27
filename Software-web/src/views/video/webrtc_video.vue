@@ -178,10 +178,12 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { io } from 'socket.io-client';
+import { aiFetch } from '../../utils/aiAuth.mjs';
 import { toast } from '../../utils/toast';
 import { getConfigValue, getSocketServerUrl } from '../../utils/systemConfig';
+import { createCandidateBuffer } from './iceCandidates.mjs';
 
 export default {
   name: 'WebrtcVideo',
@@ -192,6 +194,8 @@ export default {
     let socket = null;
     let localStream = null;
     let peerConnection = null;
+    let disposed = false;
+    const candidates = createCandidateBuffer(() => peerConnection);
     const isJoined = ref(false);
     const connState = ref('idle');
 
@@ -205,12 +209,23 @@ export default {
       calling: 'state-calling', connected: 'state-connected'
     }[connState.value]));
 
-    const rtcConfig = {
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
-    };
+    const fallbackIceServers = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ];
+
+    async function getIceServers() {
+      try {
+        const response = await aiFetch(`${livenessApiUrl.value.replace(/\/$/, '')}/rtc/ice`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!Array.isArray(data.iceServers) || !data.iceServers.length) throw new Error('配置为空');
+        return data.iceServers;
+      } catch (error) {
+        log(`视频中继不可用，将尝试直连: ${error.message}`);
+        return fallbackIceServers;
+      }
+    }
 
     function hangUpCall() {
     console.log("准备挂断通话...");
@@ -226,9 +241,10 @@ export default {
           peerConnection = null;
       }
     
-      socket.emit('message', {
-          room: FIXED_ROOM_ID,
-          payload: { type: 'bye' } 
+      candidates.clear();
+      if (socket?.connected) socket.emit('message', {
+        room: FIXED_ROOM_ID,
+        payload: { type: 'bye' }
       });
 
       if (socket) {
@@ -322,6 +338,7 @@ export default {
     }
 
     async function joinRoom() {
+      if (socket) return;
       const roomId = FIXED_ROOM_ID;
       if (!roomId) return toast.warning("请输入房间号");
 
@@ -348,7 +365,25 @@ export default {
       socket.on('connect', () => {
         log(`✅ 已连接信令服务器 (ID: ${socket.id})`);
         console.log("准备发送 join 事件，房间号:", roomId);
-        socket.emit('join', { "room": String(roomId) });
+        let token = '';
+        try { token = JSON.parse(localStorage.getItem('loginUserObject') || '{}').token || ''; } catch { /* no session */ }
+        socket.emit('join', { room: String(roomId), token });
+      });
+
+      socket.on('join_error', () => {
+        log('无法加入房间，请检查登录状态和设备绑定');
+        isJoined.value = false;
+        connState.value = 'idle';
+        socket?.disconnect();
+        socket = null;
+      });
+
+      socket.on('disconnect', () => {
+        isJoined.value = false;
+        connState.value = 'idle';
+        if (peerConnection) { peerConnection.close(); peerConnection = null; }
+        candidates.clear();
+        setPlaceholder('remotePlaceholder', false);
       });
 
       // 连接错误排查
@@ -366,6 +401,7 @@ export default {
 
       // 信令处理
       socket.on('message', async (data) => {
+        if (!data || typeof data !== 'object') return;
         console.log("收到信令:", data);
         if (data.type === 'offer') await handleOffer(data);
         else if (data.type === 'answer') await handleAnswer(data);
@@ -377,13 +413,16 @@ export default {
       });
     }
 
-    function createPeerConnection() {
+    async function createPeerConnection() {
       if (!localStream) {
         throw new Error('本地媒体流未就绪');
       }
+      const iceServers = await getIceServers();
+      if (disposed || !socket?.connected || !localStream) throw new Error('通话已结束');
       connState.value = 'calling';
+      if (peerConnection) peerConnection.close();
       log("🔗 正在创建 PeerConnection…");
-      peerConnection = new RTCPeerConnection(rtcConfig);
+      peerConnection = new RTCPeerConnection({ iceServers });
       peerConnection.onicecandidate = (e) => {
         if (e.candidate) {
           socket.emit('message', { room: FIXED_ROOM_ID, payload: { type: 'candidate', candidate: e.candidate } });
@@ -434,14 +473,15 @@ export default {
           return null;
         }
 
-        const resp = await fetch(`${livenessApiUrl.value.replace(/\/$/, '')}/face/liveness`, {
+        const resp = await aiFetch(`${livenessApiUrl.value.replace(/\/$/, '')}/face/liveness`, {
           method: 'POST',
           body: formData,
         });
 
         if (!resp.ok) {
           const err = await resp.json();
-          log(`⚠ 人脸检测服务异常: ${err.error || resp.status}`);
+          log(`⚠ 人脸检测服务异常: ${err.detail || err.error || resp.status}`);
+          if (resp.status === 400) return false;
           return null;  // null = service unavailable, allow to proceed
         }
 
@@ -459,6 +499,10 @@ export default {
     }
 
     async function startCall() {
+      if (!isJoined.value || !socket?.connected) {
+        toast.warning('请先连接机器人信令服务');
+        return;
+      }
       const cameraReady = await ensureLocalCamera();
       if (!cameraReady) return;
 
@@ -476,6 +520,7 @@ export default {
       const isReal = await checkFace();
       checkingFace.value = false;
       countdownPhase.value = 'idle';
+      if (disposed || !isJoined.value || !socket?.connected) return;
 
       if (isReal === false) {
         log('⚠ 检测到伪人脸，为确保安全，已拒绝通话');
@@ -486,7 +531,7 @@ export default {
         log('✅ 人脸活体检测通过，正在建立通话');
       }
 
-      createPeerConnection();
+      await createPeerConnection();
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       log('📤 发送 Offer…');
@@ -495,8 +540,9 @@ export default {
 
     async function handleOffer(offer) {
       log("📥 收到 Offer，准备接听…");
-      createPeerConnection();
+      await createPeerConnection();
       await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      await candidates.flush();
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       log("📤 发送 Answer…");
@@ -505,12 +551,18 @@ export default {
 
     async function handleAnswer(answer) {
       log("📥 对方已接听，连接建立中…");
+      if (!peerConnection) return;
       await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      await candidates.flush();
     }
 
     async function handleCandidate(c) {
-      if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(c.candidate));
+      if (!c?.candidate) return;
+      try { await candidates.add(new RTCIceCandidate(c.candidate)); }
+      catch (error) { log(`ICE 候选处理失败: ${error.message}`); }
     }
+
+    onBeforeUnmount(() => { disposed = true; hangUpCall(); });
 
     return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl, fixedRoomId: FIXED_ROOM_ID };
   }

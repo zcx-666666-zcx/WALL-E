@@ -61,7 +61,6 @@ public class OneNetCallbackController {
 
         System.out.println("[OneNET][URL验证] 收到 GET 验证请求");
         System.out.println("[OneNET][URL验证] 请求参数 msg=" + msg + ", nonce=" + nonce + ", signature=" + signature);
-        System.out.println("[OneNET][URL验证] 当前使用的 token=" + token);
 
         boolean ok = OneNetUtils.checkSignature(token, msg, nonce, signature);
         if (!ok) {

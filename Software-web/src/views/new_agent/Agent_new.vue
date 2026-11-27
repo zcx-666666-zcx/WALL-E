@@ -6,6 +6,7 @@ import { toast, confirm as toastConfirm } from '../../utils/toast';
 import { getConfigValue } from '../../utils/systemConfig';
 import { selectPreferredMachine } from '../drive/machineSelection.mjs';
 import { buildAiChatSetting, readStoredUsername, runStartupTasks } from './aiChatControl.mjs';
+import { aiFetch } from '../../utils/aiAuth.mjs';
 
 // ── 后端地址（本地 FastAPI）──────────────────
 const getAgentApiBase = () => getConfigValue('ai.agent-api-url', '').replace(/\/$/, '');
@@ -35,6 +36,12 @@ const backendStatus = ref('检测中…');
 onMounted(async () => {
   await runStartupTasks([getname, checkBackend, loadMachines]);
   currentPersonaId.value = userName.value ? `wali_${userName.value}` : '';
+  const apiBase = getAgentApiBase();
+  if (apiBase && userName.value) {
+    try {
+      await aiFetch(`${apiBase}/user/init_wali?user_id=${encodeURIComponent(userName.value)}`, { method: 'POST' });
+    } catch { /* The user can retry after the AI service becomes available. */ }
+  }
 });
 
 const loadMachines = async () => {
@@ -135,7 +142,7 @@ const getStyle = async () => {
   try {
     const apiBase = getAgentApiBase();
     if (!apiBase) throw new Error('未配置 AI 服务地址');
-    const res = await fetch(`${apiBase}/personas/${currentPersonaId.value}`);
+    const res = await aiFetch(`${apiBase}/personas/${currentPersonaId.value}`);
     if (!res.ok) throw new Error();  
     const data = await res.json();
     Style.value = data.persona_desc || data.personality || '暂无人设描述';
@@ -153,7 +160,7 @@ const sendStyle = async () => {
   try {
     const apiBase = getAgentApiBase();
     if (!apiBase) throw new Error('未配置 AI 服务地址');
-    const res = await fetch(`${apiBase}/personas/${currentPersonaId.value}`, {
+    const res = await aiFetch(`${apiBase}/personas/${currentPersonaId.value}`, {
       method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -194,7 +201,7 @@ const sendMessage = async () => {
     const apiBase = getAgentApiBase();
     if (!apiBase) throw new Error('未配置 AI 服务地址');
     // 不传 persona_id，后端自动用该用户绑定的瓦利
-    const res = await fetch(`${apiBase}/chat/stream`, {
+    const res = await aiFetch(`${apiBase}/chat/stream`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -254,7 +261,7 @@ const deleteData = async () => {
   try {
     const apiBase = getAgentApiBase();
     if (!apiBase) throw new Error('未配置 AI 服务地址');
-    await fetch(`${apiBase}/chat/clear`, {   // 去掉多余的 /api 前缀
+    await aiFetch(`${apiBase}/chat/clear`, {   // 去掉多余的 /api 前缀
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ user_id: userName.value }),

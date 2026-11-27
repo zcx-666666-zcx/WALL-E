@@ -81,4 +81,67 @@ class TokenFilterTest {
         assertThat(chainCalled).isFalse();
         assertThat(response.getStatus()).isEqualTo(401);
     }
+
+    @Test
+    void legacySensorReadsRequireUserAuthentication() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/sensor/latest");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isFalse();
+        assertThat(response.getStatus()).isEqualTo(401);
+    }
+
+    @Test
+    void publicVideoProxyRequiresUserAuthentication() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/robot/video-feed/1");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isFalse();
+        assertThat(response.getStatus()).isEqualTo(401);
+    }
+
+    @Test
+    void secureModeRequiresDeviceTokenForHealthIngest() throws Exception {
+        assertThat(org.springframework.util.ReflectionUtils.findField(TokenFilter.class, "requireDeviceAuth")).isNotNull();
+        ReflectionTestUtils.setField(tokenFilter, "requireDeviceAuth", true);
+        ReflectionTestUtils.setField(tokenFilter, "deviceApiToken", "device-secret");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/healthy/addRate");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isFalse();
+        assertThat(response.getStatus()).isEqualTo(401);
+        request.addHeader("X-Walle-Device-Token", "device-secret");
+        response = new MockHttpServletResponse();
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isTrue();
+    }
+
+    @Test
+    void secureModeRequiresProvisioningTokenForRegistration() throws Exception {
+        ReflectionTestUtils.setField(tokenFilter, "requireDeviceAuth", true);
+        ReflectionTestUtils.setField(tokenFilter, "deviceApiToken", "device-secret");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/users/register");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(response.getStatus()).isEqualTo(401);
+        request.addHeader("X-Walle-Device-Token", "device-secret");
+        response = new MockHttpServletResponse();
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isTrue();
+    }
+
+    @Test
+    void secureModeRequiresAuthenticationForUserLookup() throws Exception {
+        ReflectionTestUtils.setField(tokenFilter, "requireDeviceAuth", true);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/users/getId/admin");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        tokenFilter.doFilter(request, response, (req, res) -> chainCalled.set(true));
+        assertThat(chainCalled).isFalse();
+        assertThat(response.getStatus()).isEqualTo(401);
+    }
 }
