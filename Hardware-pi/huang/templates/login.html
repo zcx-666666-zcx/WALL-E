@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/latoFontFamily.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/mystyle.css') }}">
+    <title>WALL-E 控制器</title>
+</head>
+<body>
+	<div class="container-fluid">
+		<form action="/login_request" method="post">
+			<br>
+			<div class="row set-row">
+				<div class="col set-text">密码</div>
+				<div class="col">
+                    <input class="form-control set-num" autocomplete="off" type="password" name="password" autofocus>
+				</div>
+			</div>
+			<div class="row set-row">
+				<div class="col set-text"></div>
+				<div class="col">
+					<button type="submit" value="Submit" class="btn btn-outline-info">登录</button>
+				</div>
+			</div>
+			{% if incorrectPassword %}
+				<div class="row set-row" style="padding-top: 1em">
+					<div class="col set-text"></div>
+					<div class="col">
+						<div class="alert-col alert alert-danger" style="max-width: 12em">
+							<div id="alert-space">密码错误！</div>
+						</div>
+					</div>
+			 	</div>
+			{% endif %}
+		</form>
+	</div>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+	
+</body>
+<footer></footer>
+</html>
