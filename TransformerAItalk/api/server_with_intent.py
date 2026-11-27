@@ -575,6 +575,7 @@ def chat_clear(req: dict):
 class InputRequest(BaseModel):
     user_id: str
     text: str                        # 语音转文字后的文本
+    include_audio: bool = True
 
 @app.post("/input")
 async def unified_input(req: InputRequest, request: Request):
@@ -630,6 +631,11 @@ async def unified_input(req: InputRequest, request: Request):
     # ── TTS 语音合成 ───────────────────────
     audio_url = ""
     try:
+        if not req.include_audio:
+            return {
+                "type": "chat", "command": 0, "label": "对话", "reply": reply,
+                "emotion": emotion.emotion, "audio_url": "",
+            }
         from config.settings import DEFAULT_REF_AUDIO, DEFAULT_REF_TEXT
         with DEFAULT_REF_AUDIO.open("rb") as reference:
             tts_response = requests.post("http://127.0.0.1:6007/synthesize", headers=tts_auth_headers(),

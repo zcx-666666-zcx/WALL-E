@@ -56,6 +56,13 @@ needed. Event reminders use `WALLE_EVENT_REFERENCE_AUDIO` and
 `WALLE_EVENT_REFERENCE_TEXT` when configured, then fall back to the original
 speech path on failure. Keep reference audio and credentials outside Git.
 
+The 2026-11-28 device profile uses a 1280x720 shared camera frame for WebRTC,
+while `WALLE_CAMERA_PUSH_WIDTH=640` and `WALLE_CAMERA_PUSH_FPS=8` limit the
+separate remote-control JPEG feed. These settings are device/network specific;
+verify CPU, uplink and camera support before applying them elsewhere. Event
+polling defaults to five seconds and can be adjusted with
+`WALLE_EVENT_POLL_INTERVAL` (minimum five seconds).
+
 `templates/app1.py` contains null bytes in the original Pi file and does not
 pass Python syntax compilation. Its uploaded copy has had credentials removed;
 the existing file corruption remains.

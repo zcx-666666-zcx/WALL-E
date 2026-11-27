@@ -2,6 +2,7 @@ import io
 import json
 import socket
 import wave
+import time
 
 
 def process_utterance(pcm, rate, base, token, post, speak, dispatch, is_active=lambda: True):
@@ -14,15 +15,19 @@ def process_utterance(pcm, rate, base, token, post, speak, dispatch, is_active=l
         output.setframerate(rate)
         output.writeframes(pcm)
     headers = {'X-Walle-Device-Token': token}
+    started = time.monotonic()
     response = post(base + '/stt', headers=headers,
                     files={'audio_file': ('speech.wav', wav.getvalue(), 'audio/wav')}, timeout=(5, 60))
     response.raise_for_status()
     text = response.json().get('text', '').strip()
+    print(f'[AI Bridge] STT completed in {time.monotonic() - started:.1f}s; text length={len(text)}', flush=True)
     if not text or not is_active():
         return
+    started = time.monotonic()
     response = post(base + '/input', headers=headers,
-                    json={'user_id': 'test', 'text': text}, timeout=(5, 120))
+                    json={'user_id': 'test', 'text': text, 'include_audio': False}, timeout=(5, 120))
     response.raise_for_status()
+    print(f'[AI Bridge] dialogue completed in {time.monotonic() - started:.1f}s', flush=True)
     if not is_active():
         return
     result = response.json()
@@ -79,6 +84,7 @@ def run_ai_bridge():
                             break
                         pcm.extend(chunk)
                     elif item.get('kind') == 'utterance_end':
+                        print(f'[AI Bridge] utterance received: {len(pcm)} bytes', flush=True)
                         if len(pcm) >= 8000:
                             try:
                                 is_speaking_event.set()

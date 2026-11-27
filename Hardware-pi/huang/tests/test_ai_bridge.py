@@ -27,6 +27,7 @@ class AiBridgeTest(unittest.TestCase):
         module.process_utterance(b'\0\0' * 8000, 16000, 'https://example.test', 'secret', request, speak, dispatch)
         self.assertEqual(request.call_count, 2)
         self.assertEqual(request.call_args_list[0].kwargs['headers'], {'X-Walle-Device-Token': 'secret'})
+        self.assertFalse(request.call_args_list[1].kwargs['json']['include_audio'])
         speak.assert_called_once_with('今天天气不错')
         dispatch.assert_not_called()
 

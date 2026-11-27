@@ -20,6 +20,8 @@ public class SocketIOConfig {
         config.setHostname(socketHost);
         config.setPort(socketPort);
         config.setContext("/socket.io");
+        config.setMaxFramePayloadLength(600 * 1024);
+        config.setMaxHttpContentLength(600 * 1024);
 
         SocketConfig socketConfig = new SocketConfig();
         socketConfig.setReuseAddress(true);

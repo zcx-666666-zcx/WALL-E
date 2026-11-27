@@ -42,7 +42,7 @@ except ImportError:
 # 与接收端 / webrtcvad 约定：网络上始终发 16 kHz 单声道 s16le
 DEFAULT_WIRE_SAMPLE_RATE = 16000
 DEFAULT_CHANNELS = 1
-CHUNK_SAMPLES = 8192  # 每次从声卡读取的帧数
+CHUNK_SAMPLES = 1024  # Keep capture buffering short for interactive speech.
 
 # webrtcvad 仅支持 10 / 20 / 30 ms 帧长
 VAD_FRAME_MS = 20
@@ -215,7 +215,7 @@ def run_vad_stream(
 
     # 【新增：计时相关变量】
     speech_start_time = 0  
-    MAX_RECORD_SECONDS = 10.0 # 强制截断时间（秒）
+    MAX_RECORD_SECONDS = 8.0 # 强制截断时间（秒）
 
     total_chunk_bytes = 0
     utterances = 0
@@ -328,7 +328,7 @@ def audio_client_thread() -> None:
         device_index = None
         no_vad = False
         vad_aggressiveness = 3
-        silence_ms = 800
+        silence_ms = 600
         min_speech_ms = 250
         list_devices = False
         

@@ -32,6 +32,11 @@ def dependencies():
 
 
 class BackendIntegrationTest(unittest.TestCase):
+    def test_reminder_polling_interval_is_configurable(self):
+        with patch.dict(os.environ, {'WALLE_EVENT_POLL_INTERVAL': '5'}):
+            config = load('huang_event_interval_test', 'config.py')
+            self.assertEqual(config.EVENT_POLL_INTERVAL, 5)
+
     def test_recurring_and_rescheduled_events_use_occurrence_keys(self):
         import datetime
         config, _, _, modules = dependencies()

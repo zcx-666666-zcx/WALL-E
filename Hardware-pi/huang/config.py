@@ -197,7 +197,7 @@ EVENT_API_BASE_URL = "https://zhanhui.cloud/walle/api"
 HEALTH_API_BASE_URL = "https://zhanhui.cloud/walle/api/healthy"
 
 # 事件提醒配置
-EVENT_POLL_INTERVAL = 30       # 轮询间隔(秒)
+EVENT_POLL_INTERVAL = max(5, int(os.environ.get('WALLE_EVENT_POLL_INTERVAL', '5')))
 EVENT_USER_ID = "test"         # 用户名（用于先查询用户ID，再用ID查事件）
 EVENT_REMINDER_DURATION = 10   # 提醒显示时长(秒)
 
