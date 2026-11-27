@@ -188,8 +188,8 @@ const initBreathChart = () => {
 
 const initTemperatureChart = () => {
   const r = initChart(temperatureChartRef, temperatureData, {
-    name: '体温', yAxisName: '体温(℃)', yMin: 30, yMax: 42, gradientColor: '#E53935',
-    visualPieces: [{ min: 37.1, color: '#E53935' }, { min: 35.9, max: 37.0, color: '#4CAF50' }, { min: 0, max: 35.8, color: '#FF9800' }]
+    name: '环境温度', yAxisName: '温度(℃)', yMin: 0, yMax: 50, gradientColor: '#2196F3',
+    visualPieces: [{ min: 0, max: 50, color: '#2196F3' }]
   });
   if (r) { temperatureChart = r.chart; resizeHandlers.temperature = r.resizeHandler; calculateMinMax(temperatureData, maxTemperature, minTemperature); }
 };
@@ -248,7 +248,7 @@ onUnmounted(() => {
 const rateColor = (v) => v >= 170 ? '#E53935' : v >= 120 ? '#FF9800' : '#4CAF50';
 const humidityColor = (v) => v >= 80 ? '#E53935' : v <= 39 ? '#FF9800' : '#4CAF50';
 const breathColor = (v) => v >= 30 ? '#E53935' : v <= 11 ? '#FF9800' : '#4CAF50';
-const tempColor = (v) => v >= 37.1 ? '#E53935' : v <= 35.8 ? '#FF9800' : '#4CAF50';
+const tempColor = () => '#2196F3';
 const fallColor = (s) => s === '正常' ? '#4CAF50' : s === '跌倒' ? '#E53935' : '#FF9800';
 </script>
 
@@ -314,7 +314,7 @@ const fallColor = (s) => s === '正常' ? '#4CAF50' : s === '跌倒' ? '#E53935'
 
       <div class="chart-card">
         <div class="chart-card-head">
-          <span class="chart-card-label">体温</span>
+          <span class="chart-card-label">环境温度</span>
           <span class="chart-card-val" :style="{ color: tempColor(temperature) }">{{ temperature }}<small>℃</small></span>
         </div>
         <div class="chart-container" ref="temperatureChartRef"></div>

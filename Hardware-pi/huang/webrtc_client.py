@@ -199,7 +199,6 @@ async def network_main():
                                 await cleanup_pc()
                             break
                             
-                import asyncio
                 asyncio.ensure_future(receive_frames())
                 
         @pc.on("iceconnectionstatechange")

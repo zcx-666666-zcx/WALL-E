@@ -14,6 +14,8 @@ test('shows demonstration values when the API has no readings', () => {
   assert.equal(points.length, 20)
   assert.ok(points.every(point => Number.isFinite(point[1]) && point[1] >= 70 && point[1] <= 80))
   assert.equal(demoFall({ code: 1, data: null }), false)
+  const temperature = healthRowsOrDemo({ code: 1, data: { rows: [] } }, 'temperature', 1700000000000)
+  assert.ok(temperature.every(point => point[1] >= 24 && point[1] <= 26))
 })
 
 test('uses returned readings and does not disguise API errors as demo data', () => {

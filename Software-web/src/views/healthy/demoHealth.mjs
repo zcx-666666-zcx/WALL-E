@@ -2,7 +2,7 @@ const demoValues = {
   rate: [75, 2, 0],
   humidity: [50, 1, 1],
   breathe: [16, 1, 0],
-  temperature: [36.5, 0.2, 1],
+  temperature: [25, 0.3, 1],
 }
 
 export function healthRowsOrDemo(response, field, now = Date.now()) {
