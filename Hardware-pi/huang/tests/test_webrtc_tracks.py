@@ -12,6 +12,15 @@ class StopLoop(BaseException):
 
 
 class WebRtcTrackTest(unittest.TestCase):
+    def test_audio_is_only_enabled_when_offered(self):
+        path = pathlib.Path(__file__).resolve().parents[1] / 'rtc_config.py'
+        spec = importlib.util.spec_from_file_location('rtc_config_audio_test', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertFalse(module.offer_has_audio('v=0\r\nm=video 9 UDP/TLS/RTP/SAVPF 96\r\n'))
+        self.assertFalse(module.offer_has_audio('v=0\r\nm=audio 0 UDP/TLS/RTP/SAVPF 111\r\n'))
+        self.assertTrue(module.offer_has_audio('v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n'))
+
     def test_incoming_audio_does_not_abort_offer_processing(self):
         played = []
         errors = []
@@ -81,6 +90,7 @@ class WebRtcTrackTest(unittest.TestCase):
         modules['shared'].state = types.SimpleNamespace(mode='idle')
         modules['hardware'].arduino = Mock()
         modules['rtc_config'].fetch_ice_servers = Mock(return_value=[])
+        modules['rtc_config'].offer_has_audio = Mock(return_value=True)
         modules['rtc_audio'].RtcAudio = FakeAudio
         modules['requests'].get = Mock()
         for name in ('update_ui', 'update_video_ui', 'update_local_video_ui'):

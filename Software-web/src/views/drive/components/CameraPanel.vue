@@ -69,7 +69,7 @@ watch(() => props.machine?.id, (id) => {
   if (!id) { streamUrl.value = ''; return }
   loading.value = true
   refreshFrame(id)
-  refreshTimer = setInterval(() => refreshFrame(id), 500)
+  refreshTimer = setInterval(() => refreshFrame(id), 180)
 }, { immediate: true })
 
 onBeforeUnmount(() => {

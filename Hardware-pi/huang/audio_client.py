@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import socket
 import sys
 import time
@@ -320,8 +321,8 @@ def run_vad_stream(
 def audio_client_thread() -> None:
     # 模拟原来的命令行参数，让后续逻辑原封不动生效
     class Args:
-        host = AUDIO_SERVER_IP
-        port = AUDIO_SERVER_PORT
+        host = os.environ.get('WALLE_AUDIO_SERVER_IP', '127.0.0.1')
+        port = int(os.environ.get('WALLE_AUDIO_SERVER_PORT', '18765'))
         sample_rate = DEFAULT_WIRE_SAMPLE_RATE
         capture_rate = "auto"
         device_index = None

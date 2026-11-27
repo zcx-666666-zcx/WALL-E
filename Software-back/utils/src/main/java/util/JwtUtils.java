@@ -10,7 +10,7 @@ import java.util.Map;
 public class JwtUtils {
 
     private static final String LEGACY_JWT_SECRET_KEY = "TEhUIGlzIHlvdSBmYXRoZXI=";
-    private static final long JWT_EXPIRED_TIME = 1800*1000;
+    private static final long JWT_EXPIRED_TIME = 7L * 24 * 60 * 60 * 1000;
 
     public static String createJwt(Map<String, Object> claims){
         return Jwts.builder().signWith(SignatureAlgorithm.HS256, signingKey())

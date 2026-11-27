@@ -20,7 +20,6 @@ const loading = ref(false)
 const uploading = ref(false)
 const previewingId = ref(null)
 const speaking = ref(false)
-const FIXED_REFERENCE_TEXT = '你好，我是慧慧。今天我们一起测试音色克隆。'
 const FIXED_PREVIEW_TEXT = '你好，我是慧慧，正在使用克隆音色进行试听。'
 const FIXED_HARDWARE_TEXT = '你好，我是慧慧，这段声音正在从台式机发送到机器人播放。'
 
@@ -28,6 +27,7 @@ const form = ref({
   name: '',
   engine: 'gpt_sovits',
   audio: null,
+  referenceText: '',
 })
 
 const selectedProfile = computed(() => profiles.value.find((item) => item.id === selectedProfileId.value))
@@ -77,10 +77,14 @@ async function createProfile() {
     toast.warning('请先选择一段参考音频')
     return
   }
+  if (!form.value.referenceText.trim()) {
+    toast.warning('请填写参考音频对应的文字')
+    return
+  }
   const fd = new FormData()
   fd.append('name', form.value.name || '自定义音色')
   fd.append('engine', 'gpt_sovits')
-  fd.append('referenceText', FIXED_REFERENCE_TEXT)
+  fd.append('referenceText', form.value.referenceText.trim())
   fd.append('audio', form.value.audio)
 
   uploading.value = true
@@ -88,7 +92,7 @@ async function createProfile() {
     const res = await CreateVoiceProfileApi(fd)
     if (res?.code === 1) {
       toast.success('音色已创建')
-      form.value = { name: '', engine: 'gpt_sovits', audio: null }
+      form.value = { name: '', engine: 'gpt_sovits', audio: null, referenceText: '' }
       await loadProfiles()
       selectedProfileId.value = res.data?.id || selectedProfileId.value
     } else {
@@ -180,7 +184,7 @@ async function readErrorMessage(error, fallback) {
         <div class="page-title-icon"><el-icon :size="20"><Microphone /></el-icon></div>
         <div>
           <div class="page-title">音色克隆</div>
-          <div class="page-sub">上传参考音频，在台式机生成语音，树莓派作为播放终端</div>
+          <div class="page-sub">上传参考音频，生成并试听克隆音色</div>
         </div>
       </div>
       <el-button :icon="Refresh" :loading="loading" @click="loadAll">刷新</el-button>
@@ -191,7 +195,7 @@ async function readErrorMessage(error, fallback) {
         <div class="panel-head">
           <div>
             <h2>创建音色</h2>
-            <p>请上传 3-10 秒干净人声，录音内容必须照读下面固定参考句。</p>
+            <p>请上传 3-10 秒干净人声，并填写录音的准确文字。</p>
           </div>
         </div>
 
@@ -204,9 +208,8 @@ async function readErrorMessage(error, fallback) {
               <el-radio-button label="gpt_sovits">GPT-SoVITS</el-radio-button>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="参考音频文字稿（固定）">
-            <div class="fixed-copy">{{ FIXED_REFERENCE_TEXT }}</div>
-            <div class="field-note">这段文字就是上传参考音频里要念的内容，用来让 GPT-SoVITS 对齐声音和文本；它不限制音色以后只能说这一句。</div>
+          <el-form-item label="参考音频文字稿">
+            <el-input v-model="form.referenceText" type="textarea" maxlength="500" placeholder="输入录音中实际说的内容" />
           </el-form-item>
           <el-form-item label="参考音频">
             <el-upload

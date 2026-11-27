@@ -1,6 +1,11 @@
 import logging
 
 
+def offer_has_audio(sdp):
+    return any(line.startswith('m=audio ') and line.split()[1] != '0'
+               for line in sdp.splitlines() if len(line.split()) >= 2)
+
+
 def fetch_ice_servers(base_url, token, get):
     try:
         response = get(base_url.rstrip('/') + '/rtc/ice',

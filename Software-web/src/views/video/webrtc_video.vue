@@ -70,7 +70,7 @@
           </div>
 
           <div class="video-card">
-            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="remoteVideo" autoplay playsinline :muted="!audioEnabled"></video>
             <div class="video-overlay">
               <div class="video-label">
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none" style="flex-shrink:0">
@@ -106,6 +106,7 @@
           </div>
 
           <div class="ctrl-body">
+            <label class="form-label"><input type="checkbox" v-model="audioEnabled" :disabled="isJoined" /> 开启双向语音</label>
             <div class="form-row">
               <label class="form-label">房间号</label>
               <div class="input-wrap">
@@ -197,6 +198,7 @@ export default {
     let disposed = false;
     const candidates = createCandidateBuffer(() => peerConnection);
     const isJoined = ref(false);
+    const audioEnabled = ref(false);
     const connState = ref('idle');
 
     const statusText = computed(() => ({
@@ -323,10 +325,10 @@ export default {
           localStream = null;
         }
 
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: audioEnabled.value });
         document.getElementById('localVideo').srcObject = localStream;
         setPlaceholder('localPlaceholder', true);
-        log('📷 摄像头和麦克风已开启');
+        log(audioEnabled.value ? '摄像头和麦克风已开启' : '摄像头已开启，语音关闭');
         return true;
       } catch (e) {
         const msg = mediaErrorMessage(e);
@@ -563,7 +565,7 @@ export default {
 
     onBeforeUnmount(() => { disposed = true; hangUpCall(); });
 
-    return { joinRoom, startCall, isJoined, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl, fixedRoomId: FIXED_ROOM_ID };
+    return { joinRoom, startCall, isJoined, audioEnabled, statusText, statusClass, clearLog, hangUpCall, checkingFace, countdownPhase, countdownNum, socketServerUrl, fixedRoomId: FIXED_ROOM_ID };
   }
 };
 </script>

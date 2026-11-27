@@ -28,7 +28,7 @@ from config import (
 )
 from shared import state
 from hardware import arduino
-from rtc_config import fetch_ice_servers
+from rtc_config import fetch_ice_servers, offer_has_audio
 from rtc_audio import RtcAudio
 
 logger = logging.getLogger("WebRTC_Client")
@@ -146,14 +146,14 @@ async def network_main():
             except Exception as e:
                 logger.warning(f">>> [WebRTC] 添加缓存ICE候选失败: {e}")
 
-    async def create_pc():
+    async def create_pc(audio_enabled=False):
         server_data = await asyncio.to_thread(fetch_ice_servers, AI_API_URL, WALLE_DEVICE_API_TOKEN, requests.get)
         ice_servers = [RTCIceServer(**server) for server in server_data]
         pc = RTCPeerConnection(RTCConfiguration(iceServers=ice_servers))
         pc_container["pc"] = pc
         audio = RtcAudio(MediaPlayer, MediaRecorder)
         audio_container["audio"] = audio
-        if RTC_AUDIO_INPUT:
+        if audio_enabled and RTC_AUDIO_INPUT:
             try:
                 audio.add_microphone(pc, RTC_AUDIO_INPUT)
                 logger.info(">>> [WebRTC] 麦克风已挂载")
@@ -225,7 +225,7 @@ async def network_main():
             await asyncio.sleep(WEBRTC_OFFER_DELAY)
 
             if not pc_container["pc"]:
-                await create_pc()
+                await create_pc(offer_has_audio(data['sdp']))
             pc = pc_container["pc"]
             if not pc:
                 return

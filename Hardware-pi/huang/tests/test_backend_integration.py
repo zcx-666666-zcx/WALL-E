@@ -32,6 +32,23 @@ def dependencies():
 
 
 class BackendIntegrationTest(unittest.TestCase):
+    def test_recurring_and_rescheduled_events_use_occurrence_keys(self):
+        import datetime
+        config, _, _, modules = dependencies()
+        with patch.dict(sys.modules, modules):
+            manager = load('huang_event_schedule_test', 'mqtt_manager.py')
+            now = time_value = datetime.datetime(2026, 11, 28, 12, 0, 20).timestamp()
+            event = {'id': 7, 'eventDate': '2026-11-27', 'eventTime': '12:00:00', 'repeatDays': 1}
+            with patch.object(manager.time, 'time', return_value=now):
+                due, key = manager._should_remind(event)
+                self.assertTrue(due)
+                manager._already_reminded.add(key)
+                self.assertFalse(manager._should_remind(event)[0])
+                event['eventTime'] = '12:00:15'
+                self.assertTrue(manager._should_remind(event)[0])
+                event['repeatDays'] = 11
+                self.assertFalse(manager._should_remind(event)[0])
+
     def test_onenet_and_backend_tokens_are_separate(self):
         with patch.dict(os.environ, {'WALLE_DEVICE_API_TOKEN': 'backend-secret',
                                     'WALLE_ONENET_TOKEN': 'onenet-secret'}, clear=True):

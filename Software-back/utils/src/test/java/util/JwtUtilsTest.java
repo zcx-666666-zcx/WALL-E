@@ -10,6 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtUtilsTest {
+    @Test
+    void newSessionsLastSevenDays() throws Exception {
+        long issuedAt = System.currentTimeMillis();
+        String token = JwtUtils.createJwt(Map.of("id", 3));
+        long lifetime = JwtUtils.parseJwt(token).getExpiration().getTime() - issuedAt;
+        assertThat(lifetime).isBetween(7L * 24 * 60 * 60 * 1000 - 2000, 7L * 24 * 60 * 60 * 1000 + 2000);
+    }
     @AfterEach
     void clearSecret() {
         System.clearProperty("walle.jwt.secret");

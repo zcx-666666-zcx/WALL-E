@@ -136,7 +136,10 @@ if __name__ == "__main__":
     print("[系统] 正在启动 OneNet 云平台服务...")
     start_mqtt()
 
-    # 5. 语音采集服务由 PC 端 zuixin.py 负责，这里不启动树莓派麦克风上传。
+    # 5. 本机桥接负责转发语音到云端，麦克风仍由网页开关控制。
+    run_bridge = optional_callable("ai_bridge", "run_ai_bridge")
+    if run_bridge:
+        start_daemon("[系统] 启动本机 AI 语音桥接...", run_bridge)
     start_daemon("[系统] 启动语音采集服务...", audio_client_thread)
 
     # 6. 启动摄像头采集线程

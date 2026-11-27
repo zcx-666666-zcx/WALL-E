@@ -2,6 +2,7 @@ import os
 import logging
 import threading
 import time
+from datetime import datetime, date
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -243,10 +244,6 @@ def _fetch_pending_events():
 
 def _should_remind(event):
     """判断事件是否需要提醒"""
-    event_id = event.get("id") or f"{event.get('eventName')}_{event.get('eventDate')}_{event.get('eventTime')}"
-    if event_id in _already_reminded:
-        return False, None
-
     now = time.time()
     event_date = event.get("eventDate", "")  # 格式: 2026-05-24
     event_time = event.get("eventTime", "")  # 格式: 21:00 或 21:00:00
@@ -256,10 +253,20 @@ def _should_remind(event):
 
     # 构造事件时间戳
     try:
-        time_str = event_time if len(event_time) > 5 else f"{event_time}:00"
-        datetime_str = f"{event_date} {time_str}"
-        event_ts = time.mktime(time.strptime(datetime_str, "%Y-%m-%d %H:%M:%S"))
-    except ValueError:
+        first_date = date.fromisoformat(event_date)
+        current = datetime.fromtimestamp(now)
+        days = (current.date() - first_date).days
+        repeat = int(event.get('repeatDays') or 11)
+        if days < 0 or (repeat == 11 and days != 0) or (1 <= repeat <= 10 and days % repeat != 0):
+            return False, None
+        if repeat < 1 or repeat > 11:
+            return False, None
+        clock = datetime.strptime(event_time, "%H:%M:%S" if len(event_time) > 5 else "%H:%M").time()
+        event_ts = datetime.combine(current.date(), clock).timestamp()
+        event_id = (event.get('id') or event.get('eventName'), event_date, event_time, current.date().isoformat())
+        if event_id in _already_reminded:
+            return False, None
+    except (ValueError, TypeError):
         return False, None
 
     time_diff = event_ts - now

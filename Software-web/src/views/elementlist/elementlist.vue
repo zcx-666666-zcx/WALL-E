@@ -59,6 +59,10 @@
 
     const AddElement = async () => {
         const Element = element.value;
+        if (!Element.eventName?.trim() || !Element.eventDate || !Element.eventTime) {
+            toast.warning('请填写事件名称、首次提醒日期和时间');
+            return;
+        }
         if (canadd.value === "更新") {
             canadd.value = "更新中…";
             updateElement(Element);

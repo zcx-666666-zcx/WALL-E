@@ -45,6 +45,17 @@ The remote-control watchdog sends a stop after 0.8 seconds without fresh
 movement commands or on disconnect. Keep the robot in a safe test area.
 Health values remain demo values when live sensor readings are unavailable.
 
+The hardware AI conversation bridge listens on `127.0.0.1:18765` and uses
+the existing web switch to enable or disable microphone capture. It defaults
+to disabled and sends speech through the authenticated HTTPS AI service.
+This replaces the computer-side audio relay; the optional desktop YOLO vision
+tracking program remains separate. To use the older external audio receiver,
+set both `WALLE_AUDIO_SERVER_IP` and `WALLE_AUDIO_SERVER_PORT` in the service
+environment. Video calls default to no audio; enable it before joining if
+needed. Event reminders use `WALLE_EVENT_REFERENCE_AUDIO` and
+`WALLE_EVENT_REFERENCE_TEXT` when configured, then fall back to the original
+speech path on failure. Keep reference audio and credentials outside Git.
+
 `templates/app1.py` contains null bytes in the original Pi file and does not
 pass Python syntax compilation. Its uploaded copy has had credentials removed;
 the existing file corruption remains.
